@@ -60,7 +60,7 @@ namespace Domain.Service.Effect
 
         public override string Info()
         {
-            return "対象の持つアイテムの強化を解除する\n";
+            return "対象の持つアイテムの強化を解除\n";
         }
     }
 }

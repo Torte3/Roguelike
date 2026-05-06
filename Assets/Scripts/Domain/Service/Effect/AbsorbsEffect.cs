@@ -97,13 +97,15 @@ namespace Domain.Service.Effect
 
         public override string Info()
         {
-            var info = string.Join(" ", _elementPowers.Select(e => e.Info()));
-            info += "の攻撃を行う\n";
+            var powers = string.Join("/", _elementPowers.Select(e => $"{e.Element.Name()}{e.Power}"));
+            var info = $"攻撃[{ItemDescriptionRichText.RichAttackPowerSummary(powers)}]\n";
             if (_fixedCriticalRate > 0)
             {
-                info += $"そのとき{_fixedCriticalRate:P0}の確率でクリティカルを発生させる\n";
+                info += "そのとき" + ItemDescriptionRichText.ColorPercentagesInPlainText($"{_fixedCriticalRate:P0}") +
+                        "の確率でクリティカルを発生させる\n";
             }
-            info += $"与えたダメージの{_fixedRate:P0}を吸収する\n";
+
+            info += "与ダメの" + ItemDescriptionRichText.ColorPercentagesInPlainText($"{_fixedRate:P0}") + "吸収\n";
             return info;
         }
     }

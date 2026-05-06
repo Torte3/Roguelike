@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Domain.Model.Character;
@@ -104,7 +104,9 @@ namespace Domain.Service.Effect
 
         public string Info()
         {
-            return $"{_probabilityOfSuccess:P0}の確率で{_condition.Value.name}状態を付与する\n";
+            var name = ItemDescriptionRichText.RichBracketedConditionName(_condition.Value.name, Impact);
+            var prob = ItemDescriptionRichText.ColorPercentagesInPlainText($"（{_probabilityOfSuccess:P0}）");
+            return $"{name}を付与{prob}\n";
         }
     }
 }

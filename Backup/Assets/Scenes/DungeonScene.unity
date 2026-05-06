@@ -6594,7 +6594,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "\u30A2\u30A4\u30C6\u30E0\u30E1\u30CB\u30E5\u30FC: <sprite=585>+<sprite=398>
-    or <sprite=460>:\u9078\u629E / <sprite=13>:\u4F7F\u7528 / <sprite=15>:\u5165\u308C\u66FF\u3048
+    or <sprite=460>:\u9078\u629E / <sprite=13>:\u4F7F\u3046 / <sprite=15>:\u5165\u308C\u66FF\u3048
     / <sprite=584>:\u6295\u3052\u308B / <sprite=651>:\u540D\u4ED8\u3051\u308B"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 37048231315fad1469fdc00c9d965347, type: 2}
@@ -7438,7 +7438,7 @@ Camera:
   far clip plane: 1000
   field of view: 60.000004
   orthographic: 1
-  orthographic size: 11.15625
+  orthographic size: 8.4375
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -8398,7 +8398,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5.578125
+  orthographic size: 4.821429
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -8826,7 +8826,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85c3e5a96b26d0644908feee59faaeb3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _level: {fileID: 480622693}
   _hp: {fileID: 897980654}
   _money: {fileID: 1362118751}
   _inventory: {fileID: 175079717}

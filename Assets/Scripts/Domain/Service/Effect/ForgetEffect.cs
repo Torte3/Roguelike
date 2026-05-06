@@ -35,7 +35,7 @@ namespace Domain.Service.Effect
 
         public override string Info()
         {
-            return "対象の知識を消去する\n";
+            return "知識を消去\n";
         }
     }
 }

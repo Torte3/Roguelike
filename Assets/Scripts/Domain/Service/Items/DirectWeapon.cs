@@ -338,6 +338,12 @@ namespace Domain.Service.Items
             rangedWeapon => Merge(rangedWeapon.Features, rangedWeapon.UpgradeCount)
         );
 
+        protected override string? BuildTemplatedActivatableSkillInfo() =>
+            ItemDescriptionTemplate.FormatDirectWeapon(
+                (SkillWithCost)SkillOnUse.Expect("SkillOnUse is null"),
+                (SkillWithCost)SkillOnThrow.Expect("SkillOnThrow is null"),
+                _hasSameEffect);
+
         protected override string FullInfoImpl()
         {
             var info = "";

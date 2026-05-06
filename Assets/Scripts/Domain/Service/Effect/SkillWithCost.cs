@@ -94,17 +94,17 @@ namespace Domain.Service.Effect
             return InfoOnUse();
         }
 
-        public string InfoOnUse(bool omitProbabilityOfSuccess = false)
+        public string InfoOnUse(bool omitProbabilityOfSuccess = false, bool useOrThrowCombinedTargets = false)
         {
             var info = Skill.Match(
-                spawnEffectSkill => spawnEffectSkill.InfoOnUse(omitProbabilityOfSuccess),
+                spawnEffectSkill => spawnEffectSkill.InfoOnUse(omitProbabilityOfSuccess, useOrThrowCombinedTargets),
                 itemTargetSkill => itemTargetSkill.Info(),
                 inventoryTargetSkill => inventoryTargetSkill.Info()
             );
             if (ChargeTurn > 0)
-                info += $"発動には{ChargeTurn}ターンかかる\n";
+                info += $"発動には{ItemDescriptionRichText.RichTurns(ChargeTurn + 1)}ターンかかる\n";
             if (CoolTime > 0)
-                info += $"発動後に{CoolTime}ターンは再使用不能\n";
+                info += $"発動後に{ItemDescriptionRichText.RichTurns(CoolTime)}ターンは再使用不能\n";
             return info;
         }
 
@@ -116,9 +116,9 @@ namespace Domain.Service.Effect
                 inventoryTargetSkill => inventoryTargetSkill.Info()
             );
             if (ChargeTurn > 0)
-                info += $"発動には{ChargeTurn}ターンかかる\n";
+                info += $"発動には{ItemDescriptionRichText.RichTurns(ChargeTurn + 1)}ターンかかる\n";
             if (CoolTime > 0)
-                info += $"発動後に{CoolTime}ターンは再使用不能\n";
+                info += $"発動後に{ItemDescriptionRichText.RichTurns(CoolTime)}ターンは再使用不能\n";
             return info;
         }
     }

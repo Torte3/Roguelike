@@ -67,7 +67,7 @@ namespace Domain.Service.Effect
 
         public override string Info()
         {
-            return "対象の持つアイテムに呪いをかける\n";
+            return "対象の持つアイテムに呪い付与\n";
         }
     }
 }

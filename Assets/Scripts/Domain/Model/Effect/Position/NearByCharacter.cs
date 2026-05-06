@@ -70,7 +70,7 @@ namespace Domain.Model.Effect.Position
             }
 
             if (TargetSelf) info += "（自分含む）";
-            info += $"{NumberOfTarget}体";
+            info += $"{ItemDescriptionRichText.RichSpatial(NumberOfTarget)}体";
 
             return info;
         }

@@ -493,7 +493,7 @@ namespace Domain.Service.Items
             if (IsCurseIdentified)
             {
                 if (IsCursed)
-                    return "それは呪われている\n";
+                    return ItemDescriptionRichText.HarmfulLine(ItemDescriptionPhrases.IdentifiedAsCursed) + "\n";
                 return "それは呪われていない\n";
             }
 
@@ -530,56 +530,26 @@ namespace Domain.Service.Items
 
         protected abstract string FullInfoImpl();
 
-        public string FullInfo()
+        protected virtual string? BuildTemplatedActivatableSkillInfo() => null;
+
+        public string PreviewTemplatedSkillSection() => BuildTemplatedActivatableSkillInfo() ?? "";
+
+        public string FullInfo() => BuildFullInfo(useActivatableSkillTemplate: true);
+
+        public string FullInfoGenericSkillDescription() => BuildFullInfo(useActivatableSkillTemplate: false);
+
+        private string BuildFullInfo(bool useActivatableSkillTemplate)
         {
             var info = $"{State.GetDescription()}{_fullName}";
             if (MaxUsages > 1)
             {
-                info += $" ({_remainingUsages.CurrentValue}/{MaxUsages})";
+                info += $" ({ItemDescriptionRichText.RichMeta(_remainingUsages.CurrentValue)}/{ItemDescriptionRichText.RichMeta(MaxUsages)})";
             }
             info += "\n";
             if (UpgradeCount > 0)
-                info += $"それは{UpgradeCount}/{UpgradeLimit}回強化されている\n";
+                info += $"それは{ItemDescriptionRichText.RichMeta(UpgradeCount)}/{ItemDescriptionRichText.RichMeta(UpgradeLimit)}回強化されている\n";
             info += CursedInfo();
-            if (HasActivatableSkill)
-            {
-                if (HasSameSkill)
-                {
-                    info += "\n使用または投擲したときの効果...\n" + SkillOnUse.Expect("SkillOnUse is null").Skill.Match(
-                        spawnEffectSkill => spawnEffectSkill.InfoOnUse(true) + "\n",
-                        itemTargetSkill => throw new Exception("SkillOnUse can not be ItemTargetSkill"),
-                        inventoryTargetSkill => throw new Exception("SkillOnUse can not be InventoryTargetSkill")
-                    );
-                    var skillOnUseSuccessProbability = SkillOnUse.Expect("SkillOnUse is null").Skill.Match(
-                        spawnEffectSkill => spawnEffectSkill.ProbabilityOfSuccess,
-                        itemTargetSkill => throw new Exception("SkillOnUse can not be ItemTargetSkill"),
-                        inventoryTargetSkill => throw new Exception("SkillOnUse can not be InventoryTargetSkill")
-                    );
-                    var skillOnThrowSuccessProbability = SkillOnThrow.Expect("SkillOnThrow is null").Skill.Match(
-                        spawnEffectSkill => spawnEffectSkill.ProbabilityOfSuccess,
-                        itemTargetSkill => throw new Exception("SkillOnThrow can not be ItemTargetSkill"),
-                        inventoryTargetSkill => throw new Exception("SkillOnThrow can not be InventoryTargetSkill")
-                    );
-                    info += $"使用時の発動は{skillOnUseSuccessProbability:P0}の確率で成功する\n";
-                    info += $"投擲時の発動は{skillOnThrowSuccessProbability:P0}の確率で成功する\n";
-                }
-                else
-                {
-                    info += SkillOnUse.MapOr(
-                        "",
-                        skill => "\n使用したときの効果...\n" + skill.Info()
-                    );
-
-                    info += SkillOnThrow.MapOr(
-                        "",
-                        skill => "\n投擲したときの効果...\n" + skill.Skill.Match(
-                            spawnEffectSkill => spawnEffectSkill.InfoOnThrow(HasSameEffect),
-                            itemTargetSkill => throw new Exception("SkillOnThrow can not be ItemTargetSkill"),
-                            inventoryTargetSkill => throw new Exception("SkillOnThrow can not be InventoryTargetSkill")
-                        )
-                    );
-                }
-            }
+            info += BuildActivatableSkillSection(useActivatableSkillTemplate);
 
             info += "\n";
 
@@ -594,17 +564,68 @@ namespace Domain.Service.Items
             }
             else if (UsageLossChance < 1)
             {
-                info += $"それは{(1 - UsageLossChance):P0}の確率で使用可能回数が減少しない\n";
+                info += ItemDescriptionRichText.ColorPercentagesInPlainText(
+                    $"それは{(1 - UsageLossChance):P0}の確率で使用可能回数が減少しない\n");
             }
 
             foreach (var condition in PassiveConditions)
             {
-                info += $"それは{condition.Name}の効果を授ける\n";
+                info += $"それは{ItemDescriptionRichText.RichPassiveConditionName(condition.Name)}の効果を授ける\n";
             }
 
             info += FullInfoImpl();
 
             return info;
+        }
+
+        private string BuildActivatableSkillSection(bool useTemplateWhenAvailable)
+        {
+            if (!HasActivatableSkill)
+                return "";
+
+            if (useTemplateWhenAvailable)
+            {
+                var templated = BuildTemplatedActivatableSkillInfo();
+                if (templated != null)
+                    return templated;
+            }
+
+            if (HasSameSkill)
+            {
+                var info = "\n" + ItemDescriptionRichText.HeaderLine(ItemDescriptionPhrases.WhenUsedOrThrownEffects) + "\n" + SkillOnUse.Expect("SkillOnUse is null").Skill.Match(
+                    spawnEffectSkill => spawnEffectSkill.InfoOnUse(omitProbabilityOfSuccess: true, useOrThrowCombinedTargets: true) + "\n",
+                    itemTargetSkill => throw new Exception("SkillOnUse can not be ItemTargetSkill"),
+                    inventoryTargetSkill => throw new Exception("SkillOnUse can not be InventoryTargetSkill")
+                );
+                var skillOnUseSuccessProbability = SkillOnUse.Expect("SkillOnUse is null").Skill.Match(
+                    spawnEffectSkill => spawnEffectSkill.ProbabilityOfSuccess,
+                    itemTargetSkill => throw new Exception("SkillOnUse can not be ItemTargetSkill"),
+                    inventoryTargetSkill => throw new Exception("SkillOnUse can not be InventoryTargetSkill")
+                );
+                var skillOnThrowSuccessProbability = SkillOnThrow.Expect("SkillOnThrow is null").Skill.Match(
+                    spawnEffectSkill => spawnEffectSkill.ProbabilityOfSuccess,
+                    itemTargetSkill => throw new Exception("SkillOnThrow can not be ItemTargetSkill"),
+                    inventoryTargetSkill => throw new Exception("SkillOnThrow can not be InventoryTargetSkill")
+                );
+                info += ItemDescriptionRichText.ColorPercentagesInPlainText(
+                    $"成功率：使用{skillOnUseSuccessProbability:P0}／投擲{skillOnThrowSuccessProbability:P0}\n");
+                return info;
+            }
+
+            var generic = SkillOnUse.MapOr(
+                "",
+                skill => "\n" + ItemDescriptionRichText.HeaderLine(ItemDescriptionPhrases.WhenUsedEffects) + "\n" + skill.Info()
+            );
+
+            generic += SkillOnThrow.MapOr(
+                "",
+                skill => "\n" + ItemDescriptionRichText.HeaderLine(ItemDescriptionPhrases.WhenThrownEffects) + "\n" + skill.Skill.Match(
+                    spawnEffectSkill => spawnEffectSkill.InfoOnThrow(HasSameEffect),
+                    itemTargetSkill => throw new Exception("SkillOnThrow can not be ItemTargetSkill"),
+                    inventoryTargetSkill => throw new Exception("SkillOnThrow can not be InventoryTargetSkill")
+                )
+            );
+            return generic;
         }
         #endregion
 

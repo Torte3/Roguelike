@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Domain.Model.Effect.Area;
 using Domain.Model.Effect.Position;
 using Domain.Model.Evaluation;
+using Domain.Model.Item;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Utilities;
@@ -102,28 +103,30 @@ namespace Domain.Model.Effect
             var info = "";
 
             if (Cost > 0)
-                info += $"消費HP: {Cost}\n";
+                info += $"消費HP: {ItemDescriptionRichText.RichHpCost(Cost)}\n";
 
             if (RushDistance > 0)
-                info += $"最初に{RushDistance}マス前に進む\n";
+                info += $"最初に{ItemDescriptionRichText.RichSpatial(RushDistance)}マス前に進む\n";
 
-            if (Repeats > 1)
-                info += $"効果は{Repeats}回発動する\n";
-            info += $"{Position.Info()}の{Area.Info()}を対象に\n";
+            var positionInfo = Position.Info();
+            var areaInfo = Area.Info();
+            info += EffectTargetDescription.OnUse(positionInfo, areaInfo, useOrThrowCombinedTargets: false) + "\n";
             foreach (var (effect, index) in Effects.Index())
             {
-                info += effect.Info();
+                info += ItemDescriptionRichText.StyleEffectInfo(effect, effect.Info());
             }
-            info += $"発動は{ProbabilityOfSuccess:P0}の確率で成功する\n";
+            if (Repeats > 1)
+                info += $"効果は{ItemDescriptionRichText.RichMeta(Repeats)}回発動する\n";
+            info += ItemDescriptionRichText.ColorPercentagesInPlainText($"成功率：{ProbabilityOfSuccess:P0}\n");
 
             if (BackStepDistance > 0)
-                info += $"最後に{BackStepDistance}マス後ろに下がる\n";
+                info += $"最後に{ItemDescriptionRichText.RichSpatial(BackStepDistance)}マス後ろに下がる\n";
 
             if (ChargeTurn > 0)
-                info += $"発動には{ChargeTurn}ターンかかる\n";
+                info += $"発動には{ItemDescriptionRichText.RichTurns(ChargeTurn)}ターンかかる\n";
 
             if (CoolTime > 0)
-                info += $"発動後に{CoolTime}ターンは再使用不能\n";
+                info += $"発動後に{ItemDescriptionRichText.RichTurns(CoolTime)}ターンは再使用不能\n";
             return info;
         }
     }

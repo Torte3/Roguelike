@@ -22,7 +22,7 @@ namespace Domain.Service.InventoryEffect
 
         public string Info()
         {
-            return "呪い(全て)";
+            return "呪い付与(全て)";
         }
     }
 }

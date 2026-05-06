@@ -45,6 +45,8 @@ namespace Domain.Service.Items
             data.BaseItem)
         {
             _category = data.Category;
+            _hasSameEffect = data.HasSameEffect;
+            _hasSameSkill = data.HasSameSkill;
             _skillOnUse = data.SkillOnUse.Map(skill => (ISkillWithCost)new SkillWithCost(skill));
             if (data.HasSameEffect)
             {
@@ -178,6 +180,18 @@ namespace Domain.Service.Items
             throw new Exception("Cannot upgrade item");
         public override void Downgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders) =>
             throw new Exception("Cannot downgrade item");
+
+        protected override string? BuildTemplatedActivatableSkillInfo()
+        {
+            if (Category != ItemCategory.Potions)
+                return null;
+            var info = ItemDescriptionTemplate.FormatPotion(
+                _skillOnUse.UnwrapOrNull() is { } u ? (SkillWithCost)u : null,
+                _skillOnThrow.UnwrapOrNull() is { } t ? (SkillWithCost)t : null,
+                _hasSameEffect,
+                _hasSameSkill);
+            return string.IsNullOrEmpty(info) ? null : info;
+        }
 
         protected override string FullInfoImpl() => "";
 

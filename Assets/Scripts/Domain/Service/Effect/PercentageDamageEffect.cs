@@ -46,7 +46,8 @@ namespace Domain.Service.Effect
 
         public override string Info()
         {
-            return $"HPの{_damageRate:P0}のダメージを与える\n";
+            var rate = $"割合{_damageRate:P0}";
+            return $"攻撃[{ItemDescriptionRichText.RichAttackPowerSummary(rate)}]\n";
         }
     }
 }

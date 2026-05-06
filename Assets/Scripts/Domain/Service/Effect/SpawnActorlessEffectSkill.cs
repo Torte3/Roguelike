@@ -6,6 +6,7 @@ using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Effect;
 using Domain.Model.Effect.Area;
+using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
 using Domain.Model.Setting;
@@ -154,40 +155,47 @@ namespace Domain.Service.Effect
             return price * ProbabilityOfSuccess;
         }
 
-        public string InfoOnUse(bool omitProbabilityOfSuccess = false)
+        public string InfoOnUse(bool omitProbabilityOfSuccess = false, bool useOrThrowCombinedTargets = false)
         {
             var info = "";
-            if (Repeats > 1)
-                info += $"効果は{Repeats}回発動する\n";
-            info += $"{_position.Info()}の{_area.Info()}を対象にして\n";
+            var positionInfo = _position.Info();
+            var areaInfo = _area.Info();
+            info += EffectTargetDescription.OnUse(positionInfo, areaInfo, useOrThrowCombinedTargets) + "\n";
             foreach (var (effect, index) in _effects.Index())
             {
-                info += effect.Info();
+                info += ItemDescriptionRichText.StyleEffectInfo(effect, effect.Info());
             }
+            if (Repeats > 1)
+                info += $"効果は{ItemDescriptionRichText.RichMeta(Repeats)}回発動する\n";
             if (!omitProbabilityOfSuccess)
-                info += $"発動は{ProbabilityOfSuccess:P0}の確率で成功する\n";
+                info += ItemDescriptionRichText.ColorPercentagesInPlainText($"成功率：{ProbabilityOfSuccess:P0}\n");
             return info;
         }
 
         public string InfoOnThrow(bool omitEffects = false)
         {
             var info = "";
-            if (Repeats > 1)
-                info += $"効果は{Repeats}回発動する\n";
-            info += $"{_position.Info()}の{_area.Info()}を対象にして\n";
+            var positionInfo = _position.Info();
+            var areaInfo = _area.Info();
+            var targetLine = EffectTargetDescription.OnThrow(positionInfo, areaInfo);
             if (!omitEffects)
             {
+                info += targetLine + "\n";
                 foreach (var (effect, index) in _effects.Index())
                 {
-                    info += effect.Info();
+                    info += ItemDescriptionRichText.StyleEffectInfo(effect, effect.Info());
                 }
             }
             else
             {
+                info += targetLine + "\n";
                 info += "使用時と同じ効果を発揮する\n";
             }
 
-            info += $"発動は{ProbabilityOfSuccess:P0}の確率で成功する\n";
+            if (Repeats > 1)
+                info += $"効果は{ItemDescriptionRichText.RichMeta(Repeats)}回発動する\n";
+
+            info += ItemDescriptionRichText.ColorPercentagesInPlainText($"成功率：{ProbabilityOfSuccess:P0}\n");
             return info;
         }
     }

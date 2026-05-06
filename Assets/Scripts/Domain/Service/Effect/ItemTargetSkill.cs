@@ -117,9 +117,7 @@ namespace Domain.Service.Effect
             return _itemEffect.EvaluatePrice();
         }
 
-        public string Info()
-        {
-            return _itemEffect.Info();
-        }
+        public string Info() =>
+            ItemDescriptionPhrases.TargetsAnItem + "\n" + _itemEffect.Info();
     }
 }

@@ -470,7 +470,7 @@ namespace Domain.Service.Characters
             Turn(direction);
             _onItemUsed.OnNext(item.BaseName);
 
-            GameLog.Add(Entity.IsVisible, $"{GetName(map.Player)}は{item.GetName(map.Player, map.ItemPlaceholders)}を使った");
+            GameLog.Add(Entity.IsVisible, $"{GetName(map.Player)}は{item.GetName(map.Player, map.ItemPlaceholders)}を使った。");
             if (item.CanActivateWhenUsed)
             {
                 var result = await item.SkillOnUse.Expect("skill on use is null").Skill.Match(

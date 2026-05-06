@@ -34,7 +34,7 @@ namespace Domain.Service.Effect
 
         public override string Info()
         {
-            return "水上なら氷を生成する\n";
+            return "水上なら氷を生成\n";
         }
     }
 }

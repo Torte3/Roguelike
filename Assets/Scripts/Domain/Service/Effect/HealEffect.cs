@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Domain.Model.Effect;
@@ -50,9 +50,7 @@ namespace Domain.Service.Effect
             return Formula.EvaluateHeal(_power);
         }
 
-        public override string Info()
-        {
-            return $"威力{_power}の回復を行う\n";
-        }
+        public override string Info() =>
+            $"{ItemDescriptionRichText.RichHealAmount(_power)}HP回復\n";
     }
 }

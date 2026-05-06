@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Domain.Model.Effect.Area;
 using Domain.Model.Evaluation;
@@ -113,7 +113,7 @@ namespace Domain.Model.Effect
             if (BackStepDistance > 0)
                 info += $"最後に{BackStepDistance}マス後ろに下がる\n";
             if (ChargeTurn > 0)
-                info += $"発動には{ChargeTurn}ターンかかる\n";
+                info += $"発動には{ChargeTurn + 1}ターンかかる\n";
             if (CoolTime > 0)
                 info += $"発動後に{CoolTime}ターンは再使用不能\n";
             return info;

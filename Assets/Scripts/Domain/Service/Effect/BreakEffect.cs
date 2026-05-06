@@ -95,7 +95,7 @@ namespace Domain.Service.Effect
             if (ApplyToTrap) targets.Add("罠");
             if (ApplyToChest) targets.Add("宝箱");
             if (ApplyToStatue) targets.Add("石像");
-            return $"{string.Join("、", targets)}を破壊する\n";
+            return $"{string.Join("、", targets)}を破壊\n";
         }
     }
 }

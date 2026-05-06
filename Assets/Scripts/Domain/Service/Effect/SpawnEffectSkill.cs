@@ -10,6 +10,7 @@ using Domain.Model.Effect.Area;
 using Domain.Model.Effect.Position;
 using Domain.Model.Evaluation;
 using Domain.Model.Map;
+using Domain.Model.Item;
 using Domain.Model.Memento;
 using Domain.Model.Setting;
 using Domain.Service.Logs;
@@ -45,6 +46,12 @@ namespace Domain.Service.Effect
 
         public int RushDistance { get; private set; }
         public int BackStepDistance { get; private set; }
+
+        public IEffectPosition EffectPosition => _position;
+
+        public IArea EffectArea => _area;
+
+        public IReadOnlyList<IEffect> EffectList => _effects;
 
         public SpawnEffectSkillMemento Serialize()
         {
@@ -195,12 +202,12 @@ namespace Domain.Service.Effect
 
             if (successes == 0)
             {
-                GameLog.Add(actor.IsVisible, "しかし効果がなかった");
+                GameLog.AddAppend(actor.IsVisible, "しかし効果がなかった");
                 return SpawnEffectSkillResult.Failed;
             }
             else if (successes < Repeats)
             {
-                GameLog.Add(actor.IsVisible, $"{successes}回成功した");
+                GameLog.AddAppend(actor.IsVisible, $"{successes}回成功した");
             }
 
             return SpawnEffectSkillResult.Success;
@@ -277,23 +284,25 @@ namespace Domain.Service.Effect
             return InfoOnUse();
         }
 
-        public string InfoOnUse(bool omitProbabilityOfSuccess = false)
+        public string InfoOnUse(bool omitProbabilityOfSuccess = false, bool useOrThrowCombinedTargets = false)
         {
             var info = "";
             if (RushDistance > 0)
-                info += $"最初に{RushDistance}マス前に進む\n";
-            if (Repeats > 1)
-                info += $"効果は{Repeats}回発動する\n";
-            info += $"{_position.Info()}の{_area.Info()}を対象にして\n";
+                info += $"最初に{ItemDescriptionRichText.RichSpatial(RushDistance)}マス前に進む\n";
+            var positionInfo = _position.Info();
+            var areaInfo = _area.Info();
+            info += EffectTargetDescription.OnUse(positionInfo, areaInfo, useOrThrowCombinedTargets) + "\n";
             foreach (var (effect, index) in _effects.Index())
             {
-                info += effect.Info();
+                info += ItemDescriptionRichText.StyleEffectInfo(effect, effect.Info());
             }
+            if (Repeats > 1)
+                info += $"効果は{ItemDescriptionRichText.RichMeta(Repeats)}回発動する\n";
             if (!omitProbabilityOfSuccess)
-                info += $"発動は{ProbabilityOfSuccess:P0}の確率で成功する\n";
+                info += ItemDescriptionRichText.ColorPercentagesInPlainText($"成功率：{ProbabilityOfSuccess:P0}\n");
 
             if (BackStepDistance > 0)
-                info += $"最後に{BackStepDistance}マス後ろに下がる\n";
+                info += $"最後に{ItemDescriptionRichText.RichSpatial(BackStepDistance)}マス後ろに下がる\n";
             return info;
         }
 
@@ -301,26 +310,31 @@ namespace Domain.Service.Effect
         {
             var info = "";
             if (RushDistance > 0)
-                info += $"最初に{RushDistance}マス前に進む\n";
-            if (Repeats > 1)
-                info += $"効果は{Repeats}回発動する\n";
-            info += $"{_position.Info()}の{_area.Info()}を対象にして\n";
+                info += $"最初に{ItemDescriptionRichText.RichSpatial(RushDistance)}マス前に進む\n";
+            var positionInfo = _position.Info();
+            var areaInfo = _area.Info();
+            var targetLine = EffectTargetDescription.OnThrow(positionInfo, areaInfo);
             if (!omitEffects)
             {
+                info += targetLine + "\n";
                 foreach (var (effect, index) in _effects.Index())
                 {
-                    info += effect.Info();
+                    info += ItemDescriptionRichText.StyleEffectInfo(effect, effect.Info());
                 }
             }
             else
             {
+                info += targetLine + "\n";
                 info += "使用時と同じ効果を発揮する\n";
             }
 
-            info += $"発動は{ProbabilityOfSuccess:P0}の確率で成功する\n";
+            if (Repeats > 1)
+                info += $"効果は{ItemDescriptionRichText.RichMeta(Repeats)}回発動する\n";
+
+            info += ItemDescriptionRichText.ColorPercentagesInPlainText($"成功率：{ProbabilityOfSuccess:P0}\n");
 
             if (BackStepDistance > 0)
-                info += $"最後に{BackStepDistance}マス後ろに下がる\n";
+                info += $"最後に{ItemDescriptionRichText.RichSpatial(BackStepDistance)}マス後ろに下がる\n";
             return info;
         }
     }

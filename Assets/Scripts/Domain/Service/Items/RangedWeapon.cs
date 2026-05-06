@@ -315,6 +315,9 @@ namespace Domain.Service.Items
             rangedWeapon => Merge(rangedWeapon.Features, rangedWeapon.UpgradeCount)
         );
 
+        protected override string? BuildTemplatedActivatableSkillInfo() =>
+            ItemDescriptionTemplate.FormatRangedWeapon((SkillWithCost)_skillOnUse);
+
         protected override string FullInfoImpl()
         {
             var info = "";

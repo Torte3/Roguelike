@@ -79,10 +79,12 @@ namespace Domain.Service.Effect
 
         public override string Info()
         {
-            var info = $"{string.Join(" ", _elementPowers.Select(e => e.Info()))}の攻撃を行う\n";
+            var powers = string.Join("/", _elementPowers.Select(e => $"{e.Element.Name()}{e.Power}"));
+            var info = $"攻撃[{ItemDescriptionRichText.RichAttackPowerSummary(powers)}]\n";
             if (_fixedCriticalRate > 0)
             {
-                info += $"そのとき{_fixedCriticalRate:P0}の確率でクリティカルを発生させる\n";
+                info += "そのとき" + ItemDescriptionRichText.ColorPercentagesInPlainText($"{_fixedCriticalRate:P0}") +
+                        "の確率でクリティカルを発生させる\n";
             }
 
             return info;
