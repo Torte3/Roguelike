@@ -44,7 +44,7 @@ namespace Domain.Model.Effect.Area
 
         public string Info()
         {
-            var info = $"周囲{ItemDescriptionRichText.RichSpatial(Radius)}マス";
+            var info = $"周囲{ItemDescriptionRichText.RichSpatialCells(Radius)}";
             if (ContainsSelf) info += "(中心含む)";
             if (CanIgnoreWalls) info += "(壁無視)";
             return info;

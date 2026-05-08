@@ -84,7 +84,7 @@ namespace Domain.Model.Effect.Area
 
         public string Info()
         {
-            var info = $"前{ItemDescriptionRichText.RichSpatial(Radius)}マス（扇形）";
+            var info = $"前{ItemDescriptionRichText.RichSpatialCells(Radius)}（扇形）";
             if (ContainsSelf) info += "(中心含む)";
             if (CanIgnoreWalls) info += "(壁無視)";
             return info;

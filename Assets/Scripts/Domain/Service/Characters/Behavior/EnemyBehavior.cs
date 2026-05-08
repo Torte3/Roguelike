@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -434,7 +434,12 @@ namespace Domain.Service.Characters.Behavior
             );
         }
 
-        public UniTask<ItemFocus> SelectItem(string text, params ItemFocus[] disabledItems)
+        public UniTask<ItemFocus> SelectItem(string text, ItemFocus[] disabledItems)
+        {
+            return UniTask.FromResult(ItemFocus.Empty);
+        }
+
+        public UniTask<ItemFocus> SelectItemWithPreview(string text, ItemFocus[] disabledItems, ItemSelectPreview[] previews, ItemSelectPreview? defaultPreview, string previewTitle)
         {
             return UniTask.FromResult(ItemFocus.Empty);
         }

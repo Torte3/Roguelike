@@ -820,8 +820,8 @@ namespace Domain.Service.Characters
 
         public async UniTask<int?> SelectItem(string text, params int[] disabledItems)
         {
-            var disabledItemIndexes = disabledItems.Select(x => new ItemFocus(x));
-            disabledItemIndexes.Append(ItemFocus.GroundItem);
+            var disabledItemIndexes = disabledItems.Select(x => new ItemFocus(x)).ToList();
+            disabledItemIndexes.Add(ItemFocus.GroundItem);
             var focus = await _behavior.SelectItem(text, disabledItemIndexes.ToArray());
             if (focus.IsInInventory)
                 return focus.Index;
@@ -833,16 +833,60 @@ namespace Domain.Service.Characters
 
         public async UniTask<int?> SelectItemWithCanSelect(string text, Func<IItem, bool> canSelect)
         {
-            var disabledItemIndexes = new List<int>();
+            var disabledItemFocuses = new List<ItemFocus>();
             foreach (var (item, index) in Inventory.AllItemsWithIndex)
             {
                 if (!canSelect(item))
                 {
-                    disabledItemIndexes.Add(index);
+                    disabledItemFocuses.Add(new ItemFocus(index));
                 }
             }
+            disabledItemFocuses.Add(ItemFocus.GroundItem);
 
-            return await SelectItem(text, disabledItemIndexes.ToArray());
+            var focus = await _behavior.SelectItem(text, disabledItemFocuses.ToArray());
+            if (focus.IsInInventory)
+                return focus.Index;
+            else if (focus.IsOnEmpty)
+                return null;
+            else
+                throw new Exception("Unexpected item focus");
+        }
+
+        public async UniTask<int?> SelectItemWithCanSelectPreview(
+            string text,
+            Func<IItem, bool> canSelect,
+            Func<IItem, ItemSelectPreview?> buildPreview,
+            ItemSelectPreview? defaultPreview,
+            string previewTitle)
+        {
+            var disabledItemFocuses = new List<ItemFocus>();
+            var previews = new List<ItemSelectPreview>();
+            foreach (var (item, index) in Inventory.AllItemsWithIndex)
+            {
+                var preview = buildPreview(item);
+                if (preview != null)
+                {
+                    previews.Add(preview with { Focus = new ItemFocus(index) });
+                }
+                if (!canSelect(item))
+                {
+                    disabledItemFocuses.Add(new ItemFocus(index));
+                }
+            }
+            disabledItemFocuses.Add(ItemFocus.GroundItem);
+
+            var focus = await _behavior.SelectItemWithPreview(
+                text,
+                disabledItemFocuses.ToArray(),
+                previews.ToArray(),
+                defaultPreview,
+                previewTitle);
+            if (focus.IsInInventory)
+                return focus.Index;
+            else if (focus.IsOnEmpty)
+                return null;
+            else
+                throw new Exception("Unexpected item focus");
         }
 
         public async UniTask<ItemFocus> SelectItemContainsGroundItem(string text, params ItemFocus[] disabledItems)

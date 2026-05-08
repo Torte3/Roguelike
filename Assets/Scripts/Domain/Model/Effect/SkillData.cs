@@ -106,7 +106,7 @@ namespace Domain.Model.Effect
                 info += $"消費HP: {ItemDescriptionRichText.RichHpCost(Cost)}\n";
 
             if (RushDistance > 0)
-                info += $"最初に{ItemDescriptionRichText.RichSpatial(RushDistance)}マス前に進む\n";
+                info += $"最初に{ItemDescriptionRichText.RichSpatialCells(RushDistance)}前に進む\n";
 
             var positionInfo = Position.Info();
             var areaInfo = Area.Info();
@@ -120,7 +120,7 @@ namespace Domain.Model.Effect
             info += ItemDescriptionRichText.ColorPercentagesInPlainText($"成功率：{ProbabilityOfSuccess:P0}\n");
 
             if (BackStepDistance > 0)
-                info += $"最後に{ItemDescriptionRichText.RichSpatial(BackStepDistance)}マス後ろに下がる\n";
+                info += $"最後に{ItemDescriptionRichText.RichSpatialCells(BackStepDistance)}後ろに下がる\n";
 
             if (ChargeTurn > 0)
                 info += $"発動には{ItemDescriptionRichText.RichTurns(ChargeTurn)}ターンかかる\n";

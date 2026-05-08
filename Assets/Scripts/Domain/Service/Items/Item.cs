@@ -176,9 +176,9 @@ namespace Domain.Service.Items
 
         public override bool CanUpgrade() => false;
         public override bool CanDowngrade() => false;
-        public override void Upgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders) =>
+        public override void Upgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true) =>
             throw new Exception("Cannot upgrade item");
-        public override void Downgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders) =>
+        public override void Downgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true) =>
             throw new Exception("Cannot downgrade item");
 
         protected override string? BuildTemplatedActivatableSkillInfo()

@@ -265,6 +265,24 @@ namespace Domain.Service.Characters.Behavior
         public async UniTask<ItemFocus> SelectItem(string text, params ItemFocus[] disabledItemIndexes)
         {
             _onStartItemSelect.OnNext(new OnStartItemSelectMessage(text, disabledItemIndexes));
+            ItemFocus? focus;
+            do
+            {
+                focus = await _receiver.OnItemSelectConfirmReceived.WaitAsync();
+            } while (!focus.IsOnEmpty && disabledItemIndexes.Contains(focus));
+
+            _onSelectedItemSelect.OnNext(Unit.Default);
+            return focus;
+        }
+
+        public async UniTask<ItemFocus> SelectItemWithPreview(
+            string text,
+            ItemFocus[] disabledItemIndexes,
+            ItemSelectPreview[] previews,
+            ItemSelectPreview? defaultPreview,
+            string previewTitle)
+        {
+            _onStartItemSelect.OnNext(new OnStartItemSelectMessage(text, disabledItemIndexes, previews, defaultPreview, previewTitle));
 
             ItemFocus? focus;
             do

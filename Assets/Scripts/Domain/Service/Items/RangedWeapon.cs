@@ -75,9 +75,10 @@ namespace Domain.Service.Items
 
         public override bool CanUpgrade() => UpgradeCount < UpgradeLimit;
         public override bool CanDowngrade() => UpgradeCount > 0;
-        public override void Upgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
+        public override void Upgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true)
         {
-            GameLog.Add(itemHolder.IsVisible, $"{GetName(player, itemPlaceholders)}は強化された");
+            if (log)
+                GameLog.Add(itemHolder.IsVisible, $"{GetName(player, itemPlaceholders)}は強化された");
             UpgradeCount++;
             var skillOnUse = BuildSkills(
                 _defaultPower,
@@ -90,9 +91,10 @@ namespace Domain.Service.Items
             _onItemUpdated.OnNext(Unit.Default);
         }
 
-        public override void Downgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
+        public override void Downgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true)
         {
-            GameLog.Add(itemHolder.IsVisible, $"{GetName(player, itemPlaceholders)}は強化が解除された");
+            if (log)
+                GameLog.Add(itemHolder.IsVisible, $"{GetName(player, itemPlaceholders)}は強化が解除された");
             UpgradeCount--;
             var skillOnUse = BuildSkills(
                 _defaultPower,

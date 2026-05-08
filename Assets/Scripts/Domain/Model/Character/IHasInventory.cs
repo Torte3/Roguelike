@@ -13,6 +13,7 @@ namespace Domain.Model.Character
         public bool IsKnownItem(IItem item);
         public UniTask<int?> SelectItem(string text, params int[] disabledItems);
         public UniTask<int?> SelectItemWithCanSelect(string text, Func<IItem, bool> canSelect);
+        public UniTask<int?> SelectItemWithCanSelectPreview(string text, Func<IItem, bool> canSelect, Func<IItem, ItemSelectPreview?> buildPreview, ItemSelectPreview? defaultPreview, string previewTitle);
         public UniTask<ItemFocus> SelectItemContainsGroundItem(string text, params ItemFocus[] disabledItems);
         public UniTask<ItemFocus> SelectItemWithCanSelectContainsGroundItem(string text, IPlayer player, IMap map, Func<IItem, bool> canSelect);
     }

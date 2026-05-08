@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
+using Domain.Model.Character;
 using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Service.Items;
 using Domain.Service.Logs;
 using R3;
 using UnityEngine;
@@ -91,9 +93,22 @@ namespace Domain.Service.Events
         private async UniTask DoUpgradeEvent(IMap map)
         {
             var player = map.Player;
-            var itemIndex = await player.Character.SelectItemWithCanSelect(
+            var itemIndex = await player.Character.SelectItemWithCanSelectPreview(
                 "強化するアイテムを選択してください",
-                CanUpgrade);
+                CanUpgrade,
+                item =>
+                {
+                    if (!item.CanUpgrade())
+                    {
+                        return null;
+                    }
+
+                    var previewItem = item.Clone();
+                    previewItem.Upgrade(player, player.Character, map.ItemPlaceholders, log: false);
+                    return new ItemSelectPreview(new ItemFocus(0), previewItem, null);
+                },
+                defaultPreview: null,
+                "<b>強化結果...</b>");
             if (itemIndex == null)
                 return;
             var item = player.Character.Inventory.GetItem(itemIndex.Value);

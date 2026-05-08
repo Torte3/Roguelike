@@ -152,7 +152,7 @@ namespace Domain.Service.Items
             if (skillCost.Cost > 0)
                 sb.AppendLine($"消費HP: {ItemDescriptionRichText.RichHpCost(skillCost.Cost)}");
             if (spawn.RushDistance > 0)
-                sb.AppendLine($"攻撃前に{ItemDescriptionRichText.RichSpatial(spawn.RushDistance)}マス前進する");
+                sb.AppendLine($"攻撃前に{ItemDescriptionRichText.RichSpatialCells(spawn.RushDistance)}前進する");
 
             var main = BuildMainCombatLine(spawn.EffectPosition, spawn.EffectArea, spawn.EffectList, context);
             if (!string.IsNullOrEmpty(main))
@@ -175,7 +175,7 @@ namespace Domain.Service.Items
                 sb.AppendLine(ItemDescriptionRichText.ColorPercentagesInPlainText($"成功率：{spawn.ProbabilityOfSuccess:P0}"));
 
             if (spawn.BackStepDistance > 0)
-                sb.AppendLine($"攻撃後に{ItemDescriptionRichText.RichSpatial(spawn.BackStepDistance)}マス後退する");
+                sb.AppendLine($"攻撃後に{ItemDescriptionRichText.RichSpatialCells(spawn.BackStepDistance)}後退する");
             if (skillCost.ChargeTurn > 0)
                 sb.AppendLine($"発動には{ItemDescriptionRichText.RichTurns(skillCost.ChargeTurn + 1)}ターンかかる");
             if (skillCost.CoolTime > 0)
@@ -213,12 +213,12 @@ namespace Domain.Service.Items
                 if (projectile.IsPiercing)
                 {
                     if (area is CircleArea circleOnPierce)
-                        return $"射線上の各対象とその周囲{ItemDescriptionRichText.RichSpatial(circleOnPierce.Radius)}マス";
+                        return $"射線上の各対象とその周囲{ItemDescriptionRichText.RichSpatialCells(circleOnPierce.Radius)}";
                     return "射線上の対象すべて";
                 }
 
                 if (area is CircleArea circle)
-                    return $"命中地点とその周囲{ItemDescriptionRichText.RichSpatial(circle.Radius)}マス";
+                    return $"命中地点とその周囲{ItemDescriptionRichText.RichSpatialCells(circle.Radius)}";
                 return "命中地点";
             }
 
@@ -232,8 +232,8 @@ namespace Domain.Service.Items
             return position switch
             {
                 ProjectileImpact projectile => projectile.IsPiercing
-                    ? $"射程{ItemDescriptionRichText.RichSpatial(CommonSenseParameters.ThrowDistance)}マスの貫通攻撃を放つ"
-                    : $"射程{ItemDescriptionRichText.RichSpatial(CommonSenseParameters.ThrowDistance)}マスの攻撃を放つ",
+                    ? $"射程{ItemDescriptionRichText.RichSpatialCells(CommonSenseParameters.ThrowDistance)}の貫通攻撃を放つ"
+                    : $"射程{ItemDescriptionRichText.RichSpatialCells(CommonSenseParameters.ThrowDistance)}の攻撃を放つ",
                 NearByCharacter => "曲射で近くの敵を狙う",
                 _ => "射撃攻撃を放つ"
             };
@@ -243,9 +243,9 @@ namespace Domain.Service.Items
         {
             return area switch
             {
-                LineArea line => $"前方{ItemDescriptionRichText.RichSpatial(line.Length)}マス",
-                FanArea fan => $"前{ItemDescriptionRichText.RichSpatial(fan.Radius)}マス（扇形）",
-                CircleArea circle => $"周囲{ItemDescriptionRichText.RichSpatial(circle.Radius)}マス",
+                LineArea line => $"前方{ItemDescriptionRichText.RichSpatialCells(line.Length)}",
+                FanArea fan => $"前{ItemDescriptionRichText.RichSpatialCells(fan.Radius)}（扇形）",
+                CircleArea circle => $"周囲{ItemDescriptionRichText.RichSpatialCells(circle.Radius)}",
                 SelfArea => "その場",
                 _ => area.Info()
             };

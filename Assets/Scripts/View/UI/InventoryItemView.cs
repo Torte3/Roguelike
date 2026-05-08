@@ -75,7 +75,7 @@ namespace View.UI
         private void SetName(string name, bool isUsable)
         {
             _name.text = name;
-            _name.color = isUsable ? Color.white : Color.lightGray;
+            _name.color = isUsable ? Colors.White : Colors.Gray;
         }
 
         public void UpdateInteractable(bool interactable)

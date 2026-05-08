@@ -43,7 +43,7 @@ namespace Domain.Model.Effect.Area
 
         public string Info()
         {
-            var info = $"前{ItemDescriptionRichText.RichSpatial(Length)}マス";
+            var info = $"前{ItemDescriptionRichText.RichSpatialCells(Length)}";
             if (ContainsSelf) info += "(原点含む)";
             if (CanIgnoreWalls) info += "(壁無視)";
             return info;

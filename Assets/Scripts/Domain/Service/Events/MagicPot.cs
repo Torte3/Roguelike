@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
+using Domain.Model.Character;
 using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Item;
@@ -72,9 +73,20 @@ namespace Domain.Service.Events
                 return;
             }
 
-            var mergedItemIndex = await player.Character.SelectItemWithCanSelect(
+            var mergedItemIndex = await player.Character.SelectItemWithCanSelectPreview(
                 "合成するアイテムを選択してください",
-                item => ItemMergeExtension.CanSelectForMergedItem(item, mergeBaseItem));
+                item => ItemMergeExtension.CanSelectForMergedItem(item, mergeBaseItem),
+                item =>
+                {
+                    var canMerge = ItemMergeExtension.CanSelectForMergedItem(item, mergeBaseItem);
+                    if (!canMerge)
+                    {
+                        return null;
+                    }
+                    return new ItemSelectPreview(new ItemFocus(0), mergeBaseItem.Merge(item), null);
+                },
+                new ItemSelectPreview(new ItemFocus(0), mergeBaseItem, "（合成されていません）\n"),
+                "<b>合成結果...</b>");
             if (mergedItemIndex == null)
                 return;
             var mergedItem = player.Character.Inventory.GetItem(mergedItemIndex.Value);

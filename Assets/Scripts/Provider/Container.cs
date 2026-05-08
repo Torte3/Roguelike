@@ -54,6 +54,7 @@ namespace Provider
             builder.RegisterComponentInHierarchy<MenuController>();
             builder.RegisterComponentInHierarchy<LogView>();
             builder.RegisterComponentInHierarchy<ShopInfoView>();
+            builder.RegisterComponentInHierarchy<ItemPreviewWindow>();
             builder.RegisterComponentInHierarchy<ItemSelectText>();
             builder.RegisterComponentInHierarchy<DamageTextSpawner>();
             builder.RegisterComponentInHierarchy<FlushController>();

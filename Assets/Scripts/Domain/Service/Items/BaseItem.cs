@@ -478,8 +478,8 @@ namespace Domain.Service.Items
 
         public abstract bool CanUpgrade();
         public abstract bool CanDowngrade();
-        public abstract void Upgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders);
-        public abstract void Downgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders);
+        public abstract void Upgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true);
+        public abstract void Downgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true);
 
         #endregion
         #region Info

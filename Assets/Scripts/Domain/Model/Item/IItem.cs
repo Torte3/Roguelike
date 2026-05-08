@@ -71,8 +71,8 @@ namespace Domain.Model.Item
         public void RevertToDefaultName();
         public bool CanUpgrade();
         public bool CanDowngrade();
-        public void Upgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders);
-        public void Downgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders);
+        public void Upgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true);
+        public void Downgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true);
         public string Info(IPlayer player, ItemPlaceholders itemPlaceholders);
         public string DebugInfo();
     }

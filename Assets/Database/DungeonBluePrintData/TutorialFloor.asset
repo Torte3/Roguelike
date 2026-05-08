@@ -17,8 +17,8 @@ MonoBehaviour:
   SleepChance: 0.75
   MimicChance: 0
   ShopChance: 0
-  MonsterHouseChance: 1
-  RestRoomChance: 0
+  MonsterHouseChance: 0
+  RestRoomChance: 1
   LakeChance: 0
   ItemCount: 2
   MoneyCount: 1
@@ -27,6 +27,6 @@ MonoBehaviour:
   TrapCount: 0.5
   ChestChance: 0.1
   StatueChance: 0
-  BonfireWeight: 1
+  BonfireWeight: 0
   MagicPotWeight: 0
-  WorkbenchWeight: 0
+  WorkbenchWeight: 1

@@ -83,6 +83,11 @@ namespace Domain.Service.Items
             );
         }
 
+        public static IItem Clone(this IItem item)
+        {
+            return item.Serialize().Deserialize();
+        }
+
         public static IItemMemento Build(this IItemData data, int upgradeCount = 0, bool isCursed = false, ItemState state = ItemState.None, EnemyData? mimic = null)
         {
             return data.Match<IItemMemento>(
