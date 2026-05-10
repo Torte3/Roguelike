@@ -22,6 +22,6 @@ namespace Domain.Service.ItemEffect
             return 100;
         }
 
-        public string Info() => ItemDescriptionPhrases.AppliesCurse;
+        public string Info() => "呪い付与";
     }
 }

@@ -28,5 +28,5 @@ MonoBehaviour:
   ChestChance: 0.1
   StatueChance: 0
   BonfireWeight: 0
-  MagicPotWeight: 0
-  WorkbenchWeight: 1
+  MagicPotWeight: 1
+  WorkbenchWeight: 0

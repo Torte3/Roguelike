@@ -118,6 +118,6 @@ namespace Domain.Service.Effect
         }
 
         public string Info() =>
-            ItemDescriptionPhrases.TargetsAnItem + "\n" + _itemEffect.Info();
+            "アイテムを対象に\n" + _itemEffect.Info();
     }
 }

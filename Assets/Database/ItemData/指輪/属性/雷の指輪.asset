@@ -9,71 +9,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42c9d6e8f38cdc547ad116f2420ef50e, type: 3}
+  m_Script: {fileID: 11500000, guid: 8d05bbe6caa05a74e8a0d30dc3973d2c, type: 3}
   m_Name: "\u96F7\u306E\u6307\u8F2A"
-  m_EditorClassIdentifier: 
-  Category: 5
+  m_EditorClassIdentifier: Domain.Model::Domain.Model.Item.ArtifactData
   Icon: {fileID: 1240741089, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
   IsShiny: 0
   _rarity: 1
-  _useCustomBasePrice: 0
+  UseCustomBasePrice: 0
   CustomBasePrice: 0
   AdditionalPrice: 0
   MultiplyPrice: 1
-  EffectType: 0
-  UseOnDeath: 0
-  SpawnEffectsOnUse: 0
-  SpawnEffectsOnThrow: 0
-  IsSameEffect: 0
-  IsSameSkill: 0
-  SkillOnUse:
-    <Position>k__BackingField:
-      rid: 2541219106150416411
-    <Area>k__BackingField:
-      rid: 4425516923575599143
-    <Effects>k__BackingField:
-    - rid: 4425516923575599144
-    <Repeats>k__BackingField: 1
-    <ProbabilityOfSuccess>k__BackingField: 0.95
-    <Cost>k__BackingField: 0
-    <RushDistance>k__BackingField: 0
-    <BackStepDistance>k__BackingField: 0
-    <ChargeTurn>k__BackingField: 0
-    <CoolTime>k__BackingField: 0
-  SkillOnThrow:
-    <Area>k__BackingField:
-      rid: 4425516923575599143
-    <Effects>k__BackingField:
-    - rid: 4425516923575599144
-    <ProbabilityOfSuccess>k__BackingField: 0.9
-  ItemEffect:
-    rid: -2
-  InventoryEffect:
-    rid: -2
-  UsageLimit: 1
-  UpgradeLimit: 3
-  PassiveConditions:
-  - rid: 2541219158355345437
-  _featuresToMergeWeapon: []
+  SynthesisSlotLimit: 0
+  HasBuiltInPassive: 1
+  BuiltInPassiveConditionBundle:
+    _displayName: "\u96F7\u5F37\u5316"
+    _conditions:
+    - rid: 8023009043126943859
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
-    - rid: 2541219106150416411
-      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
-      data: 
-    - rid: 2541219158355345437
+    - rid: 8023009043126943859
       type: {class: AddAttackMultiplier, ns: Domain.Service.Characters.Conditions, asm: Domain.Service}
       data:
         Element: 3
         AddedMultiplier: 0.5
-    - rid: 4425516923575599143
-      type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
-      data: 
-    - rid: 4425516923575599144
-      type: {class: AddConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
-      data:
-        _condition:
-          _name: 
-        _probabilityOfSuccess: 0

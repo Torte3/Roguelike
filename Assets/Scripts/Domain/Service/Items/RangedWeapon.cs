@@ -314,7 +314,8 @@ namespace Domain.Service.Items
         public RangedWeapon Merge(IItem mergedItem) => mergedItem.Match(
             item => Merge(item.FeaturesToMergeWeapon, item.UpgradeCount),
             directWeapon => Merge(directWeapon.Features, directWeapon.UpgradeCount),
-            rangedWeapon => Merge(rangedWeapon.Features, rangedWeapon.UpgradeCount)
+            rangedWeapon => Merge(rangedWeapon.Features, rangedWeapon.UpgradeCount),
+            _ => throw new ArgumentException("武器とだけ合成できます")
         );
 
         protected override string? BuildTemplatedActivatableSkillInfo() =>

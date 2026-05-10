@@ -12,13 +12,15 @@ namespace Domain.Service.Items
         public static TResult Match<TResult>(this IItem item,
             Func<Item, TResult> itemFunc,
             Func<DirectWeapon, TResult> directWeaponFunc,
-            Func<RangedWeapon, TResult> rangedWeaponFunc)
+            Func<RangedWeapon, TResult> rangedWeaponFunc,
+            Func<Artifact, TResult> artifactFunc)
         {
             return item switch
             {
                 Item uniqueItem => itemFunc(uniqueItem),
                 DirectWeapon directWeapon => directWeaponFunc(directWeapon),
                 RangedWeapon rangedWeapon => rangedWeaponFunc(rangedWeapon),
+                Artifact artifact => artifactFunc(artifact),
                 _ => throw new ArgumentException("Invalid item type")
             };
         }
@@ -26,13 +28,15 @@ namespace Domain.Service.Items
         public static async UniTask<TResult> Match<TResult>(this IItem item,
             Func<Item, UniTask<TResult>> itemFunc,
             Func<DirectWeapon, UniTask<TResult>> directWeaponFunc,
-            Func<RangedWeapon, UniTask<TResult>> rangedWeaponFunc)
+            Func<RangedWeapon, UniTask<TResult>> rangedWeaponFunc,
+            Func<Artifact, UniTask<TResult>> artifactFunc)
         {
             return item switch
             {
                 Item uniqueItem => await itemFunc(uniqueItem),
                 DirectWeapon directWeapon => await directWeaponFunc(directWeapon),
                 RangedWeapon rangedWeapon => await rangedWeaponFunc(rangedWeapon),
+                Artifact artifact => await artifactFunc(artifact),
                 _ => throw new ArgumentException("Invalid item type")
             };
         }
@@ -40,13 +44,15 @@ namespace Domain.Service.Items
         public static TResult Match<TResult>(this IItemMemento memento,
             Func<ItemMemento, TResult> itemFunc,
             Func<DirectWeaponMemento, TResult> directWeaponFunc,
-            Func<RangedWeaponMemento, TResult> rangedWeaponFunc)
+            Func<RangedWeaponMemento, TResult> rangedWeaponFunc,
+            Func<ArtifactMemento, TResult> artifactFunc)
         {
             return memento switch
             {
                 ItemMemento itemMemento => itemFunc(itemMemento),
                 DirectWeaponMemento directWeaponMemento => directWeaponFunc(directWeaponMemento),
                 RangedWeaponMemento rangedWeaponMemento => rangedWeaponFunc(rangedWeaponMemento),
+                ArtifactMemento artifactMemento => artifactFunc(artifactMemento),
                 _ => throw new ArgumentException("Invalid item type")
             };
         }
@@ -54,13 +60,15 @@ namespace Domain.Service.Items
         public static TResult Match<TResult>(this IItemData data,
             Func<ItemData, TResult> itemFunc,
             Func<DirectWeaponData, TResult> directWeaponFunc,
-            Func<RangedWeaponData, TResult> rangedWeaponFunc)
+            Func<RangedWeaponData, TResult> rangedWeaponFunc,
+            Func<ArtifactData, TResult> artifactFunc)
         {
             return data switch
             {
                 ItemData itemData => itemFunc(itemData),
                 DirectWeaponData directWeaponData => directWeaponFunc(directWeaponData),
                 RangedWeaponData rangedWeaponData => rangedWeaponFunc(rangedWeaponData),
+                ArtifactData artifactData => artifactFunc(artifactData),
                 _ => throw new ArgumentException("Invalid item data type")
             };
         }
@@ -70,8 +78,8 @@ namespace Domain.Service.Items
             return item.Match<IItemMemento>(
                 item => item.Serialize(),
                 directWeapon => directWeapon.Serialize(),
-                rangedWeapon => rangedWeapon.Serialize()
-            );
+                rangedWeapon => rangedWeapon.Serialize(),
+                artifact => artifact.Serialize());
         }
 
         public static IItem Deserialize(this IItemMemento memento)
@@ -79,8 +87,8 @@ namespace Domain.Service.Items
             return memento.Match<IItem>(
                 itemMemento => new Item(itemMemento),
                 directWeaponMemento => new DirectWeapon(directWeaponMemento),
-                rangedWeaponMemento => new RangedWeapon(rangedWeaponMemento)
-            );
+                rangedWeaponMemento => new RangedWeapon(rangedWeaponMemento),
+                artifactMemento => new Artifact(artifactMemento));
         }
 
         public static IItem Clone(this IItem item)
@@ -108,8 +116,12 @@ namespace Domain.Service.Items
                     upgradeCount: upgradeCount,
                     isCursed: isCursed,
                     state: state,
-                    mimic: mimic)
-            );
+                    mimic: mimic),
+                artifactData => Artifact.Build(
+                    artifactData,
+                    isCursed: isCursed,
+                    state: state,
+                    mimic: mimic));
         }
     }
 }

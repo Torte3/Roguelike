@@ -102,7 +102,7 @@ MonoBehaviour:
   - _item: {fileID: 0}
     _directWeapon: {fileID: 0}
     _rangedWeapon: {fileID: 11400000, guid: 4f2a1d8d1c8d71943b890fede999c865, type: 2}
-  - _item: {fileID: 11400000, guid: bb246d89a47042443aae9223593825d0, type: 2}
+  - _item: {fileID: 11400000, guid: 7b8f3b9f5ac72f649b44f962b210f8d4, type: 2}
     _directWeapon: {fileID: 0}
     _rangedWeapon: {fileID: 0}
   - _item: {fileID: 11400000, guid: 6d1c3aefd2797974983b12f0273cf0fa, type: 2}
@@ -1078,7 +1078,7 @@ MonoBehaviour:
   - _item: {fileID: 0}
     _directWeapon: {fileID: 11400000, guid: e554e921d09e12641b64a9d7d94e8da5, type: 2}
     _rangedWeapon: {fileID: 0}
-  - _item: {fileID: 11400000, guid: faf68274a43d09847b8dd92f1ba45895, type: 2}
+  - _item: {fileID: 11400000, guid: 7f801f48e2ffbe34498eed3a79b02832, type: 2}
     _directWeapon: {fileID: 0}
     _rangedWeapon: {fileID: 0}
   - _item: {fileID: 11400000, guid: b1e2f102e80ab044e9cd44e032bb9151, type: 2}

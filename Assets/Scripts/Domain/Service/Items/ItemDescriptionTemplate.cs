@@ -89,10 +89,10 @@ namespace Domain.Service.Items
 
             var sb = new StringBuilder();
             sb.Append('\n');
-            sb.AppendLine(ItemDescriptionRichText.HeaderLine(ItemDescriptionPhrases.WhenUsedEffects));
+            sb.AppendLine(ItemDescriptionRichText.HeaderLine("使用したときの効果..."));
             AppendCompactSkillBody(sb, skillOnUse, useSpawn, "使用");
             sb.Append('\n');
-            sb.AppendLine(ItemDescriptionRichText.HeaderLine(ItemDescriptionPhrases.WhenThrownEffects));
+            sb.AppendLine(ItemDescriptionRichText.HeaderLine("投擲したときの効果..."));
             AppendCompactSkillBody(sb, skillOnThrow, throwSpawn, "投擲");
 
             return sb.ToString();
@@ -104,7 +104,7 @@ namespace Domain.Service.Items
 
             var sb = new StringBuilder();
             sb.Append('\n');
-            sb.AppendLine(ItemDescriptionRichText.HeaderLine(ItemDescriptionPhrases.WhenUsedEffects));
+            sb.AppendLine(ItemDescriptionRichText.HeaderLine("使用したときの効果..."));
             sb.AppendLine(BuildRangedLaunchLine(spawn.EffectPosition));
             AppendCompactSkillBody(sb, skillOnUse, spawn, "使用");
             return sb.ToString();
@@ -121,7 +121,7 @@ namespace Domain.Service.Items
             if (hasSameSkill)
             {
                 sb.Append('\n');
-                sb.AppendLine(ItemDescriptionRichText.HeaderLine(ItemDescriptionPhrases.WhenUsedOrThrownEffects));
+                sb.AppendLine(ItemDescriptionRichText.HeaderLine("使用または投擲したときの効果..."));
                 AppendCompactSkillBody(sb, skillOnUse, useSpawn, "使用", includeSuccessRate: false);
                 if (skillOnThrow != null && skillOnThrow.Skill is SpawnEffectSkill throwSpawnOnSameSkill)
                     sb.AppendLine(ItemDescriptionRichText.ColorPercentagesInPlainText(
@@ -133,13 +133,13 @@ namespace Domain.Service.Items
             }
 
             sb.Append('\n');
-            sb.AppendLine(ItemDescriptionRichText.HeaderLine(ItemDescriptionPhrases.WhenUsedEffects));
+            sb.AppendLine(ItemDescriptionRichText.HeaderLine("使用したときの効果..."));
             AppendCompactSkillBody(sb, skillOnUse, useSpawn, "使用");
 
             if (skillOnThrow != null && skillOnThrow.Skill is SpawnEffectSkill throwSpawn)
             {
                 sb.Append('\n');
-                sb.AppendLine(ItemDescriptionRichText.HeaderLine(ItemDescriptionPhrases.WhenThrownEffects));
+                sb.AppendLine(ItemDescriptionRichText.HeaderLine("投擲したときの効果..."));
                 AppendCompactSkillBody(sb, skillOnThrow, throwSpawn, "投擲");
             }
 

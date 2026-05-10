@@ -14,7 +14,7 @@ namespace Domain.Model.Dungeon
         public RarityWeightTable<DirectWeaponData> DirectWeapons;
         public RarityWeightTable<RangedWeaponData> RangedWeapons;
         public RarityWeightTable<IItemData> AllWeapons => DirectWeapons.Concat<IItemData, DirectWeaponData, RangedWeaponData>(RangedWeapons);
-        public RarityWeightTable<ItemData> Artifacts;
+        public RarityWeightTable<ArtifactData> Artifacts;
         public RarityWeightTable<ItemData> Others;
         public RarityWeightTable<ItemData> ChestItems;
         public RarityWeightTable<DirectWeaponData> ChestDirectWeapons;

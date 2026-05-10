@@ -281,6 +281,7 @@ namespace Domain.Service.Items
             {
                 return SpawnEffectSkillResult.Failed;
             }
+            SetCurseIdentified(true);
             if (IsCursed)
             {
                 GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は呪われているため使用できない");
@@ -392,7 +393,9 @@ namespace Domain.Service.Items
                 .Map(customBasePrice => (float)customBasePrice)
                 .UnwrapOr(() => market.GetBasePrice(Category, Rarity));
 
-            var usagesMultiplier = (_remainingUsages.CurrentValue + MaxUsages) / Mathf.Max(1, MaxUsages) / 2;
+            var usagesMultiplier = MaxUsages <= 0
+                ? 1f
+                : (_remainingUsages.CurrentValue + MaxUsages) / Mathf.Max(1, MaxUsages) / 2f;
 
             var price = basePrice * usagesMultiplier;
             price += _additionalPrice;
@@ -493,7 +496,7 @@ namespace Domain.Service.Items
             if (IsCurseIdentified)
             {
                 if (IsCursed)
-                    return ItemDescriptionRichText.HarmfulLine(ItemDescriptionPhrases.IdentifiedAsCursed) + "\n";
+                    return ItemDescriptionRichText.HarmfulLine("それは呪われている") + "\n";
                 return "それは呪われていない\n";
             }
 
@@ -592,7 +595,7 @@ namespace Domain.Service.Items
 
             if (HasSameSkill)
             {
-                var info = "\n" + ItemDescriptionRichText.HeaderLine(ItemDescriptionPhrases.WhenUsedOrThrownEffects) + "\n" + SkillOnUse.Expect("SkillOnUse is null").Skill.Match(
+                var info = "\n" + ItemDescriptionRichText.HeaderLine("使用または投擲したときの効果...") + "\n" + SkillOnUse.Expect("SkillOnUse is null").Skill.Match(
                     spawnEffectSkill => spawnEffectSkill.InfoOnUse(omitProbabilityOfSuccess: true, useOrThrowCombinedTargets: true) + "\n",
                     itemTargetSkill => throw new Exception("SkillOnUse can not be ItemTargetSkill"),
                     inventoryTargetSkill => throw new Exception("SkillOnUse can not be InventoryTargetSkill")
@@ -614,12 +617,12 @@ namespace Domain.Service.Items
 
             var generic = SkillOnUse.MapOr(
                 "",
-                skill => "\n" + ItemDescriptionRichText.HeaderLine(ItemDescriptionPhrases.WhenUsedEffects) + "\n" + skill.Info()
+                skill => "\n" + ItemDescriptionRichText.HeaderLine("使用したときの効果...") + "\n" + skill.Info()
             );
 
             generic += SkillOnThrow.MapOr(
                 "",
-                skill => "\n" + ItemDescriptionRichText.HeaderLine(ItemDescriptionPhrases.WhenThrownEffects) + "\n" + skill.Skill.Match(
+                skill => "\n" + ItemDescriptionRichText.HeaderLine("投擲したときの効果...") + "\n" + skill.Skill.Match(
                     spawnEffectSkill => spawnEffectSkill.InfoOnThrow(HasSameEffect),
                     itemTargetSkill => throw new Exception("SkillOnThrow can not be ItemTargetSkill"),
                     inventoryTargetSkill => throw new Exception("SkillOnThrow can not be InventoryTargetSkill")

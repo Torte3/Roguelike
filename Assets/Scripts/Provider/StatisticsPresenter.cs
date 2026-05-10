@@ -29,7 +29,8 @@ namespace Provider
             var itemViewData = baseItemData.Match(
                 itemData => new ItemLibraryViewData(itemName, itemData.Icon, (int)itemData.Category, itemData.IsShiny, new Item(itemData).FullInfo()),
                 directWeaponData => new ItemLibraryViewData(itemName, directWeaponData.Icon, (int)ItemCategory.Weapons, directWeaponData.IsShiny, new DirectWeapon(directWeaponData).FullInfo()),
-                rangedWeaponData => new ItemLibraryViewData(itemName, rangedWeaponData.Icon, (int)ItemCategory.Weapons, rangedWeaponData.IsShiny, new RangedWeapon(rangedWeaponData).FullInfo())
+                rangedWeaponData => new ItemLibraryViewData(itemName, rangedWeaponData.Icon, (int)ItemCategory.Weapons, rangedWeaponData.IsShiny, new RangedWeapon(rangedWeaponData).FullInfo()),
+                artifactData => new ItemLibraryViewData(itemName, artifactData.Icon, (int)ItemCategory.Artifacts, artifactData.IsShiny, new Artifact(artifactData).FullInfo())
             );
             itemLibraryView.AddItem(itemName, itemViewData);
         }

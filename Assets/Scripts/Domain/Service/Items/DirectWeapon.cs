@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Domain.Model;
@@ -337,7 +338,8 @@ namespace Domain.Service.Items
         public DirectWeapon Merge(IItem mergedItem) => mergedItem.Match(
             item => Merge(item.FeaturesToMergeWeapon, item.UpgradeCount),
             directWeapon => Merge(directWeapon.Features, directWeapon.UpgradeCount),
-            rangedWeapon => Merge(rangedWeapon.Features, rangedWeapon.UpgradeCount)
+            rangedWeapon => Merge(rangedWeapon.Features, rangedWeapon.UpgradeCount),
+            _ => throw new ArgumentException("武器とだけ合成できます")
         );
 
         protected override string? BuildTemplatedActivatableSkillInfo() =>

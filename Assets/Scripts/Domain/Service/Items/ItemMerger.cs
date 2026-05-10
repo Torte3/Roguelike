@@ -7,14 +7,17 @@ namespace Domain.Service.Items
 {
     public static class ItemMergeExtension
     {
-        public static bool CanSelectForBaseItem(IItem item) => item is DirectWeapon || item.MaxUsages > 0;
+        public static bool CanSelectForBaseItem(IItem item) =>
+            item is DirectWeapon || item is Artifact || item.MaxUsages > 0;
         public static bool CanSelectForMergedItem(IItem item, IItem mergeBaseItem)
         {
+            if (item == mergeBaseItem)
+                return false;
             switch (mergeBaseItem)
             {
                 case DirectWeapon:
                 case RangedWeapon:
-                    if (item == mergeBaseItem)
+                    if (item is Artifact)
                         return false;
                     var featuresToMergeWeapon = item switch
                     {
@@ -52,6 +55,8 @@ namespace Domain.Service.Items
                     return false;
                 case Item baseItem:
                     return baseItem.BaseName == item.BaseName && baseItem.CanMergeUses;
+                case Artifact artifactBase:
+                    return item is Artifact artifactOther && artifactBase.CanMergeFrom(artifactOther);
                 default:
                     throw new Exception("Invalid item");
             }
@@ -61,8 +66,8 @@ namespace Domain.Service.Items
             return mergeBaseItem.Match<IItem>(
                 item => item.Merge(mergedItem as Item),
                 directWeapon => directWeapon.Merge(mergedItem),
-                rangedWeapon => rangedWeapon.Merge(mergedItem)
-            );
+                rangedWeapon => rangedWeapon.Merge(mergedItem),
+                artifact => artifact.Merge(mergedItem));
         }
     }
 }

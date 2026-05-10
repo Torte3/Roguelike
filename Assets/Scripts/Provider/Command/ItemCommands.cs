@@ -82,7 +82,8 @@ namespace Provider
                 var item = baseItemData.Match<IItem>(
                     itemData => new Item(itemData),
                     directWeaponData => new DirectWeapon(directWeaponData),
-                    rangedWeaponData => new RangedWeapon(rangedWeaponData)
+                    rangedWeaponData => new RangedWeapon(rangedWeaponData),
+                    artifactData => new Artifact(artifactData)
                 );
                 if (prefixName != null)
                 {
@@ -90,7 +91,8 @@ namespace Provider
                     item = baseItemData.Match<IItem>(
                         itemData => throw new Exception($"Cannot add prefix {prefixName} to {itemName}"),
                         directWeaponData => new DirectWeapon(DirectWeapon.Build(directWeaponData, prefix: prefixData)),
-                        rangedWeaponData => new RangedWeapon(RangedWeapon.Build(rangedWeaponData, prefix: prefixData))
+                        rangedWeaponData => new RangedWeapon(RangedWeapon.Build(rangedWeaponData, prefix: prefixData)),
+                        _ => throw new Exception($"Cannot add prefix {prefixName} to {itemName}")
                     );
                 }
 

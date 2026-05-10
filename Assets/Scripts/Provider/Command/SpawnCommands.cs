@@ -51,7 +51,8 @@ namespace Provider
                 var item = baseItemData.Match<IItem>(
                     itemData => new Item(itemData),
                     directWeaponData => new DirectWeapon(directWeaponData),
-                    rangedWeaponData => new RangedWeapon(rangedWeaponData)
+                    rangedWeaponData => new RangedWeapon(rangedWeaponData),
+                    artifactData => new Artifact(artifactData)
                 );
                 if (prefixName != null)
                 {
