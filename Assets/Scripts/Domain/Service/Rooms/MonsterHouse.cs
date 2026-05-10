@@ -38,6 +38,7 @@ namespace Domain.Service.Rooms
 
         protected override async UniTask FirstTimeEnter(IGameManager gameManager, IMap map)
         {
+            gameManager.PlayBGM(BGM.MonsterHouse);
             GameLog.AddIgnoreVisibility("<color=red>モンスターハウスだ！</color>");
             var area = Rect.size.x * Rect.size.y;
             var monsterCount = area switch

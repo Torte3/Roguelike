@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character.Message;
 using Domain.Model.Character;
+using Domain.Model.Dungeon;
 using Domain.Model.Entity;
 using Domain.Model.Map;
 using Domain.Model.Setting;
@@ -39,6 +40,8 @@ namespace Game
         public Observable<BGM> OnPlayBGM => _onPlayBGM;
         private readonly Subject<SE> _onPlaySE = new();
         public Observable<SE> OnPlaySE => _onPlaySE;
+        private readonly Subject<ItemCategory> _onPlayItemUseSE = new();
+        public Observable<ItemCategory> OnPlayItemUseSE => _onPlayItemUseSE;
         private readonly Subject<OnWorldIconPopupRequestedMessage> _onWorldIconPopupRequested = new();
         public Observable<OnWorldIconPopupRequestedMessage> OnWorldIconPopupRequested => _onWorldIconPopupRequested;
         private readonly ReactiveProperty<GameState> _state = new();
@@ -300,6 +303,11 @@ namespace Game
         public void PlaySE(SE se)
         {
             _onPlaySE.OnNext(se);
+        }
+
+        public void PlayItemUseSE(ItemCategory category)
+        {
+            _onPlayItemUseSE.OnNext(category);
         }
 
         public void RequestWorldIconPopup(Sprite icon, Vector2Int position)

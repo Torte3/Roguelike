@@ -339,6 +339,7 @@ namespace Game
             var eventEntity = EntityManager.GetEventEntityFastAt(position, EntityLayer.Bottom);
             if (eventEntity != null && eventEntity is Trap trapEntity)
             {
+                _gameManager.PlaySE(SE.TrapStep);
                 await trapEntity.Event.DoEvent(actor, _gameManager, this);
             }
         }
@@ -480,6 +481,7 @@ namespace Game
                             if (character.Inventory.CanAddToEmpty())
                             {
                                 character.Inventory.AddToEmpty(item.Item);
+                                _gameManager.PlaySE(SE.Pickup);
                                 _gameManager.RequestWorldIconPopup(item.Icon, positionChanged);
                                 if (EntityManager.Player.Character.IsVisible(positionChanged))
                                 {

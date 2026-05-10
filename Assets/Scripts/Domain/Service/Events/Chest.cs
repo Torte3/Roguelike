@@ -60,6 +60,7 @@ namespace Domain.Service.Events
 
         private async UniTask DoEvent(IGameManager gameManager, IMap map)
         {
+            gameManager.PlaySE(SE.OpenChest);
             Entity.Destroy($"は{map.Player.Character.GetName(map.Player)}に開かれた");
 
             IItem? selectedItem = null;

@@ -36,12 +36,12 @@ namespace Domain.Service.Events
                         new(
                             "アイテムを修理する",
                             (player, map) => CanUse.CurrentValue,
-                            async (gameManager, map) => await DoRepairEvent(map)
+                            async (gameManager, map) => await DoRepairEvent(gameManager, map)
                         ),
                         new(
                             "アイテムを強化する",
                             (player, map) => CanUse.CurrentValue,
-                            async (gameManager, map) => await DoUpgradeEvent(map)
+                            async (gameManager, map) => await DoUpgradeEvent(gameManager, map)
                         )
                     }
                 )
@@ -63,7 +63,7 @@ namespace Domain.Service.Events
             return item.RemainingUses.CurrentValue < item.MaxUsages;
         }
 
-        private async UniTask DoRepairEvent(IMap map)
+        private async UniTask DoRepairEvent(IGameManager gameManager, IMap map)
         {
             var player = map.Player;
             var itemIndex = await player.Character.SelectItemWithCanSelect(
@@ -82,6 +82,7 @@ namespace Domain.Service.Events
                 return;
             }
             item.Repair(player, player.Character, map.ItemPlaceholders);
+            gameManager.PlaySE(SE.WorkbenchCraft);
             _remainingUsages.Value -= 1;
         }
 
@@ -90,7 +91,7 @@ namespace Domain.Service.Events
             return item.CanUpgrade();
         }
 
-        private async UniTask DoUpgradeEvent(IMap map)
+        private async UniTask DoUpgradeEvent(IGameManager gameManager, IMap map)
         {
             var player = map.Player;
             var itemIndex = await player.Character.SelectItemWithCanSelectPreview(
@@ -122,6 +123,7 @@ namespace Domain.Service.Events
                 return;
             }
             item.Upgrade(player, player.Character, map.ItemPlaceholders);
+            gameManager.PlaySE(SE.WorkbenchCraft);
             _remainingUsages.Value -= 1;
         }
 

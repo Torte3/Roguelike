@@ -5,5 +5,6 @@ namespace Domain.Model
         Normal,
         Stolen,
         Shop,
+        MonsterHouse,
     }
 }

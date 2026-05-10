@@ -1,3 +1,4 @@
+using Domain.Model;
 using Domain.Service.Characters.Behavior;
 using Domain.Service.Events;
 using Game;
@@ -27,7 +28,7 @@ namespace Provider
 #endif
         protected override void Configure(IContainerBuilder builder)
         {
-            builder.Register<GameManager>(Lifetime.Singleton);
+            builder.Register<GameManager>(Lifetime.Singleton).AsSelf().As<IGameManager>();
             builder.Register<World>(Lifetime.Singleton);
             builder.Register<InputReceiver>(Lifetime.Singleton);
             builder.Register<GameInput>(Lifetime.Singleton);
@@ -52,6 +53,8 @@ namespace Provider
             builder.RegisterComponentInHierarchy<MainMenu>();
             builder.RegisterComponentInHierarchy<SettingWindow>();
             builder.RegisterComponentInHierarchy<MenuController>();
+            builder.RegisterComponentInHierarchy<ChoiceMenu>();
+            builder.RegisterComponentInHierarchy<CharacterSelectMenu>();
             builder.RegisterComponentInHierarchy<LogView>();
             builder.RegisterComponentInHierarchy<ShopInfoView>();
             builder.RegisterComponentInHierarchy<ItemPreviewWindow>();

@@ -1,11 +1,13 @@
 #nullable enable
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using Domain.Model;
 using R3;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Utilities;
+using VContainer;
 
 namespace View.UI
 {
@@ -21,6 +23,13 @@ namespace View.UI
         [SerializeField] private ChoiceButton _choiceButtonPrefab;
         private readonly List<ChoiceButton> _buttons = new();
         [SerializeField] private TMP_Text _infoText;
+        private IGameManager _gameManager;
+
+        [Inject]
+        public void Construct(IGameManager gameManager)
+        {
+            _gameManager = gameManager;
+        }
 
         public void SetChoices(List<(string name, string textureName, string info, bool usable)> characters)
         {
@@ -40,6 +49,7 @@ namespace View.UI
                     characters[index].usable,
                     () =>
                     {
+                        _gameManager.PlaySE(SE.ChoiceCursor);
                         _selectedIndex.Value = index;
                         _characterDemoDisplay.SetTexture(characters[index].textureName);
                         if (characters[index].usable)
@@ -48,7 +58,11 @@ namespace View.UI
                             _characterDemoDisplay.SetColor(Color.gray);
                         _infoText.text = characters[index].info;
                     },
-                    () => _choicedIndex.Value = index);
+                    () =>
+                    {
+                        _gameManager.PlaySE(SE.ChoiceConfirm);
+                        _choicedIndex.Value = index;
+                    });
                 _buttons.Add(button);
             }
 

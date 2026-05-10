@@ -5499,6 +5499,7 @@ MonoBehaviour:
   _normalBGM: {fileID: 8300000, guid: 1b6d88c16610001499d6e2f1866e4f66, type: 3}
   _stolenBGM: {fileID: 8300000, guid: a6b3442616705ec47bb67d3911a3b5f9, type: 3}
   _shopBGM: {fileID: 8300000, guid: 9889d8d8c8c697b4c860037e7ef138c7, type: 3}
+  _monsterHouseBGM: {fileID: 0}
 --- !u!1 &888337317
 GameObject:
   m_ObjectHideFlags: 0
@@ -11189,6 +11190,21 @@ MonoBehaviour:
   _pickupSE: {fileID: 8300000, guid: 3a9509c4cfbeade4c890073ffa7c4e0f, type: 3}
   _stairsSE: {fileID: 8300000, guid: 0384098f7e84c6e4d9004bf33db81af6, type: 3}
   _teleportSE: {fileID: 8300000, guid: d3e4e81088110144c84bb0b9223ddd3d, type: 3}
+  _workbenchCraftSE: {fileID: 8300000, guid: 4c3c93c17dc41c243b1884cf66576756, type: 3}
+  _magicPotEnhanceSE: {fileID: 8300000, guid: 96b1b208da868e445bd9107b00464a9f, type: 3}
+  _bonfireRestSE: {fileID: 8300000, guid: 5c1e04da4ffc5a94f90a3813ef09dcb7, type: 3}
+  _choiceCursorSE: {fileID: 8300000, guid: 0105defa831611445873e37b8f429e1f, type: 3}
+  _choiceConfirmSE: {fileID: 8300000, guid: 923d903f7ebed5948a27cfc50270f6d2, type: 3}
+  _itemSelectCursorSE: {fileID: 8300000, guid: 0105defa831611445873e37b8f429e1f, type: 3}
+  _itemSelectConfirmSE: {fileID: 8300000, guid: 923d903f7ebed5948a27cfc50270f6d2, type: 3}
+  _openChestSE: {fileID: 8300000, guid: fc92a4b4ae0fbca45a5b2f95d2104824, type: 3}
+  _shopCheckoutSE: {fileID: 8300000, guid: b65341da08857fe46aa1bbd1d0394ffc, type: 3}
+  _itemUsePotionSE: {fileID: 0}
+  _itemUseScrollSE: {fileID: 0}
+  _itemUseBookSE: {fileID: 0}
+  _itemUseWandSE: {fileID: 0}
+  _itemUseWeaponSE: {fileID: 0}
+  _itemUseOthersSE: {fileID: 0}
 --- !u!82 &1953968010
 AudioSource:
   m_ObjectHideFlags: 0

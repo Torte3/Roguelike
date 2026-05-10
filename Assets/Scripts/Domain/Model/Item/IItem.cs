@@ -20,6 +20,7 @@ namespace Domain.Model.Item
     {
         public Id<IItem> Id { get; }
         public string BaseName { get; }
+        public ItemCategory Category { get; }
         public string UnknownName(ItemPlaceholders itemPlaceholders);
         public string RevealedName { get; }
         public Option<string> CustomName { get; }

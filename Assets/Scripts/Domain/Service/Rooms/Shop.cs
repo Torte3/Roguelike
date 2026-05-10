@@ -38,8 +38,9 @@ namespace Domain.Service.Rooms
                     new(
                         "代金を支払う",
                         (player, map) => CanExecute && (GetSalePrice(map) > 0 || GetPurchasePrice(map) > 0),
-                        (gameManager, map) =>{
-                            Purchase(map);
+                        (gameManager, map) =>
+                        {
+                            Purchase(gameManager, map);
                             return UniTask.CompletedTask;
                         }
                     )
@@ -159,7 +160,7 @@ namespace Domain.Service.Rooms
             return Mathf.RoundToInt(saleItems.Sum(item => item.Price) / 2f);
         }
 
-        public void Purchase(IMap map)
+        public void Purchase(IGameManager gameManager, IMap map)
         {
             if (map.Player.Money.CurrentValue + GetSalePrice(map) >= GetPurchasePrice(map))
             {
@@ -178,6 +179,7 @@ namespace Domain.Service.Rooms
                 var purchaseItems = GetMissingItems(map);
                 RemoveMark(map, purchaseItems);
                 SetShopItems(map, GetItemsInRoom(map));
+                gameManager.PlaySE(SE.ShopCheckout);
             }
             else
             {

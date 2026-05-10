@@ -36,7 +36,7 @@ namespace Domain.Service.Events
                         new(
                             "使う",
                             (player, map) => CanUse.CurrentValue,
-                            async (gameManager, map) => await DoEvent(map)
+                            async (gameManager, map) => await DoEvent(gameManager, map)
                         )
                     }
                 )
@@ -53,7 +53,7 @@ namespace Domain.Service.Events
 
         public IReadOnlyList<IPlayerEvent> Events { get; init; }
 
-        private async UniTask DoEvent(IMap map)
+        private async UniTask DoEvent(IGameManager gameManager, IMap map)
         {
             var player = map.Player;
             var mergeBaseItemIndex = await player.Character.SelectItemWithCanSelect(
@@ -108,6 +108,7 @@ namespace Domain.Service.Events
             player.Character.Inventory.Replace(mergeBaseItem, mergeBaseItem.Merge(mergedItem));
             player.Character.Inventory.Remove(mergedItem);
             GameLog.AddIgnoreVisibility($"{player.Character.GetName(player)}は{mergeBaseItem.GetName(player, map.ItemPlaceholders)}と{mergedItem.GetName(player, map.ItemPlaceholders)}を合成した。");
+            gameManager.PlaySE(SE.MagicPotEnhance);
             _remainingUsages.Value -= 1;
         }
 

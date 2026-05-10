@@ -38,6 +38,11 @@ namespace Provider
                     case BGM.Shop:
                         bgmManager.ShopBGM();
                         break;
+                    case BGM.MonsterHouse:
+                        bgmManager.MonsterHouseBGM();
+                        break;
+                    default:
+                        break;
                 }
             });
             gameManager.OnPlaySE.Subscribe(se =>
@@ -59,10 +64,41 @@ namespace Provider
                     case SE.Teleport:
                         seManager.TeleportSE();
                         break;
+                    case SE.WorkbenchCraft:
+                        seManager.WorkbenchCraftSE();
+                        break;
+                    case SE.MagicPotEnhance:
+                        seManager.MagicPotEnhanceSE();
+                        break;
+                    case SE.BonfireRest:
+                        seManager.BonfireRestSE();
+                        break;
+                    case SE.ChoiceCursor:
+                        seManager.ChoiceCursorSE();
+                        break;
+                    case SE.ChoiceConfirm:
+                        seManager.ChoiceConfirmSE();
+                        break;
+                    case SE.ItemSelectCursor:
+                        seManager.ItemSelectCursorSE();
+                        break;
+                    case SE.ItemSelectConfirm:
+                        seManager.ItemSelectConfirmSE();
+                        break;
+                    case SE.OpenChest:
+                        seManager.OpenChestSE();
+                        break;
+                    case SE.ShopCheckout:
+                        seManager.ShopCheckoutSE();
+                        break;
+                    case SE.TrapStep:
+                        seManager.TrapStepSE();
+                        break;
                     default:
                         throw new NotImplementedException($"SE {se} is not implemented");
                 }
             });
+            gameManager.OnPlayItemUseSE.Subscribe(seManager.ItemUseSE);
         }
     }
 }

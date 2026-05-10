@@ -1,6 +1,7 @@
 #nullable enable
 using System.Collections.Generic;
 using System.Linq;
+using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Item;
 using Domain.Model.Map;
@@ -20,7 +21,8 @@ namespace Provider
             ItemSelectText itemSelectText,
             InventoryView inventoryView,
             ItemPreviewWindow itemPreviewWindow,
-            InputReceiver receiver)
+            InputReceiver receiver,
+            IGameManager gameManager)
         {
             var serialDisposable = new SerialDisposable();
             world.OnActiveMapChanged.Subscribe(mapChanged =>
@@ -34,9 +36,11 @@ namespace Provider
                 ItemSelectPreview? defaultPreview = null;
                 var previewTitle = string.Empty;
                 itemPreviewWindow.SetVisibility(false);
+                var isItemSelecting = false;
 
                 player.OnStartItemSelect.Subscribe(message =>
                 {
+                    isItemSelecting = true;
                     itemSelectText.Show(message.Text);
                     inventoryView.LockItems(message.DisabledItemIndexes.Select(index => index.ToInventoryViewIndex()).ToList());
                     inventoryView.SetCanSkip(true);
@@ -59,6 +63,7 @@ namespace Provider
 
                 player.OnSelectedItemSelect.Subscribe(_ =>
                 {
+                    isItemSelecting = false;
                     itemSelectText.Hide();
                     inventoryView.UnlockAllItems();
                     inventoryView.SetCanSkip(false);
@@ -71,6 +76,8 @@ namespace Provider
 
                 inventoryView.Focus.Subscribe(focus =>
                 {
+                    gameManager.PlaySE(SE.ItemSelectCursor);
+
                     if (previews.Count == 0)
                     {
                         return;

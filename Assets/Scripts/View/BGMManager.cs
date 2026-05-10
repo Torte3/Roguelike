@@ -9,6 +9,7 @@ namespace View
         [SerializeField] private AudioClip _normalBGM;
         [SerializeField] private AudioClip _stolenBGM;
         [SerializeField] private AudioClip _shopBGM;
+        [SerializeField] private AudioClip _monsterHouseBGM;
 
         public void SetVolume(float volume)
         {
@@ -33,13 +34,24 @@ namespace View
             ChangeBGM(_shopBGM);
         }
 
+        public void MonsterHouseBGM()
+        {
+            Log.Debug("[BGM]Change BGM to MonsterHouse");
+            ChangeBGM(_monsterHouseBGM);
+        }
+
         public void StopBGM()
         {
             _audioSource.Stop();
         }
 
-        public void ChangeBGM(AudioClip clip)
+        public void ChangeBGM(AudioClip? clip)
         {
+            if (clip == null)
+            {
+                return;
+            }
+
             if (_audioSource.clip == clip)
             {
                 return;

@@ -2,6 +2,7 @@
 using System;
 using Cysharp.Threading.Tasks;
 using Domain.Model.Character.Message;
+using Domain.Model.Dungeon;
 using Domain.Model.Entity;
 using Domain.Model.Map;
 using R3;
@@ -21,6 +22,7 @@ namespace Domain.Model
         public void MoveMap(Id<IMap> destination, Id<IEntity> from);
         public void PlayBGM(BGM bgm);
         public void PlaySE(SE se);
+        public void PlayItemUseSE(ItemCategory category);
         public void RequestWorldIconPopup(Sprite icon, Vector2Int position);
         public void Save();
         public void SaveLight();

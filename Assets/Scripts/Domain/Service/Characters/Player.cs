@@ -17,7 +17,7 @@ namespace Domain.Service.Characters
 
         public Player(PlayerMemento data, CharacterControlInputReceiver receiver, IGameManager gameManager, IMap map)
         {
-            Character = new Character(data.Character, new PlayerBehavior(receiver), gameManager, map, true);
+            Character = new Character(data.Character, new PlayerBehavior(receiver, gameManager), gameManager, map, true);
             _money = new ReactiveProperty<int>(data.Money);
         }
 

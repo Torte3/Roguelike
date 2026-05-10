@@ -7,5 +7,15 @@ namespace Domain.Model
         Pickup,
         Stairs,
         Teleport,
+        WorkbenchCraft,
+        MagicPotEnhance,
+        BonfireRest,
+        ChoiceCursor,
+        ChoiceConfirm,
+        ItemSelectCursor,
+        ItemSelectConfirm,
+        OpenChest,
+        ShopCheckout,
+        TrapStep,
     }
 }

@@ -33,6 +33,7 @@ namespace Domain.Service.Events
                             (gameManager, map) =>
                             {
                                 map.Player.Character.RestoreToFullHealth();
+                                gameManager.PlaySE(SE.BonfireRest);
                                 _isFire.Value = false;
                                 return UniTask.CompletedTask;
                             }

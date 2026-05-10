@@ -53,9 +53,11 @@ namespace Domain.Service.Characters
         private Option<IAction> _chargeAction = Option.None<IAction>();
         private Option<ISkillWithCost> _chargeSkill = Option.None<ISkillWithCost>();
         private ReactiveProperty<int> _chargeTurn = new(0);
+        private readonly IGameManager _gameManager;
 
         internal Character(CharacterMemento data, ICharacterBehavior behavior, IGameManager gameManager, IMap map, bool isPlayer)
         {
+            _gameManager = gameManager;
             IsPlayer = isPlayer;
             _name = data.Name;
             CharacterType = data.CharacterType;
@@ -471,6 +473,7 @@ namespace Domain.Service.Characters
             _onItemUsed.OnNext(item.BaseName);
 
             GameLog.Add(Entity.IsVisible, $"{GetName(map.Player)}は{item.GetName(map.Player, map.ItemPlaceholders)}を使った。");
+            _gameManager.PlayItemUseSE(item.Category);
             if (item.CanActivateWhenUsed)
             {
                 var result = await item.SkillOnUse.Expect("skill on use is null").Skill.Match(

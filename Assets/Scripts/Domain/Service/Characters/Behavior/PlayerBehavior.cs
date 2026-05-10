@@ -26,6 +26,7 @@ namespace Domain.Service.Characters.Behavior
     {
         private readonly IntelligentDashController _intelligentDashController = new();
         private readonly CharacterControlInputReceiver _receiver;
+        private readonly IGameManager _gameManager;
         public BehaviorData BehaviorData => new();
         private readonly Subject<OnStartItemSelectMessage> _onStartItemSelect = new();
         public Observable<OnStartItemSelectMessage> OnStartItemSelect => _onStartItemSelect;
@@ -44,9 +45,10 @@ namespace Domain.Service.Characters.Behavior
             RenameItem
         }
 
-        public PlayerBehavior(CharacterControlInputReceiver receiver)
+        public PlayerBehavior(CharacterControlInputReceiver receiver, IGameManager gameManager)
         {
             _receiver = receiver;
+            _gameManager = gameManager;
         }
 
         public BehaviorMemento Serialize()
@@ -271,6 +273,7 @@ namespace Domain.Service.Characters.Behavior
                 focus = await _receiver.OnItemSelectConfirmReceived.WaitAsync();
             } while (!focus.IsOnEmpty && disabledItemIndexes.Contains(focus));
 
+            _gameManager.PlaySE(SE.ItemSelectConfirm);
             _onSelectedItemSelect.OnNext(Unit.Default);
             return focus;
         }
@@ -290,6 +293,7 @@ namespace Domain.Service.Characters.Behavior
                 focus = await _receiver.OnItemSelectConfirmReceived.WaitAsync();
             } while (!focus.IsOnEmpty && disabledItemIndexes.Contains(focus));
 
+            _gameManager.PlaySE(SE.ItemSelectConfirm);
             _onSelectedItemSelect.OnNext(Unit.Default);
             return focus;
         }
