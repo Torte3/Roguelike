@@ -11193,9 +11193,9 @@ MonoBehaviour:
   _workbenchCraftSE: {fileID: 8300000, guid: 4c3c93c17dc41c243b1884cf66576756, type: 3}
   _magicPotEnhanceSE: {fileID: 8300000, guid: 96b1b208da868e445bd9107b00464a9f, type: 3}
   _bonfireRestSE: {fileID: 8300000, guid: 5c1e04da4ffc5a94f90a3813ef09dcb7, type: 3}
-  _choiceCursorSE: {fileID: 8300000, guid: 8f8031d1cdc5da64abf903b6ed06e614, type: 3}
+  _choiceCursorSE: {fileID: 8300000, guid: 0105defa831611445873e37b8f429e1f, type: 3}
   _choiceConfirmSE: {fileID: 8300000, guid: 923d903f7ebed5948a27cfc50270f6d2, type: 3}
-  _itemSelectCursorSE: {fileID: 8300000, guid: 8f8031d1cdc5da64abf903b6ed06e614, type: 3}
+  _itemSelectCursorSE: {fileID: 8300000, guid: 0105defa831611445873e37b8f429e1f, type: 3}
   _itemSelectConfirmSE: {fileID: 8300000, guid: 923d903f7ebed5948a27cfc50270f6d2, type: 3}
   _openChestSE: {fileID: 8300000, guid: fc92a4b4ae0fbca45a5b2f95d2104824, type: 3}
   _shopCheckoutSE: {fileID: 8300000, guid: b65341da08857fe46aa1bbd1d0394ffc, type: 3}

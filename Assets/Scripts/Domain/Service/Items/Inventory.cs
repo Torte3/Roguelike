@@ -42,19 +42,15 @@ namespace Domain.Service.Items
             {
                 _itemDisposables[item] = new CompositeDisposable();
 
-                item.OnCursedChanged.Subscribe(
-                    isCursed =>
+                item.IsPassiveActive.SkipLatestValueOnSubscribe().Subscribe(
+                    isPassiveActive =>
                     {
-                        if (isCursed)
+                        if (isPassiveActive)
                             foreach (var condition in item.PassiveConditions)
-                            {
-                                condition.Delete(_character, Id<IEntity>.Empty);
-                            }
+                                condition.Inflict(_character, Id<IEntity>.Empty);
                         else
                             foreach (var condition in item.PassiveConditions)
-                            {
-                                condition.Inflict(_character, Id<IEntity>.Empty);
-                            }
+                                condition.Delete(_character, Id<IEntity>.Empty);
                     }
                 ).AddTo(_itemDisposables[item]);
             }
@@ -76,21 +72,21 @@ namespace Domain.Service.Items
                 _character.KnowItem(item, false);
             }
 
-            if (!item.IsCursed)
+            if (item.IsPassiveActive.CurrentValue)
             {
                 foreach (var condition in item.PassiveConditions)
                     condition.Inflict(_character, Id<IEntity>.Empty);
             }
 
-            item.OnCursedChanged.Subscribe(
-                isCursed =>
+            item.IsPassiveActive.SkipLatestValueOnSubscribe().Subscribe(
+                isPassiveActive =>
                 {
-                    if (isCursed)
-                        foreach (var condition in item.PassiveConditions)
-                            condition.Delete(_character, Id<IEntity>.Empty);
-                    else
+                    if (isPassiveActive)
                         foreach (var condition in item.PassiveConditions)
                             condition.Inflict(_character, Id<IEntity>.Empty);
+                    else
+                        foreach (var condition in item.PassiveConditions)
+                            condition.Delete(_character, Id<IEntity>.Empty);
                 }
             ).AddTo(_itemDisposables[item]);
         }
@@ -99,7 +95,7 @@ namespace Domain.Service.Items
         {
             _itemDisposables[item].Clear();
             _itemDisposables.Remove(item);
-            if (!item.IsCursed)
+            if (item.IsPassiveActive.CurrentValue)
             {
                 foreach (var condition in item.PassiveConditions)
                     condition.Delete(_character, Id<IEntity>.Empty);

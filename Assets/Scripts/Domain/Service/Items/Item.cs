@@ -16,7 +16,7 @@ using Utilities.Serialize.Option;
 
 namespace Domain.Service.Items
 {
-    public class Item : BaseItem, ISerializable<ItemMemento>
+    public class Item : ConsumableItem, ISerializable<ItemMemento>
     {
         private readonly ItemCategory _category;
         private readonly Option<ISkillWithCost> _skillOnUse;
@@ -161,7 +161,8 @@ namespace Domain.Service.Items
                     isCursed: isCursed,
                     upgradeLimit: data.UpgradeLimit,
                     conditions: data.PassiveConditions,
-                    mimic: mimic.ToOption()
+                    mimic: mimic.ToOption(),
+                    isEquipped: Option.None<bool>()
                 ),
                 category: data.Category,
                 skillOnUse: skillOnUse.ToOption(),

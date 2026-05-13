@@ -162,7 +162,8 @@ namespace Domain.Service.Characters
                                 spawnEffectSkill.Color
                             ),
                             itemTargetSkill => null,
-                            inventoryTargetSkill => null
+                            inventoryTargetSkill => null,
+                            _ => null
                         )
                     ).Value
                 ));
@@ -472,7 +473,27 @@ namespace Domain.Service.Characters
             Turn(direction);
             _onItemUsed.OnNext(item.BaseName);
 
-            GameLog.Add(Entity.IsVisible, $"{GetName(map.Player)}は{item.GetName(map.Player, map.ItemPlaceholders)}を使った。");
+            var playerName = GetName(map.Player);
+            var itemName = item.GetName(map.Player, map.ItemPlaceholders);
+            switch (item)
+            {
+                case EquipmentItem equipment:
+                    GameLog.Add(
+                        Entity.IsVisible,
+                        equipment.IsEquipped.UnwrapOr(false)
+                            ? $"{playerName}は{itemName}を外した。"
+                            : $"{playerName}は{itemName}を装備した。");
+                    break;
+                case DirectWeapon:
+                case RangedWeapon:
+                case Item:
+                    GameLog.Add(Entity.IsVisible, $"{playerName}は{itemName}を使った。");
+                    break;
+                default:
+                    throw new InvalidOperationException(
+                        $"UseItem: unsupported item type '{item.GetType().Name}'.");
+            }
+
             _gameManager.PlayItemUseSE(item.Category);
             if (item.CanActivateWhenUsed)
             {
@@ -500,7 +521,8 @@ namespace Domain.Service.Characters
                         return result;
                     },
                     async itemTarget => await item.Use(this, Entity.CurrentPosition, direction, map),
-                    async inventoryTarget => await item.Use(this, Entity.CurrentPosition, direction, map)
+                    async inventoryTarget => await item.Use(this, Entity.CurrentPosition, direction, map),
+                    async _ => await item.Use(this, Entity.CurrentPosition, direction, map)
                 );
                 if (result.Result == SkillResult.Success)
                 {

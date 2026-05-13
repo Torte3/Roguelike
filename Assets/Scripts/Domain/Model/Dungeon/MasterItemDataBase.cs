@@ -19,9 +19,11 @@ namespace Domain.Model.Dungeon
         public RarityWeightTable<ItemData> ChestItems;
         public RarityWeightTable<DirectWeaponData> ChestDirectWeapons;
         public RarityWeightTable<RangedWeaponData> ChestRangedWeapons;
+        public RarityWeightTable<ArtifactData> ChestArtifacts;
         public RarityWeightTable<IItemData> AllChestItems => ChestItems
             .Concat<IItemData, ItemData, DirectWeaponData>(ChestDirectWeapons)
-            .Concat<IItemData, IItemData, RangedWeaponData>(ChestRangedWeapons);
+            .Concat<IItemData, IItemData, RangedWeaponData>(ChestRangedWeapons)
+            .Concat<IItemData, IItemData, ArtifactData>(ChestArtifacts);
         public Table<ShopItemData> ShopItems;
 
         public IItemData GetRandomItem(ItemCategory category, float progress)

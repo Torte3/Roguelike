@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System.Collections.Generic;
 using R3;
 using TMPro;
@@ -23,8 +23,8 @@ namespace View.UI
         public void Initialize()
         {
             Log.Debug($"[View]InventoryView Initialize");
-            _defaultGroundItemItem = new ItemViewData("[足元]", false, _groundItemIcon, true, null, false, false, true, true, "");
-            _defaultEmptyItem = new ItemViewData("", false, _emptyIcon, true, null, false, false, true, true, "");
+            _defaultGroundItemItem = new ItemViewData("[足元]", false, _groundItemIcon, true, null, false, false, false, true, true, "");
+            _defaultEmptyItem = new ItemViewData("", false, _emptyIcon, true, null, false, false, false, true, true, "");
             Reset(new(), true);
 
             _storageView.OnSelected

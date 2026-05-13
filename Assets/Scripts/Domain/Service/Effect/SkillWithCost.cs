@@ -20,12 +20,14 @@ namespace Domain.Service.Effect
         public int RushDistance => Skill.Match(
             spawnEffectSkill => spawnEffectSkill.RushDistance,
             itemTargetSkill => 0,
-            inventoryTargetSkill => 0
+            inventoryTargetSkill => 0,
+            _ => 0
         );
         public int BackStepDistance => Skill.Match(
             spawnEffectSkill => spawnEffectSkill.BackStepDistance,
             itemTargetSkill => 0,
-            inventoryTargetSkill => 0
+            inventoryTargetSkill => 0,
+            _ => 0
         );
         public int CoolTime { get; private set; }
         private ReactiveProperty<int> _remainingCoolTime;
@@ -63,7 +65,8 @@ namespace Domain.Service.Effect
             return Skill.Match(
                 spawnEffectSkill => spawnEffectSkill.Use(actor, position, direction, map),
                 itemTargetSkill => itemTargetSkill.Use(map.Player, item, actor, map),
-                inventoryTargetSkill => inventoryTargetSkill.Use(actor.Inventory, actor, map)
+                inventoryTargetSkill => inventoryTargetSkill.Use(actor.Inventory, actor, map),
+                equipToggleSkill => equipToggleSkill.Use(actor, item!, position, direction, map)
             );
         }
 
@@ -72,7 +75,8 @@ namespace Domain.Service.Effect
             return Skill.Match(
                 spawnEffectSkill => spawnEffectSkill.Evaluate(actor, position, direction, map),
                 itemTargetSkill => itemTargetSkill.Evaluate(),
-                inventoryTargetSkill => inventoryTargetSkill.Evaluate()
+                inventoryTargetSkill => inventoryTargetSkill.Evaluate(),
+                equipToggleSkill => equipToggleSkill.Evaluate(actor, position, direction, map)
             ) / (1 + ChargeTurn);
         }
 
@@ -99,7 +103,8 @@ namespace Domain.Service.Effect
             var info = Skill.Match(
                 spawnEffectSkill => spawnEffectSkill.InfoOnUse(omitProbabilityOfSuccess, useOrThrowCombinedTargets),
                 itemTargetSkill => itemTargetSkill.Info(),
-                inventoryTargetSkill => inventoryTargetSkill.Info()
+                inventoryTargetSkill => inventoryTargetSkill.Info(),
+                equipToggleSkill => equipToggleSkill.Info()
             );
             if (ChargeTurn > 0)
                 info += $"発動には{ItemDescriptionRichText.RichTurns(ChargeTurn + 1)}ターンかかる\n";
@@ -113,7 +118,8 @@ namespace Domain.Service.Effect
             var info = Skill.Match(
                 spawnEffectSkill => spawnEffectSkill.InfoOnThrow(omitEffects),
                 itemTargetSkill => itemTargetSkill.Info(),
-                inventoryTargetSkill => inventoryTargetSkill.Info()
+                inventoryTargetSkill => inventoryTargetSkill.Info(),
+                equipToggleSkill => equipToggleSkill.Info()
             );
             if (ChargeTurn > 0)
                 info += $"発動には{ItemDescriptionRichText.RichTurns(ChargeTurn + 1)}ターンかかる\n";

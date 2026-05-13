@@ -9,6 +9,7 @@ namespace View.UI
         Sprite icon,
         bool canSelect,
         int? count,
+        bool showEquippedBadge,
         bool isCursed,
         bool isShiny,
         bool isCountIdentified,

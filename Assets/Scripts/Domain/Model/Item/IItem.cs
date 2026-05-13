@@ -42,9 +42,11 @@ namespace Domain.Model.Item
         public float EvaluateWhenUsed(IActor actor, Vector2Int position, Direction8 direction, IMap map);
         public float EvaluateWhenThrown(IActorOfEffect actor, Vector2Int position, Direction8 direction, IMap map);
         public bool IsDisabled { get; }
+        public Option<bool> IsEquipped { get; }
         public int MaxUsages { get; }
         public ReadOnlyReactiveProperty<int> RemainingUses { get; }
         public bool IsCursed { get; }
+        public ReadOnlyReactiveProperty<bool> IsPassiveActive { get; }
         public bool RequiresLiteracy { get; }
         public bool IdentifyIfGot { get; }
         public bool IdentifyIfUsed { get; }
@@ -54,7 +56,6 @@ namespace Domain.Model.Item
         public int UpgradeCount { get; }
         public IReadOnlyList<IConditionData> PassiveConditions { get; }
         public Observable<Unit> OnItemUpdated { get; }
-        public Observable<bool> OnCursedChanged { get; }
         public Observable<Unit> OnMimicRevealed { get; }
         public void SetState(ItemState state);
         public bool ShouldRevealMimic(IActorOfEffect actor, Vector2Int position, IMap map);

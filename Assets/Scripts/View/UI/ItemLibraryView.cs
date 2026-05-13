@@ -40,10 +40,10 @@ namespace View.UI
             }
             _itemViews.Clear();
             var sortedItems = _items.OrderBy(item => item.Category).ThenBy(item => item.Name).ToList();
-            foreach (var itemData in sortedItems)
+            foreach (var libraryItem in sortedItems)
             {
                 var view = Instantiate(_itemViewPrefab, _content.transform);
-                var itemViewData = new ItemViewData("", true, itemData.Icon, false, null, false, itemData.IsShiny, true, true, itemData.Info);
+                var itemViewData = new ItemViewData("", true, libraryItem.Icon, false, null, false, false, libraryItem.IsShiny, true, true, libraryItem.Info);
                 view.Set(itemViewData);
                 _itemViews.Add(view);
             }

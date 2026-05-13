@@ -5499,7 +5499,7 @@ MonoBehaviour:
   _normalBGM: {fileID: 8300000, guid: 1b6d88c16610001499d6e2f1866e4f66, type: 3}
   _stolenBGM: {fileID: 8300000, guid: a6b3442616705ec47bb67d3911a3b5f9, type: 3}
   _shopBGM: {fileID: 8300000, guid: 9889d8d8c8c697b4c860037e7ef138c7, type: 3}
-  _monsterHouseBGM: {fileID: 0}
+  _monsterHouseBGM: {fileID: 8300000, guid: 768858a47c04c8541974f481d6a86857, type: 3}
 --- !u!1 &888337317
 GameObject:
   m_ObjectHideFlags: 0
@@ -11199,6 +11199,7 @@ MonoBehaviour:
   _itemSelectConfirmSE: {fileID: 8300000, guid: 923d903f7ebed5948a27cfc50270f6d2, type: 3}
   _openChestSE: {fileID: 8300000, guid: fc92a4b4ae0fbca45a5b2f95d2104824, type: 3}
   _shopCheckoutSE: {fileID: 8300000, guid: b65341da08857fe46aa1bbd1d0394ffc, type: 3}
+  _trapStepSE: {fileID: 0}
   _itemUsePotionSE: {fileID: 0}
   _itemUseScrollSE: {fileID: 0}
   _itemUseBookSE: {fileID: 0}

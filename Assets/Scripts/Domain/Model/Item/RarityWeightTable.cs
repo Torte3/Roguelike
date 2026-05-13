@@ -24,7 +24,9 @@ namespace Domain.Model.Item
 
         public T GetRandomItem(float progress)
         {
-            var itemsByRarity = items.GroupBy(item => item.Rarity)
+            var itemsByRarity = items
+                .Where(item => item != null)
+                .GroupBy(item => item.Rarity)
                 .Where(group => group.Any())
                 .ToList();
 

@@ -113,12 +113,17 @@ namespace Provider
         private static ItemViewData BuildItemViewData(IMap map, IItem item)
         {
             var baseName = item.GetName(map.Player, map.ItemPlaceholders);
+            var showEquippedBadge = item.IsEquipped.UnwrapOr(false);
+            int? count = item.IsEquipped.IsNone && item.HasActivatableSkill
+                ? item.RemainingUses.CurrentValue
+                : null;
             return new ItemViewData(
                 baseName,
                 item.CanActivateWhenUsed,
                 item.Icon,
                 canSelect: true,
-                item.HasActivatableSkill ? item.RemainingUses.CurrentValue : null,
+                count,
+                showEquippedBadge,
                 item.IsCursed,
                 item.IsShiny,
                 map.Player.Character.IsKnownItem(item),

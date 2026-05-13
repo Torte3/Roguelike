@@ -135,12 +135,17 @@ namespace Provider
         {
             var baseName = item.GetName(map.Player, map.ItemPlaceholders);
             var name = baseName + GetShopPriceSuffix(map, item);
+            var showEquippedBadge = item.IsEquipped.UnwrapOr(false);
+            int? count = item.IsEquipped.IsNone && item.HasActivatableSkill
+                ? item.RemainingUses.CurrentValue
+                : null;
             return new ItemViewData(
                 name,
                 item.CanActivateWhenUsed,
                 item.Icon,
                 canSelect,
-                item.HasActivatableSkill ? item.RemainingUses.CurrentValue : null,
+                count,
+                showEquippedBadge,
                 item.IsCursed,
                 item.IsShiny,
                 map.Player.Character.IsKnownItem(item),

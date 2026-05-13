@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using R3;
 using TMPro;
 using UnityEngine;
@@ -30,7 +30,7 @@ namespace View.UI
         {
             ItemData = itemData;
             SetIcon(itemData.icon);
-            SetCount(itemData.count, itemData.isCountIdentified);
+            SetCount(itemData.count, itemData.showEquippedBadge, itemData.isCountIdentified);
             SetCursed(itemData.isCursed, itemData.isCurseIdentified);
             SetShiny(itemData.isShiny);
             SetName(itemData.name, itemData.isUsable);
@@ -62,8 +62,14 @@ namespace View.UI
                 _particles.Clear();
         }
 
-        private void SetCount(int? count, bool isIdentified)
+        private void SetCount(int? count, bool showEquippedBadge, bool isIdentified)
         {
+            if (showEquippedBadge)
+            {
+                _count.text = "E";
+                return;
+            }
+
             if (!isIdentified)
                 _count.text = "?";
             else if (count.HasValue)

@@ -7,7 +7,6 @@ using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Condition;
 using Domain.Model.Dungeon;
-using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Item;
 using Domain.Model.Memento;
@@ -17,7 +16,7 @@ using Utilities.Serialize.Option;
 
 namespace Domain.Service.Items
 {
-    public class Artifact : BaseItem, ISerializable<ArtifactMemento>
+    public class Artifact : EquipmentItem, ISerializable<ArtifactMemento>
     {
         private readonly List<ArtifactPassiveConditionBundle> _passiveConditionSlots;
 
@@ -34,8 +33,6 @@ namespace Domain.Service.Items
         public override bool IdentifyIfGot => false;
         public override bool IdentifyIfUsed => false;
         public override bool AutoDestroyWhenDisabled => false;
-        public override Option<ISkillWithCost> SkillOnUse => Option.None<ISkillWithCost>();
-        public override Option<ISkillWithCost> SkillOnThrow => Option.None<ISkillWithCost>();
 
         public Artifact(ArtifactData data) : this(Build(data))
         {
@@ -60,7 +57,8 @@ namespace Domain.Service.Items
             ArtifactData data,
             bool isCursed = false,
             ItemState state = ItemState.None,
-            EnemyData? mimic = null)
+            EnemyData? mimic = null,
+            bool isEquipped = false)
         {
             var hasBuiltIn = data.HasBuiltInPassive;
             var slots = new List<ArtifactPassiveConditionBundle>();
@@ -88,7 +86,8 @@ namespace Domain.Service.Items
                     isCursed: isCursed,
                     upgradeLimit: 0,
                     conditions: conditions,
-                    mimic: mimic.ToOption()),
+                    mimic: mimic.ToOption(),
+                    isEquipped: Option.Some(isEquipped)),
                 slots,
                 slotLimit));
             return JsonUtility.FromJson<ArtifactMemento>(json);
@@ -102,7 +101,7 @@ namespace Domain.Service.Items
         {
             if (mergedItem is not Artifact other)
             {
-                throw new ArgumentException("アーティファクトは別のアーティファクトとだけ合成できます");
+                throw new ArgumentException("Artifact can only be merged with other artifacts");
             }
 
             var memento = Serialize();

@@ -23,7 +23,7 @@ using Utilities.Serialize.Option;
 
 namespace Domain.Service.Items
 {
-    public class RangedWeapon : BaseItem, ISerializable<RangedWeaponMemento>
+    public class RangedWeapon : ConsumableItem, ISerializable<RangedWeaponMemento>
     {
         public override string RevealedName => _prefix.MapOr("", prefix => prefix.Name) + BaseName;
         public override ItemCategory Category => ItemCategory.Weapons;
@@ -272,7 +272,8 @@ namespace Domain.Service.Items
                     isCursed: isCursed,
                     upgradeLimit: data.UpgradeLimit + prefix.ToOption().MapOr(0, prefix => prefix.AdditionalUpgradeLimit),
                     conditions: data.PassiveConditions,
-                    mimic: mimic.ToOption()
+                    mimic: mimic.ToOption(),
+                    isEquipped: Option.None<bool>()
                 ),
                 prefix: prefix.ToOption(),
                 defaultPower: data.Power,
