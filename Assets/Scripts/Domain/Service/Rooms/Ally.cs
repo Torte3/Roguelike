@@ -28,7 +28,7 @@ namespace Domain.Service.Rooms
                         var disabledItemIndexes = new List<int>();
                         foreach (var (i, inventoryIndex) in player.Character.Inventory.AllItemsWithIndex)
                         {
-                            if (!player.Character.Inventory.CanRemove(i))
+                            if (!player.Character.Inventory.CanRemove(i) || i.IsDiscardBlocked)
                             {
                                 disabledItemIndexes.Add(inventoryIndex);
                             }
@@ -36,7 +36,9 @@ namespace Domain.Service.Rooms
                         var focus = await player.Character.SelectItem("渡すアイテムを選択してください", disabledItemIndexes.ToArray());
                         if (focus.HasValue && player.Character.Inventory.HasItemAt(focus.Value, out var item))
                         {
-                            if (character.Inventory.CanAddToEmpty() && player.Character.Inventory.CanRemove(item))
+                            if (character.Inventory.CanAddToEmpty()
+                                && player.Character.Inventory.CanRemove(item)
+                                && !item.IsDiscardBlocked)
                             {
                                 player.Character.Inventory.Remove(item);
                                 character.Inventory.AddToEmpty(item);

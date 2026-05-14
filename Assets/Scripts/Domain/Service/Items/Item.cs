@@ -35,6 +35,7 @@ namespace Domain.Service.Items
         public override bool IdentifyIfGot => Category == ItemCategory.Weapons || Category == ItemCategory.Others;
         public override bool IdentifyIfUsed => Category != ItemCategory.Wands;
         public override bool AutoDestroyWhenDisabled => Category == ItemCategory.Potions || Category == ItemCategory.Scrolls || Category == ItemCategory.Others;
+        public override ItemCurseKind CurseKind => ItemCurseKind.UseBlockedWhenCursed;
         public readonly IReadOnlyList<ItemFeature> FeaturesToMergeWeapon;
 
         public Item(ItemData data) : this(Build(data))
@@ -161,8 +162,7 @@ namespace Domain.Service.Items
                     isCursed: isCursed,
                     upgradeLimit: data.UpgradeLimit,
                     conditions: data.PassiveConditions,
-                    mimic: mimic.ToOption(),
-                    isEquipped: Option.None<bool>()
+                    mimic: mimic.ToOption()
                 ),
                 category: data.Category,
                 skillOnUse: skillOnUse.ToOption(),

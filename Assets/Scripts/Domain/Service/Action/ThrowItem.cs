@@ -25,6 +25,9 @@ namespace Domain.Service.Action
                 return false;
             }
 
+            if (!Item.CanAttemptThrow)
+                return false;
+
             return true;
         }
 

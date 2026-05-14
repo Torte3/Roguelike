@@ -100,6 +100,11 @@ namespace Domain.Service.Events
                 GameLog.AddIgnoreVisibility($"{mergedItem.GetName(player, map.ItemPlaceholders)}は取り出せなかった");
                 return;
             }
+            if (mergedItem.IsDiscardBlocked)
+            {
+                GameLog.AddIgnoreVisibility($"{mergedItem.GetName(player, map.ItemPlaceholders)}は呪われていて入れられない");
+                return;
+            }
             if (!player.Character.Inventory.CanAddIgnoreEmptySpace())
             {
                 GameLog.AddIgnoreVisibility($"合成したアイテムがインベントリに入れられなかった");

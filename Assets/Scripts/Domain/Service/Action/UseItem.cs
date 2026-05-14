@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
@@ -30,7 +30,7 @@ namespace Domain.Service.Action
                 return true;
             }
 
-            return Item.CanActivateWhenUsed;
+            return Item.CanAttemptUse;
         }
 
         public async UniTask Do(IActor actor, IMap map, IInput input)

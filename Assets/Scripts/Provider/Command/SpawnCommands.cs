@@ -52,7 +52,7 @@ namespace Provider
                     itemData => new Item(itemData),
                     directWeaponData => new DirectWeapon(directWeaponData),
                     rangedWeaponData => new RangedWeapon(rangedWeaponData),
-                    artifactData => new Artifact(artifactData)
+                    artifactData => new EquipmentItem(artifactData)
                 );
                 if (prefixName != null)
                 {

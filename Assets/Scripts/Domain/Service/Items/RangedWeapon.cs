@@ -23,19 +23,8 @@ using Utilities.Serialize.Option;
 
 namespace Domain.Service.Items
 {
-    public class RangedWeapon : ConsumableItem, ISerializable<RangedWeaponMemento>
+    public class RangedWeapon : WeaponConsumableItem, ISerializable<RangedWeaponMemento>
     {
-        public override string RevealedName => _prefix.MapOr("", prefix => prefix.Name) + BaseName;
-        public override ItemCategory Category => ItemCategory.Weapons;
-        private bool _hasSameEffect;
-        protected override bool HasSameEffect => _hasSameEffect;
-        protected override bool HasSameSkill => false;
-        public override bool UseOnDeath => false;
-        public override bool RequiresLiteracy => false;
-        public override bool IdentifyIfGot => true;
-        public override bool IdentifyIfUsed => true;
-        public override bool AutoDestroyWhenDisabled => false;
-        private readonly Option<WeaponPrefix> _prefix;
         private readonly int _defaultPower;
         private readonly IconSerializable _projectileIcon;
         private readonly List<ItemFeature> _features;
@@ -48,9 +37,8 @@ namespace Domain.Service.Items
         {
         }
 
-        public RangedWeapon(RangedWeaponMemento data) : base(data.BaseItem)
+        public RangedWeapon(RangedWeaponMemento data) : base(data.BaseItem, data.Prefix)
         {
-            _prefix = data.Prefix;
             _defaultPower = data.DefaultPower;
             _projectileIcon = data.ProjectileIcon;
             _features = data.Features;
@@ -63,7 +51,7 @@ namespace Domain.Service.Items
             var json = JsonUtility.ToJson(new RangedWeaponMemento
             (
                 baseItem: SerializeBase(),
-                prefix: _prefix,
+                prefix: WeaponPrefix,
                 defaultPower: _defaultPower,
                 projectileIcon: _projectileIcon,
                 features: _features,
@@ -73,8 +61,6 @@ namespace Domain.Service.Items
             return JsonUtility.FromJson<RangedWeaponMemento>(json);
         }
 
-        public override bool CanUpgrade() => UpgradeCount < UpgradeLimit;
-        public override bool CanDowngrade() => UpgradeCount > 0;
         public override void Upgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true)
         {
             if (log)
@@ -85,7 +71,7 @@ namespace Domain.Service.Items
                 UpgradeCount,
                 _projectileIcon,
                 _features,
-                _prefix.Value
+                WeaponPrefix.Value
             );
             _skillOnUse = new SkillWithCost(skillOnUse);
             _onItemUpdated.OnNext(Unit.Default);
@@ -101,7 +87,7 @@ namespace Domain.Service.Items
                 UpgradeCount,
                 _projectileIcon,
                 _features,
-                _prefix.Value
+                WeaponPrefix.Value
             );
             _skillOnUse = new SkillWithCost(skillOnUse);
             _onItemUpdated.OnNext(Unit.Default);
@@ -272,8 +258,7 @@ namespace Domain.Service.Items
                     isCursed: isCursed,
                     upgradeLimit: data.UpgradeLimit + prefix.ToOption().MapOr(0, prefix => prefix.AdditionalUpgradeLimit),
                     conditions: data.PassiveConditions,
-                    mimic: mimic.ToOption(),
-                    isEquipped: Option.None<bool>()
+                    mimic: mimic.ToOption()
                 ),
                 prefix: prefix.ToOption(),
                 defaultPower: data.Power,
@@ -316,7 +301,8 @@ namespace Domain.Service.Items
             item => Merge(item.FeaturesToMergeWeapon, item.UpgradeCount),
             directWeapon => Merge(directWeapon.Features, directWeapon.UpgradeCount),
             rangedWeapon => Merge(rangedWeapon.Features, rangedWeapon.UpgradeCount),
-            _ => throw new ArgumentException("武器とだけ合成できます")
+            _ => throw new ArgumentException(
+                "Invalid merge target: only another weapon or an item with mergeable weapon features is allowed.")
         );
 
         protected override string? BuildTemplatedActivatableSkillInfo() =>

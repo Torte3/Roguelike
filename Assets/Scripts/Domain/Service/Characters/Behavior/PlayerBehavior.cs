@@ -15,6 +15,7 @@ using Domain.Model.Memento;
 using Domain.Model.Setting;
 using Domain.Service.Action;
 using Domain.Service.Events;
+using Domain.Service.Logs;
 using R3;
 using Unity.Logging;
 using Utilities;
@@ -132,6 +133,7 @@ namespace Domain.Service.Characters.Behavior
                         {
                             action = new ThrowItem(focusItem, character.CurrentDirection);
                             if (action.Doable(character, map)) return action;
+                            LogIfCursedBlocksThrowAfterDoableFailed(character, map, focusItem);
                         }
 
                         break;
@@ -158,11 +160,13 @@ namespace Domain.Service.Characters.Behavior
                         {
                             action = new DropItem(item2);
                             if (action.Doable(character, map)) return action;
+                            LogIfCursedBlocksDropAfterDoableFailed(character, map, item2);
                         }
                         else if (focus2.IsOnGroundItem)
                         {
                             action = new DropItem(item1);
                             if (action.Doable(character, map)) return action;
+                            LogIfCursedBlocksDropAfterDoableFailed(character, map, item1);
                         }
                         else
                         {
@@ -297,5 +301,33 @@ namespace Domain.Service.Characters.Behavior
             _onSelectedItemSelect.OnNext(Unit.Default);
             return focus;
         }
+
+        private static void LogIfCursedBlocksThrowAfterDoableFailed(IHasBehavior character, IMap map, IItem item)
+        {
+            if (character.Status.IsFlagStat(FlagStatType.CannotAct))
+                return;
+            if (!IsItemAccessibleForThrow(character, map, item))
+                return;
+            if (!item.IsDiscardBlocked)
+                return;
+            GameLog.Add(character.Entity.IsVisible,
+                $"{item.GetName(map.Player, map.ItemPlaceholders)}は呪われていて投げられない");
+        }
+
+        private static void LogIfCursedBlocksDropAfterDoableFailed(IHasBehavior character, IMap map, IItem? item)
+        {
+            if (item == null || character.Status.IsFlagStat(FlagStatType.CannotAct))
+                return;
+            if (!character.Inventory.CanRemove(item))
+                return;
+            if (!item.IsDiscardBlocked)
+                return;
+            GameLog.Add(character.Entity.IsVisible,
+                $"{item.GetName(map.Player, map.ItemPlaceholders)}は呪われていて捨てられない");
+        }
+
+        private static bool IsItemAccessibleForThrow(IHasBehavior character, IMap map, IItem item) =>
+            character.Inventory.CanRemove(item)
+            || map.Items.At(character.Entity.CurrentPosition).FirstOrDefault()?.Item == item;
     }
 }

@@ -21,11 +21,60 @@ namespace Domain.Service.Items
 {
     public abstract class ConsumableItem : BaseItem
     {
+        public override ReadOnlyReactiveProperty<bool> IsPassiveActive { get; }
+
         protected ConsumableItem(BaseItemMemento baseItem) : base(baseItem)
         {
+            IsPassiveActive = _isCursed
+                .Select(c => !(CannotUseWhileCursed && c))
+                .DistinctUntilChanged()
+                .ToReadOnlyReactiveProperty();
+            IsPassiveActive.AddTo(_disposables);
         }
 
-        public override bool IsDisabled => IsCursed || RemainingUses.CurrentValue <= 0;
+        public override bool IsDiscardBlocked =>
+            IsCursed && !CannotUseWhileCursed && UsedWhileCursed;
+
+        public override Option<bool> IsEquipped => Option.None<bool>();
+
+        public abstract ItemCurseKind CurseKind { get; }
+
+        protected bool CannotUseWhileCursed => CurseKind switch
+        {
+            ItemCurseKind.UseBlockedWhenCursed => true,
+            ItemCurseKind.CannotDiscardWhenCursed => false,
+        };
+
+        private void TryMarkUsedWhileCursed(IActorOfEffect actor, IMap map)
+        {
+            if (!IsCursed || UsedWhileCursed)
+            {
+                return;
+            }
+
+            UsedWhileCursed = true;
+            _onItemUpdated.OnNext(Unit.Default);
+
+            if (CurseKind == ItemCurseKind.CannotDiscardWhenCursed)
+            {
+                GameLog.Add(actor.IsVisible,
+                    $"{GetName(map.Player, map.ItemPlaceholders)}は捨てられなくなった");
+            }
+        }
+
+        private bool IsUseBlockedByCurse =>
+            CurseKind == ItemCurseKind.UseBlockedWhenCursed && IsCursed;
+
+        public override bool CanActivateWhenUsed =>
+            HasUsableSkillOnUse() && RemainingUses.CurrentValue > 0 && !IsUseBlockedByCurse;
+
+        public override bool CanActivateWhenThrown =>
+            HasUsableSkillOnThrow() && RemainingUses.CurrentValue > 0 && !IsUseBlockedByCurse;
+
+        public override bool CanAttemptUse =>
+            HasUsableSkillOnUse() && RemainingUses.CurrentValue > 0;
+
+        public override bool CanAttemptThrow => !IsDiscardBlocked;
 
         public override void Repair(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
         {
@@ -47,6 +96,35 @@ namespace Domain.Service.Items
             return RandUtils.IsLessThanProbability(UsageLossChance);
         }
 
+        private void ApplyPostUseAttemptInventoryEffects(IActorOfEffect actor, IMap map)
+        {
+            if (ShouldDecreaseUsage(actor))
+            {
+                _remainingUsages.Value -= 1;
+            }
+            else
+            {
+                GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は消費しなかった");
+            }
+
+            if (State == ItemState.ShopItem)
+            {
+                SetState(ItemState.UsedShopItem);
+            }
+
+            _onItemUpdated.OnNext(Unit.Default);
+        }
+
+        public override void LogWhyCannotActivateWhenUsed(IActor actor, IMap map)
+        {
+            if (!CannotUseWhileCursed || !IsCursed)
+            {
+                return;
+            }
+
+            GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は呪われているため使用できない");
+        }
+
         public override async UniTask<ISkillResult> Use(IActor actor, Vector2Int position, Direction8 direction, IMap map)
         {
             Debug.Log($"Use:");
@@ -55,12 +133,7 @@ namespace Domain.Service.Items
                 return SpawnEffectSkillResult.Failed;
             }
 
-            SetCurseIdentified(true);
-            if (IsCursed)
-            {
-                GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は呪われているため使用できない");
-                return SpawnEffectSkillResult.Failed;
-            }
+            SetCurseIdentified(true, map.Player, actor, map.ItemPlaceholders);
 
             if (!actor.CanReadItem && RequiresLiteracy)
             {
@@ -73,27 +146,15 @@ namespace Domain.Service.Items
             if (!skill.IsUsable())
             {
                 GameLog.Add(actor.IsVisible, $"しかしうまくいかなかった");
+                TryMarkUsedWhileCursed(actor, map);
                 return SpawnEffectSkillResult.Failed;
             }
 
             var result = await skill.Use(actor, this, position, direction, map);
             if (result.Result != SkillResult.Cancelled)
             {
-                if (ShouldDecreaseUsage(actor))
-                {
-                    _remainingUsages.Value -= 1;
-                }
-                else
-                {
-                    GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は消費しなかった");
-                }
-
-                if (State == ItemState.ShopItem)
-                {
-                    SetState(ItemState.UsedShopItem);
-                }
-
-                _onItemUpdated.OnNext(Unit.Default);
+                ApplyPostUseAttemptInventoryEffects(actor, map);
+                TryMarkUsedWhileCursed(actor, map);
             }
 
             return result;
@@ -107,12 +168,7 @@ namespace Domain.Service.Items
                 return SpawnEffectSkillResult.Failed;
             }
 
-            SetCurseIdentified(true);
-            if (IsCursed)
-            {
-                GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は呪われているため使用できない");
-                return SpawnEffectSkillResult.Failed;
-            }
+            SetCurseIdentified(true, map.Player, actor, map.ItemPlaceholders);
 
             if (!actor.CanReadItem && RequiresLiteracy)
             {
@@ -138,21 +194,7 @@ namespace Domain.Service.Items
             );
             if (result.Result != SkillResult.Cancelled)
             {
-                if (ShouldDecreaseUsage(actor))
-                {
-                    _remainingUsages.Value -= 1;
-                }
-                else
-                {
-                    GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は消費しなかった");
-                }
-
-                if (State == ItemState.ShopItem)
-                {
-                    SetState(ItemState.UsedShopItem);
-                }
-
-                _onItemUpdated.OnNext(Unit.Default);
+                ApplyPostUseAttemptInventoryEffects(actor, map);
             }
 
             return result;

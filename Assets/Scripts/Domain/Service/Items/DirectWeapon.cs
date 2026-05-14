@@ -22,19 +22,8 @@ using Utilities.Serialize.Option;
 
 namespace Domain.Service.Items
 {
-    public class DirectWeapon : ConsumableItem, ISerializable<DirectWeaponMemento>
+    public class DirectWeapon : WeaponConsumableItem, ISerializable<DirectWeaponMemento>
     {
-        public override string RevealedName => _prefix.MapOr("", prefix => prefix.Name) + BaseName;
-        public override ItemCategory Category => ItemCategory.Weapons;
-        private bool _hasSameEffect;
-        protected override bool HasSameEffect => _hasSameEffect;
-        protected override bool HasSameSkill => false;
-        public override bool UseOnDeath => false;
-        public override bool RequiresLiteracy => false;
-        public override bool IdentifyIfGot => true;
-        public override bool IdentifyIfUsed => true;
-        public override bool AutoDestroyWhenDisabled => false;
-        private readonly Option<WeaponPrefix> _prefix;
         private readonly int _defaultPower;
         private readonly List<ItemFeature> _features;
         public IReadOnlyList<ItemFeature> Features => _features;
@@ -47,9 +36,9 @@ namespace Domain.Service.Items
         {
         }
 
-        public DirectWeapon(DirectWeaponMemento data) : base(data.BaseItem)
+        public DirectWeapon(DirectWeaponMemento data) : base(data.BaseItem, data.Prefix)
         {
-            _prefix = data.Prefix;
+            _hasSameEffect = data.HasSameEffect;
             _defaultPower = data.DefaultPower;
             _features = data.Features;
             FeatureLimit = data.FeatureLimit;
@@ -62,7 +51,7 @@ namespace Domain.Service.Items
             var json = JsonUtility.ToJson(new DirectWeaponMemento
             (
                 baseItem: SerializeBase(),
-                prefix: _prefix,
+                prefix: WeaponPrefix,
                 defaultPower: _defaultPower,
                 features: _features,
                 featureLimit: FeatureLimit,
@@ -73,14 +62,12 @@ namespace Domain.Service.Items
             return JsonUtility.FromJson<DirectWeaponMemento>(json);
         }
 
-        public override bool CanUpgrade() => UpgradeCount < UpgradeLimit;
-        public override bool CanDowngrade() => UpgradeCount > 0;
         public override void Upgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true)
         {
             if (log)
                 GameLog.Add(itemHolder.IsVisible, $"{GetName(player, itemPlaceholders)}は強化された");
             UpgradeCount++;
-            var (skillOnUse, skillOnThrow, hasSameEffect) = BuildSkills(_defaultPower, UpgradeCount, _features, _prefix.Value);
+            var (skillOnUse, skillOnThrow, hasSameEffect) = BuildSkills(_defaultPower, UpgradeCount, _features, WeaponPrefix.Value);
             _skillOnUse = new SkillWithCost(skillOnUse);
             _skillOnThrow = new SkillWithCost(skillOnThrow);
             _hasSameEffect = hasSameEffect;
@@ -92,7 +79,7 @@ namespace Domain.Service.Items
             if (log)
                 GameLog.Add(itemHolder.IsVisible, $"{GetName(player, itemPlaceholders)}は強化が解除された");
             UpgradeCount--;
-            var (skillOnUse, skillOnThrow, hasSameEffect) = BuildSkills(_defaultPower, UpgradeCount, _features, _prefix.Value);
+            var (skillOnUse, skillOnThrow, hasSameEffect) = BuildSkills(_defaultPower, UpgradeCount, _features, WeaponPrefix.Value);
             _skillOnUse = new SkillWithCost(skillOnUse);
             _skillOnThrow = new SkillWithCost(skillOnThrow);
             _hasSameEffect = hasSameEffect;
@@ -299,8 +286,7 @@ namespace Domain.Service.Items
                     isCursed: isCursed,
                     upgradeLimit: data.UpgradeLimit + prefix.ToOption().MapOr(0, prefix => prefix.AdditionalUpgradeLimit),
                     conditions: data.PassiveConditions,
-                    mimic: mimic.ToOption(),
-                    isEquipped: Option.None<bool>()
+                    mimic: mimic.ToOption()
                 ),
                 prefix: prefix.ToOption(),
                 defaultPower: data.Power,
@@ -340,7 +326,8 @@ namespace Domain.Service.Items
             item => Merge(item.FeaturesToMergeWeapon, item.UpgradeCount),
             directWeapon => Merge(directWeapon.Features, directWeapon.UpgradeCount),
             rangedWeapon => Merge(rangedWeapon.Features, rangedWeapon.UpgradeCount),
-            _ => throw new ArgumentException("武器とだけ合成できます")
+            _ => throw new ArgumentException(
+                "Invalid merge target: only another weapon or an item with mergeable weapon features is allowed.")
         );
 
         protected override string? BuildTemplatedActivatableSkillInfo() =>

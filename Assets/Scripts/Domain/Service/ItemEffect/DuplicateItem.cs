@@ -47,8 +47,8 @@ namespace Domain.Service.ItemEffect
                 rangedWeaponMemento => rangedWeaponMemento.CopyWith(
                     baseItem: rangedWeaponMemento.BaseItem.CopyWith(id: newId)
                 ),
-                artifactMemento => artifactMemento.CopyWith(
-                    baseItem: artifactMemento.BaseItem.CopyWith(id: newId)
+                equipmentItemMemento => equipmentItemMemento.CopyWith(
+                    baseItem: equipmentItemMemento.BaseItem.CopyWith(id: newId)
                 )
             );
             return copiedMemento.Deserialize();

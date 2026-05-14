@@ -15,7 +15,7 @@ namespace Domain.Service.ItemEffect
         public void Apply(IPlayer player, IItem item, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
         {
             player.Character.KnowItem(item, true);
-            item.SetCurseIdentified(true);
+            item.SetCurseIdentified(true, player, itemHolder, itemPlaceholders);
         }
 
         public float EvaluatePrice()

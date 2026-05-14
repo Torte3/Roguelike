@@ -39,13 +39,16 @@ namespace Domain.Model.Item
         public Option<ISkillWithCost> SkillOnThrow { get; }
         public bool HasActivatableSkill { get; }
         public bool CanActivate { get; }
+        public bool CanAttemptUse { get; }
+        public bool CanAttemptThrow { get; }
+        public bool CanAttemptUseOrThrow { get; }
         public float EvaluateWhenUsed(IActor actor, Vector2Int position, Direction8 direction, IMap map);
         public float EvaluateWhenThrown(IActorOfEffect actor, Vector2Int position, Direction8 direction, IMap map);
-        public bool IsDisabled { get; }
         public Option<bool> IsEquipped { get; }
         public int MaxUsages { get; }
         public ReadOnlyReactiveProperty<int> RemainingUses { get; }
         public bool IsCursed { get; }
+        public bool IsDiscardBlocked { get; }
         public ReadOnlyReactiveProperty<bool> IsPassiveActive { get; }
         public bool RequiresLiteracy { get; }
         public bool IdentifyIfGot { get; }
@@ -61,6 +64,8 @@ namespace Domain.Model.Item
         public bool ShouldRevealMimic(IActorOfEffect actor, Vector2Int position, IMap map);
         public UniTask<ISkillResult> Use(IActor actor, Vector2Int position, Direction8 direction, IMap map);
 
+        public void LogWhyCannotActivateWhenUsed(IActor actor, IMap map);
+
         public UniTask<ISkillResult> UseWhenThrown(IActorOfEffect actor, Vector2Int position, Direction8 direction,
             IMap map);
 
@@ -68,7 +73,8 @@ namespace Domain.Model.Item
 
         public void Repair(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders);
         public void SetCursed(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool isCursed);
-        public void SetCurseIdentified(bool isCurseIdentified);
+        public void SetCurseIdentified(bool isCurseIdentified, IPlayer? logPlayer = null,
+            IEntity? logVisibleEntity = null, ItemPlaceholders? logPlaceholders = null);
         public void Rename(string name);
         public void RevertToDefaultName();
         public bool CanUpgrade();

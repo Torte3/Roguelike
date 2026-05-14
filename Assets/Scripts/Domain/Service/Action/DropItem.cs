@@ -13,6 +13,8 @@ namespace Domain.Service.Action
         {
             if (!actor.Inventory.CanRemove(Item))
                 return false;
+            if (Item.IsDiscardBlocked)
+                return false;
             return !actor.Status.IsFlagStat(FlagStatType.CannotAct);
         }
 

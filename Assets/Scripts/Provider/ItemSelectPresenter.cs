@@ -119,7 +119,7 @@ namespace Provider
                 : null;
             return new ItemViewData(
                 baseName,
-                item.CanActivateWhenUsed,
+                item.CanAttemptUseOrThrow,
                 item.Icon,
                 canSelect: true,
                 count,

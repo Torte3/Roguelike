@@ -49,14 +49,14 @@ namespace Editor
         private float EvaluateEvaluatedPrice()
         {
             var data = (ArtifactData)target;
-            var item = new Artifact(data);
+            var item = new EquipmentItem(data);
             return item.EvaluateEvaluatedPrice();
         }
 
         private float EvaluateMarketPrice()
         {
             var data = (ArtifactData)target;
-            var item = new Artifact(data);
+            var item = new EquipmentItem(data);
             return item.EvaluatePrice(_cachedMarketPriceTable!);
         }
 
@@ -65,7 +65,7 @@ namespace Editor
             EditorGUILayout.LabelField("ゲーム内プレビュー（識別済み・汎用説明・色付き）", EditorStyles.boldLabel);
             try
             {
-                var item = new Artifact((ArtifactData)target);
+                var item = new EquipmentItem((ArtifactData)target);
                 ItemDescriptionPreviewEditor.DrawIdentifiedLikeInventory(item.FullInfoGenericSkillDescription(), 120f);
             }
             catch (Exception ex)

@@ -27,7 +27,8 @@ namespace Domain.Service.Effect
         {
             if (item is IEquipmentToggleTarget toggleTarget)
             {
-                toggleTarget.ToggleEquippedFromUse();
+                if (!toggleTarget.TryToggleEquipped(actor, map))
+                    return UniTask.FromResult((ISkillResult)SpawnEffectSkillResult.Failed);
                 return UniTask.FromResult((ISkillResult)SpawnEffectSkillResult.Success);
             }
 

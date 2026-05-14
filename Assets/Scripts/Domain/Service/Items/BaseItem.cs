@@ -46,10 +46,8 @@ namespace Domain.Service.Items
         private protected List<IConditionData> _conditions;
         private protected Subject<Unit> _onItemUpdated = new();
         private protected Subject<Unit> _onMimicRevealed = new();
-        private protected Option<ReactiveProperty<bool>> _isEquipped;
-        private readonly ReactiveProperty<bool> _passiveActive;
-        private CompositeDisposable _disposables = new();
-
+        private protected CompositeDisposable _disposables = new();
+        protected bool UsedWhileCursed { get; private protected set; }
         public abstract ItemCategory Category { get; }
         public abstract string RevealedName { get; }
         protected abstract bool HasSameEffect { get; }
@@ -62,6 +60,9 @@ namespace Domain.Service.Items
         public abstract Option<ISkillWithCost> SkillOnUse { get; }
         public abstract Option<ISkillWithCost> SkillOnThrow { get; }
         private Option<EnemyData> _mimic { get; init; }
+
+        protected bool HasUsableSkillOnUse() => SkillOnUse.HasValue && SkillOnUse.Value.IsUsable();
+        protected bool HasUsableSkillOnThrow() => SkillOnThrow.HasValue && SkillOnThrow.Value.IsUsable();
 
         public string DebugName => _fullName;
         private string _fullName => CustomName.UnwrapOr(RevealedName) + _upgradeText();
@@ -77,17 +78,20 @@ namespace Domain.Service.Items
         public int GetPrice(ItemMarketPriceTable market) => Mathf.RoundToInt(EvaluatePrice(market));
         public bool HasActivatableSkillWhenUsed => SkillOnUse.HasValue;
         public bool HasActivatableSkillWhenThrown => SkillOnThrow.HasValue;
-        public bool CanActivateWhenUsed => SkillOnUse.HasValue
-            && SkillOnUse.Value.IsUsable()
-            && !IsDisabled;
-        public bool CanActivateWhenThrown => SkillOnThrow.HasValue
-            && SkillOnThrow.Value.IsUsable()
-            && !IsDisabled;
+        public abstract bool CanActivateWhenUsed { get; }
+        public abstract bool CanActivateWhenThrown { get; }
         public bool HasActivatableSkill => HasActivatableSkillWhenUsed || HasActivatableSkillWhenThrown;
         public bool CanActivate => CanActivateWhenUsed || CanActivateWhenThrown;
-        public abstract bool IsDisabled { get; }
-        public Option<bool> IsEquipped => _isEquipped.Map(rp => rp.CurrentValue);
-        public ReadOnlyReactiveProperty<bool> IsPassiveActive => _passiveActive;
+
+        public abstract bool CanAttemptUse { get; }
+
+        public abstract bool CanAttemptThrow { get; }
+
+        public bool CanAttemptUseOrThrow => CanAttemptUse || CanAttemptThrow;
+
+        public abstract bool IsDiscardBlocked { get; }
+        public abstract Option<bool> IsEquipped { get; }
+        public abstract ReadOnlyReactiveProperty<bool> IsPassiveActive { get; }
         public ReadOnlyReactiveProperty<int> RemainingUses => _remainingUsages;
         public IReadOnlyList<IConditionData> PassiveConditions => _conditions;
         public Observable<Unit> OnItemUpdated => _onItemUpdated;
@@ -125,26 +129,8 @@ namespace Domain.Service.Items
             UpgradeLimit = baseItem.UpgradeLimit;
             _conditions = baseItem.Conditions;
             _mimic = baseItem.Mimic;
-            _isEquipped = baseItem.IsEquipped.Map(b => new ReactiveProperty<bool>(b));
-            _passiveActive = new ReactiveProperty<bool>(PassiveFrom(_isCursed.CurrentValue, IsEquipped));
-            if (_isEquipped.IsSome(out var equippedRp))
-            {
-                Observable.CombineLatest(_isCursed, equippedRp, (c, eq) => PassiveFrom(c, Option.Some(eq)))
-                    .DistinctUntilChanged()
-                    .Subscribe(v => _passiveActive.Value = v)
-                    .AddTo(_disposables);
-            }
-            else
-            {
-                _isCursed.Select(c => PassiveFrom(c, Option.None<bool>()))
-                    .DistinctUntilChanged()
-                    .Subscribe(v => _passiveActive.Value = v)
-                    .AddTo(_disposables);
-            }
+            UsedWhileCursed = baseItem.UsedWhileCursed;
         }
-
-        private static bool PassiveFrom(bool cursed, Option<bool> equippedOpt) =>
-            (!cursed && equippedOpt.IsNone) || (equippedOpt.IsSome(out var equipped) && equipped);
 
         public BaseItemMemento SerializeBase()
         {
@@ -162,13 +148,13 @@ namespace Domain.Service.Items
                 upgradeCount: UpgradeCount,
                 maxUsages: MaxUsages,
                 remainingUsages: _remainingUsages.CurrentValue,
-                usageLossChance: UsageLossChance,
                 isCursed: IsCursed,
                 isCurseIdentified: IsCurseIdentified,
                 upgradeLimit: UpgradeLimit,
+                usageLossChance: UsageLossChance,
                 conditions: _conditions,
                 mimic: _mimic,
-                isEquipped: _isEquipped.Map(rp => rp.CurrentValue));
+                usedWhileCursed: UsedWhileCursed);
         }
 
         public static BaseItemMemento BuildBase(
@@ -186,8 +172,7 @@ namespace Domain.Service.Items
             bool isCursed,
             int upgradeLimit,
             List<IConditionData> conditions,
-            Option<EnemyData> mimic,
-            Option<bool> isEquipped)
+            Option<EnemyData> mimic)
         {
             return new BaseItemMemento(
                 id: Id<IItem>.Generate(),
@@ -208,16 +193,12 @@ namespace Domain.Service.Items
                 isCurseIdentified: false,
                 upgradeLimit: upgradeLimit,
                 conditions: conditions,
-                mimic: mimic,
-                isEquipped: isEquipped);
+                mimic: mimic);
         }
 
         public void Dispose()
         {
             _disposables.Dispose();
-            _passiveActive.Dispose();
-            if (_isEquipped.IsSome(out var equippedRp))
-                equippedRp.Dispose();
         }
 
         public void SetState(ItemState state)
@@ -240,6 +221,8 @@ namespace Domain.Service.Items
         }
 
         public abstract UniTask<ISkillResult> Use(IActor actor, Vector2Int position, Direction8 direction, IMap map);
+
+        public abstract void LogWhyCannotActivateWhenUsed(IActor actor, IMap map);
 
         public abstract UniTask<ISkillResult> UseWhenThrown(IActorOfEffect actor, Vector2Int position,
             Direction8 direction, IMap map);
@@ -352,12 +335,7 @@ namespace Domain.Service.Items
         public void SetCursed(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool isCursed)
         {
             SetCurseIdentified(true);
-            if (_isCursed.CurrentValue == isCursed)
-            {
-                return;
-            }
 
-            _isCursed.Value = isCursed;
             if (isCursed)
             {
                 GameLog.Add(itemHolder.IsVisible, $"{GetName(player, itemPlaceholders)}は呪われた");
@@ -367,12 +345,32 @@ namespace Domain.Service.Items
                 GameLog.Add(itemHolder.IsVisible, $"{GetName(player, itemPlaceholders)}の呪いは解かれた");
             }
 
+            if (_isCursed.CurrentValue == isCursed)
+            {
+                return;
+            }
+
+            _isCursed.Value = isCursed;
+            if (!isCursed)
+            {
+                UsedWhileCursed = false;
+            }
+
             _onItemUpdated.OnNext(Unit.Default);
         }
 
-        public void SetCurseIdentified(bool isCurseIdentified)
+        public void SetCurseIdentified(bool isCurseIdentified, IPlayer? logPlayer = null,
+            IEntity? logVisibleEntity = null, ItemPlaceholders? logPlaceholders = null)
         {
+            var wasUnidentified = !IsCurseIdentified;
             IsCurseIdentified = isCurseIdentified;
+            if (isCurseIdentified && wasUnidentified && IsCursed
+                && logPlayer != null && logVisibleEntity != null && logPlaceholders != null)
+            {
+                GameLog.Add(logVisibleEntity.IsVisible,
+                    $"{GetName(logPlayer, logPlaceholders)}は呪われていた");
+            }
+
             _onItemUpdated.OnNext(Unit.Default);
         }
 

@@ -141,7 +141,7 @@ namespace Provider
                 : null;
             return new ItemViewData(
                 name,
-                item.CanActivateWhenUsed,
+                item.CanAttemptUseOrThrow,
                 item.Icon,
                 canSelect,
                 count,

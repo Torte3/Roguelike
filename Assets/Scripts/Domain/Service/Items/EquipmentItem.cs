@@ -1,7 +1,11 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
+using Domain.Model;
 using Domain.Model.Character;
+using Domain.Model.Condition;
 using Domain.Model.Dungeon;
 using Domain.Model.Effect;
 using Domain.Model.Entity;
@@ -17,38 +21,88 @@ using Utilities.Serialize.Option;
 
 namespace Domain.Service.Items
 {
-    public abstract class EquipmentItem : BaseItem, IEquipmentToggleTarget
+    public sealed class EquipmentItem : BaseItem, IEquipmentToggleTarget, ISerializable<EquipmentItemMemento>
     {
-        private readonly ISkillWithCost _skillOnUseToggle;
+        private readonly ReactiveProperty<bool> _equippedState;
+        private readonly List<ArtifactPassiveConditionBundle> _passiveConditionSlots;
 
-        protected EquipmentItem(BaseItemMemento baseItem) : base(baseItem)
+        public int SlotLimit { get; }
+
+        public IReadOnlyList<ArtifactPassiveConditionBundle> PassiveConditionSlots => _passiveConditionSlots;
+
+        public override string RevealedName => BaseName;
+        public override ItemCategory Category => ItemCategory.Artifacts;
+        protected override bool HasSameEffect => false;
+        protected override bool HasSameSkill => false;
+        public override bool UseOnDeath => false;
+        public override bool RequiresLiteracy => false;
+        public override bool IdentifyIfGot => false;
+        public override bool IdentifyIfUsed => false;
+        public override bool AutoDestroyWhenDisabled => false;
+
+        public EquipmentItem(ArtifactData data) : this(Build(data))
         {
-            _skillOnUseToggle = new SkillWithCost(new SkillWithCostMemento(
-                EquipToggleSkill.BuildMemento(),
-                cost: 0,
-                chargeTurn: 0,
-                coolTime: 0,
-                remainingTurn: 0));
         }
 
-        public override bool IsDisabled => false;
+        public EquipmentItem(EquipmentItemMemento data) : base(data.BaseItem)
+        {
+            _passiveConditionSlots = data.PassiveConditionSlots;
+            SlotLimit = data.SlotLimit;
 
-        public override Option<ISkillWithCost> SkillOnUse => Option.Some(_skillOnUseToggle);
+            _equippedState = new ReactiveProperty<bool>(data.IsEquipped);
+            _equippedState.AddTo(_disposables);
+        }
 
+        public override Option<bool> IsEquipped => Option.Some(_equippedState.CurrentValue);
+
+        public override ReadOnlyReactiveProperty<bool> IsPassiveActive => _equippedState;
+
+        public override bool CanActivateWhenUsed =>
+            HasUsableSkillOnUse() && !(IsCursed && _equippedState.CurrentValue);
+
+        public override bool CanActivateWhenThrown => HasUsableSkillOnThrow();
+
+        public override bool CanAttemptUse => HasUsableSkillOnUse();
+
+        public override bool CanAttemptThrow => !IsDiscardBlocked;
+
+        public override bool IsDiscardBlocked =>
+            IsCursed && _equippedState.CurrentValue;
+
+        public override Option<ISkillWithCost> SkillOnUse { get; } = Option.Some(
+            (ISkillWithCost)new SkillWithCost(
+                new SkillWithCostMemento(
+                    EquipToggleSkill.BuildMemento(),
+                    cost: 0,
+                    chargeTurn: 0,
+                    coolTime: 0,
+                    remainingTurn: 0)));
         public override Option<ISkillWithCost> SkillOnThrow => Option.None<ISkillWithCost>();
 
-        public void ToggleEquippedFromUse()
+        public override void LogWhyCannotActivateWhenUsed(IActor actor, IMap map)
         {
-            if (!_isEquipped.IsSome(out var rp))
-                return;
-            rp.Value = !rp.CurrentValue;
-            _onItemUpdated.OnNext(Unit.Default);
+            if (IsCursed && _equippedState.CurrentValue)
+            {
+                LogCannotUnequipWhileCursed(actor, map);
+            }
         }
 
-        protected void SetIsEquipped(bool isEquipped)
+        private void LogCannotUnequipWhileCursed(IActorOfEffect actor, IMap map)
         {
-            if (_isEquipped.IsSome(out var rp))
-                rp.Value = isEquipped;
+            GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は呪われていて外せない");
+        }
+
+        public bool TryToggleEquipped(IActorOfEffect actor, IMap map)
+        {
+            if (IsCursed && _equippedState.CurrentValue)
+            {
+                LogCannotUnequipWhileCursed(actor, map);
+                return false;
+            }
+
+            _equippedState.Value = !_equippedState.CurrentValue;
+            _onItemUpdated.OnNext(Unit.Default);
+            return true;
         }
 
         public override void Repair(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
@@ -63,7 +117,8 @@ namespace Domain.Service.Items
                 return SpawnEffectSkillResult.Failed;
             }
 
-            SetCurseIdentified(true);
+            SetCurseIdentified(true, map.Player, actor, map.ItemPlaceholders);
+
             if (!actor.CanReadItem && RequiresLiteracy)
             {
                 GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は文字が読めない");
@@ -100,7 +155,8 @@ namespace Domain.Service.Items
                 return SpawnEffectSkillResult.Failed;
             }
 
-            SetCurseIdentified(true);
+            SetCurseIdentified(true, map.Player, actor, map.ItemPlaceholders);
+
             if (!actor.CanReadItem && RequiresLiteracy)
             {
                 GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は文字が読めない");
@@ -139,6 +195,114 @@ namespace Domain.Service.Items
             }
 
             return result;
+        }
+
+        public EquipmentItemMemento Serialize()
+        {
+            var json = JsonUtility.ToJson(new EquipmentItemMemento(
+                SerializeBase(),
+                _passiveConditionSlots,
+                SlotLimit,
+                IsEquipped.UnwrapOr(false)));
+            return JsonUtility.FromJson<EquipmentItemMemento>(json);
+        }
+
+        public static EquipmentItemMemento Build(
+            ArtifactData data,
+            bool isCursed = false,
+            ItemState state = ItemState.None,
+            EnemyData? mimic = null,
+            bool isEquipped = false)
+        {
+            var hasBuiltIn = data.HasBuiltInPassive;
+            var slots = new List<ArtifactPassiveConditionBundle>();
+            if (hasBuiltIn)
+            {
+                slots.Add(data.BuiltInPassiveConditionBundle.Clone());
+            }
+
+            var slotLimit = (hasBuiltIn ? 1 : 0) + data.SynthesisSlotLimit;
+
+            var conditions = FlattenConditionList(slots);
+            var json = JsonUtility.ToJson(new EquipmentItemMemento(
+                BuildBase(
+                    baseName: data.name,
+                    icon: data.Icon,
+                    isShiny: data.IsShiny,
+                    rarity: data.Rarity,
+                    customBasePrice: data.UseCustomBasePrice ? data.CustomBasePrice : null,
+                    additionalPrice: data.AdditionalPrice,
+                    multiplyPrice: data.MultiplyPrice,
+                    state: state,
+                    upgradeCount: 0,
+                    maxUsages: 0,
+                    usageLossChance: 1f,
+                    isCursed: isCursed,
+                    upgradeLimit: 0,
+                    conditions: conditions,
+                    mimic: mimic.ToOption()),
+                slots,
+                slotLimit,
+                isEquipped));
+            return JsonUtility.FromJson<EquipmentItemMemento>(json);
+        }
+
+        public bool CanMergeFrom(EquipmentItem material) =>
+            _passiveConditionSlots.Count < SlotLimit
+            && material.PassiveConditionSlots.Count > 0;
+
+        public EquipmentItem Merge(IItem mergedItem)
+        {
+            if (mergedItem is not EquipmentItem other)
+            {
+                throw new ArgumentException("Equipment item can only be merged with other equipment items");
+            }
+
+            var memento = Serialize();
+            var newSlots = memento.PassiveConditionSlots.Select(b => b.Clone()).ToList();
+            foreach (var bundle in other.PassiveConditionSlots)
+            {
+                if (newSlots.Count >= memento.SlotLimit)
+                    break;
+                newSlots.Add(bundle.Clone());
+            }
+
+            var conditions = FlattenConditionList(newSlots);
+            return new EquipmentItem(memento.CopyWith(
+                baseItem: memento.BaseItem.CopyWith(conditions: conditions),
+                passiveConditionSlots: newSlots));
+        }
+
+        private static List<IConditionData> FlattenConditionList(IReadOnlyList<ArtifactPassiveConditionBundle> slots)
+        {
+            var list = new List<IConditionData>();
+            foreach (var bundle in slots)
+            {
+                foreach (var c in bundle.Conditions)
+                    list.Add(c);
+            }
+
+            return list;
+        }
+
+        public override bool CanUpgrade() => false;
+        public override bool CanDowngrade() => false;
+
+        public override void Upgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true) =>
+            throw new Exception("Cannot upgrade equipment item");
+
+        public override void Downgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true) =>
+            throw new Exception("Cannot downgrade equipment item");
+
+        protected override string? BuildTemplatedActivatableSkillInfo() => null;
+
+        protected override string FullInfoImpl()
+        {
+            var info = $"\nパッシブスキル ({_passiveConditionSlots.Count}/{SlotLimit})\n";
+
+            foreach (var bundle in _passiveConditionSlots)
+                info += $"{bundle.DisplayName}\n";
+            return info;
         }
     }
 }

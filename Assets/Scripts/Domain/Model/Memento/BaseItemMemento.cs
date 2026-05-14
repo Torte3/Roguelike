@@ -37,7 +37,8 @@ namespace Domain.Model.Memento
         [field: SerializeReference] public List<IConditionData> Conditions { get; private set; }
         [SerializeField] private Option<ScriptableObjectSerializable<EnemyData>> _mimic;
         public Option<EnemyData> Mimic => _mimic.Map(m => m.Value);
-        [field: SerializeField] public Option<bool> IsEquipped { get; private set; }
+        [field: SerializeField] public bool UsedWhileCursed { get; private set; }
+
         public BaseItemMemento(
             Id<IItem> id,
             string baseName,
@@ -58,7 +59,7 @@ namespace Domain.Model.Memento
             float usageLossChance,
             List<IConditionData> conditions,
             Option<EnemyData> mimic,
-            Option<bool> isEquipped)
+            bool usedWhileCursed = false)
         {
             _id = id.ToString();
             BaseName = baseName;
@@ -79,7 +80,7 @@ namespace Domain.Model.Memento
             UsageLossChance = usageLossChance;
             Conditions = conditions;
             _mimic = mimic.Map(m => m.ToSerializable());
-            IsEquipped = isEquipped;
+            UsedWhileCursed = usedWhileCursed;
         }
 
         public BaseItemMemento CopyWith(
@@ -102,7 +103,7 @@ namespace Domain.Model.Memento
             float? usageLossChance = null,
             List<IConditionData>? conditions = null,
             Option<EnemyData>? mimic = null,
-            Option<bool>? isEquipped = null)
+            bool? usedWhileCursed = null)
         {
             return new BaseItemMemento(
                 id ?? Id,
@@ -124,8 +125,7 @@ namespace Domain.Model.Memento
                 usageLossChance ?? UsageLossChance,
                 conditions ?? Conditions,
                 mimic ?? Mimic,
-                isEquipped ?? IsEquipped
-            );
+                usedWhileCursed ?? UsedWhileCursed);
         }
     }
 }

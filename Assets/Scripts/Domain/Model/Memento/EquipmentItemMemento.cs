@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Domain.Model.Memento
 {
     [Serializable]
-    public class ArtifactMemento : IItemMemento
+    public class EquipmentItemMemento : IItemMemento
     {
         [field: SerializeField] public BaseItemMemento BaseItem { get; private set; }
 
@@ -17,25 +17,31 @@ namespace Domain.Model.Memento
 
         [field: SerializeField] public int SlotLimit { get; private set; }
 
-        public ArtifactMemento(
+        [field: SerializeField] public bool IsEquipped { get; private set; }
+
+        public EquipmentItemMemento(
             BaseItemMemento baseItem,
             List<ArtifactPassiveConditionBundle> passiveConditionSlots,
-            int slotLimit)
+            int slotLimit,
+            bool isEquipped = false)
         {
             BaseItem = baseItem;
             PassiveConditionSlots = passiveConditionSlots;
             SlotLimit = slotLimit;
+            IsEquipped = isEquipped;
         }
 
-        public ArtifactMemento CopyWith(
+        public EquipmentItemMemento CopyWith(
             BaseItemMemento? baseItem = null,
             List<ArtifactPassiveConditionBundle>? passiveConditionSlots = null,
-            int? slotLimit = null)
+            int? slotLimit = null,
+            bool? isEquipped = null)
         {
-            return new ArtifactMemento(
+            return new EquipmentItemMemento(
                 baseItem ?? BaseItem,
                 passiveConditionSlots ?? PassiveConditionSlots,
-                slotLimit ?? SlotLimit);
+                slotLimit ?? SlotLimit,
+                isEquipped ?? IsEquipped);
         }
     }
 }

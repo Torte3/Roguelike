@@ -475,28 +475,28 @@ namespace Domain.Service.Characters
 
             var playerName = GetName(map.Player);
             var itemName = item.GetName(map.Player, map.ItemPlaceholders);
-            switch (item)
-            {
-                case EquipmentItem equipment:
-                    GameLog.Add(
-                        Entity.IsVisible,
-                        equipment.IsEquipped.UnwrapOr(false)
-                            ? $"{playerName}は{itemName}を外した。"
-                            : $"{playerName}は{itemName}を装備した。");
-                    break;
-                case DirectWeapon:
-                case RangedWeapon:
-                case Item:
-                    GameLog.Add(Entity.IsVisible, $"{playerName}は{itemName}を使った。");
-                    break;
-                default:
-                    throw new InvalidOperationException(
-                        $"UseItem: unsupported item type '{item.GetType().Name}'.");
-            }
-
-            _gameManager.PlayItemUseSE(item.Category);
             if (item.CanActivateWhenUsed)
             {
+                switch (item)
+                {
+                    case EquipmentItem equipment:
+                        GameLog.Add(
+                            Entity.IsVisible,
+                            equipment.IsEquipped.UnwrapOr(false)
+                                ? $"{playerName}は{itemName}を外した。"
+                                : $"{playerName}は{itemName}を装備した。");
+                        break;
+                    case DirectWeapon:
+                    case RangedWeapon:
+                    case Item:
+                        GameLog.Add(Entity.IsVisible, $"{playerName}は{itemName}を使った。");
+                        break;
+                    default:
+                        throw new InvalidOperationException(
+                            $"UseItem: unsupported item type '{item.GetType().Name}'.");
+                }
+
+                _gameManager.PlayItemUseSE(item.Category);
                 var result = await item.SkillOnUse.Expect("skill on use is null").Skill.Match(
                     async spawnEffect =>
                     {
@@ -532,6 +532,10 @@ namespace Domain.Service.Characters
                     }
                 }
             }
+            else if (item.CanAttemptUse)
+            {
+                item.LogWhyCannotActivateWhenUsed(this, map);
+            }
 
             State = CharacterState.Finish;
         }
@@ -552,8 +556,8 @@ namespace Domain.Service.Characters
                 $"[Action]{_name}:ThrowItem\n{item.Info(map.Player, map.ItemPlaceholders)}\n direction:{direction}");
             Turn(direction);
 
-            item.SetCurseIdentified(true);
-            if (item.IsCursed)
+            item.SetCurseIdentified(true, map.Player, this, map.ItemPlaceholders);
+            if (!item.CanAttemptThrow)
             {
                 GameLog.Add(Entity.IsVisible, $"{item.GetName(map.Player, map.ItemPlaceholders)}は呪われていて投げられない");
                 State = CharacterState.Finish;
@@ -636,6 +640,13 @@ namespace Domain.Service.Characters
         }
         public void DropItem(IItem item, IMap map)
         {
+            if (item.IsDiscardBlocked)
+            {
+                GameLog.Add(Entity.IsVisible, $"{item.GetName(map.Player, map.ItemPlaceholders)}は呪われていて捨てられない");
+                State = CharacterState.Finish;
+                return;
+            }
+
             var groundItem = map.Items.At(Entity.CurrentPosition).FirstOrDefault();
             var index = Inventory.GetItemIndex(item).Value;
 
