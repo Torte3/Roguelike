@@ -65,6 +65,21 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
+/.VSCodeCounter/
+/Assets/ConsolePro/
+/Assets/Aevus/
+/Assets/HotReload/
+/Assets/kyouma0220/
+/Assets/Animations/
+/Assets/Images/
+/Assets/Sounds/
+/Assets/StateEffect/
+/Assets/Editor/WakaTime/
+/Assets/Editor/HiArda/
+/Assets/Editor/tsubaki-wakepon/
+/Assets/Plugins/Sirenix/
+/Packages/com.singularitygroup.hotreload/
+
 # Packed Addressables
 /[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
 

@@ -15,8 +15,28 @@ MonoBehaviour:
   m_GroupName: Default Local Group
   m_GUID: 5256d31568c849647891e08873e62a54
   m_SerializeEntries:
+  - m_GUID: 016afa9ba6078f843b4b5e909920dc85
+    m_Address: EffectPrefabs/effect_state_fastSpeed.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 01c54bd000f81894e8ed9b56980d3628
+    m_Address: EffectPrefabs/effect_state_slowDown.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 03c5bf2588bc94f49bb74b437f39bb71
+    m_Address: EffectPrefabs/effect_state_electric.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0ff0bbc95fb260f419eac6217e9c2857
     m_Address: Assets/Database/WeaponPrefix
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1035a68f2489f42a3b88c70cca0d5435
+    m_Address: EffectPrefabs/effect_state_stuned.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -32,6 +52,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 16dc036fb54374a438b6bf86d3e13a57
     m_Address: Assets/Database/ItemData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1b56a3ab4afd11d4db07245a18cd4cf2
+    m_Address: EffectPrefabs/effect_state_powerUp.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -55,13 +80,43 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 34a05e975b2c01549a54728a8beb0017
+    m_Address: EffectPrefabs/effect_state_blind.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 415db10414617474c956567d209756f9
     m_Address: Assets/Database/ItemData
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4a58669c8646d1941a4b76e3745e30ae
+    m_Address: EffectPrefabs/effect_state_energy.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4a599c8ec1f87e14086877f004975218
     m_Address: Assets/Database/EnemyData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4dd331fb59a25234dbec6c9e87083bcc
+    m_Address: EffectPrefabs/effect_state_healGreen.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5090f7b29e6ea7049884e1bc75e34c37
+    m_Address: EffectPrefabs/effect_state_coldSnow.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 619d0cf90a7ea3541a7fcab33fad7968
+    m_Address: EffectPrefabs/effect_state_suckBlood.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 65e10b681f139874f9ce6f32fcac5aa7
+    m_Address: EffectPrefabs/effect_state_burn.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -95,11 +150,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 932d0297d5f408141b20c2891b6c4b22
-    m_Address: MapChip
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 95fda9077916e264598251505583fb60
     m_Address: Assets/Database/ItemData
     m_ReadOnly: 0
@@ -115,8 +165,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 98bece6d1828bfc469437cfbc1241023
+    m_Address: EffectPrefabs/effect_state_paralysis.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a187ca85d27774241b40182313223557
     m_Address: Assets/Database/ItemData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a18e3a522541b4ade984b6ed092f2e99
+    m_Address: EffectPrefabs/effect_state_poisoning_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -130,8 +190,28 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a736f18f5f57a4a40aba40a462e9fd8e
+    m_Address: EffectPrefabs/effect_state_shineyStar.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a7e9cd6ea47fbe44e98b33935eb5ad41
     m_Address: Assets/Database/PlayerData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b46ee94992f45fa48b794da141d0483d
+    m_Address: EffectPrefabs/effect_state_relieve.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b52edc0c2ccb10540a4eb251ef9449a0
+    m_Address: EffectPrefabs/effect_state_sleep.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b92178bf2273dfa41aa8cbdf4824a31d
+    m_Address: EffectPrefabs/effect_state_poisoning_2.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -145,8 +225,8 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: cd3c5d70a8f2cb947a8a88a4e292befe
-    m_Address: Assets/kyouma0220/RandomDungeonWithBluePrint/BluePrints
+  - m_GUID: cce9afa6be8dae643be15442b88eb103
+    m_Address: EffectPrefabs/effect_state_confusion.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -165,6 +245,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e7751382922752b47bcc9ee8fd7034e6
+    m_Address: EffectPrefabs/effect_state_bloodRage.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e9e3c0dc1c99c0541acfad4909ca107b
     m_Address: "Assets/Database/ItemData/\u85AC\u8349.asset"
     m_ReadOnly: 0
@@ -175,8 +260,28 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f175afc0ab4f162488d3a69815f4bde6
+    m_Address: EffectPrefabs/effect_state_blood.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f187fdd8ef452c840a23b8d6ce067b93
+    m_Address: EffectPrefabs/effect_state_fastHeal.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f2c45c8ee47dc9148a3b2c1e104f0d43
+    m_Address: EffectPrefabs/effect_state_fear.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f5954a8ba66a98444ace7667d7ee2362
     m_Address: "Assets/Database/ItemData/\u6B6A\u3093\u3060\u61D0\u4E2D\u6642\u8A08.asset"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fbe02ab71561c8240b1d53c97c898aa3
+    m_Address: EffectPrefabs/effect_statel_rage.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
