@@ -7,12 +7,12 @@ namespace Domain.Model.Memento
     [Serializable]
     public class BonfireMemento
     {
-        [field: SerializeField] public bool IsFire { get; private set; }
+        [field: SerializeField] public int RemainingUsages { get; private set; }
         [field: SerializeField] public EntityMemento Entity { get; private set; }
 
-        public BonfireMemento(bool isFire, EntityMemento entity)
+        public BonfireMemento(int remainingUsages, EntityMemento entity)
         {
-            IsFire = isFire;
+            RemainingUsages = remainingUsages;
             Entity = entity;
         }
     }
