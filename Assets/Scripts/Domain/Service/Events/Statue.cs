@@ -18,6 +18,7 @@ namespace Domain.Service.Events
     {
         public readonly string Name;
         public EntityBase Entity { get; init; }
+        public bool IsGrounded => true;
         private readonly SpawnActorlessEffectSkill _skill;
         public StatueType Type;
         private int _attackToBreak;

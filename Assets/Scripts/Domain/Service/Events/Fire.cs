@@ -12,6 +12,7 @@ namespace Domain.Service.Events
     public class Fire : ISerializable<EntityMemento>, IEntity
     {
         public EntityBase Entity { get; init; }
+        public bool IsGrounded => false;
 
         public Fire(EntityMemento memento)
         {

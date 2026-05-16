@@ -20,6 +20,7 @@ namespace Domain.Service.Events
         public MovementEntityType Type { get; init; }
         public Id<IMap> Destination { get; init; }
         public EntityBase Entity { get; init; }
+        public bool IsGrounded => true;
         public Id<IEntity> DestinationId { get; init; }
         public List<Id<IEntity>> KeyCharacters { get; init; }
         private const string _keyBaseName = "黄金の鍵";
@@ -122,7 +123,7 @@ namespace Domain.Service.Events
             (
                 type,
                 destination,
-                entity: EntityBase.Build(id, position, EntityLayer.Bottom),
+                entity: EntityBase.Build(id, position, EntityLayer.Floor),
                 destinationId: destinationId,
                 keyCharacters: keyCharacters
             );

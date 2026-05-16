@@ -14,6 +14,7 @@ namespace Domain.Service.Items
     public class ItemEntity : IItemEntity
     {
         public EntityBase Entity { get; init; }
+        public bool IsGrounded => true;
 
         public ItemEntity(ItemEntityMemento item)
         {
@@ -80,8 +81,6 @@ namespace Domain.Service.Items
                 Entity.Teleport(map.FindBlankPositionFrom(destination,
                     position => map.At(position).IsBlankAndStandable(EntityLayer.Bottom)));
             }
-
-            await map.ExecuteTrapAt(destination, actor as ICharacter);
 
             if (Item.CanActivateWhenThrown)
             {

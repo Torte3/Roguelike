@@ -22,6 +22,7 @@ namespace Domain.Service.Events
         private ReactiveProperty<int> _remainingUsages;
         public ReadOnlyReactiveProperty<bool> CanUse => _remainingUsages.Select(remainingUsages => remainingUsages > 0).ToReadOnlyReactiveProperty();
         public EntityBase Entity { get; init; }
+        public bool IsGrounded => true;
 
         public Workbench(WorkbenchMemento data)
         {

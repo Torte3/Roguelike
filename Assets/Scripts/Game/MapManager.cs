@@ -191,8 +191,10 @@ namespace Game
 
         public IItemEntity SpawnItem(IItem item, Vector2Int position)
         {
-            return EntityManager.SpawnItem(item,
+            var itemEntity = EntityManager.SpawnItem(item,
                 FindBlankPositionFrom(position, position => At(position).IsBlankAndStandable(EntityLayer.Bottom)));
+            ExecuteEntityTouchEventsAt(itemEntity.Entity.CurrentPosition, itemEntity).Forget();
+            return itemEntity;
         }
 
         public void SpawnEnemy(EnemyData enemy, Vector2Int position, bool doActImmediately, IAffiliation? affiliation = null,
@@ -259,7 +261,8 @@ namespace Game
                 _ => throw new NotImplementedException()
             };
             var dummyItem = _dungeonData.ItemDatabase.GetRandomItem(category, _dungeonData.Progress).Build(mimic: enemy);
-            EntityManager.SpawnItem(ItemEntity.Build(position, dummyItem));
+            var itemEntity = EntityManager.SpawnItemFromMemento(ItemEntity.Build(position, dummyItem));
+            ExecuteEntityTouchEventsAt(itemEntity.Entity.CurrentPosition, itemEntity).Forget();
         }
 
         public void SpawnMimicMoney(EnemyData enemy, Vector2Int position)
@@ -322,7 +325,8 @@ namespace Game
         public void UpdateVisibility(IEntity entity)
         {
             bool visibility;
-            if (IsGrass(entity.Entity.CurrentPosition) && entity.Entity.Layer == EntityLayer.Bottom)
+            if (IsGrass(entity.Entity.CurrentPosition) &&
+                (entity.Entity.Layer == EntityLayer.Bottom || entity.Entity.Layer == EntityLayer.Floor))
                 visibility = false;
             else
                 visibility = EntityManager.Player.Character.IsVisible(entity.Entity.CurrentPosition);
@@ -334,14 +338,18 @@ namespace Game
             return TilemapViewer.IsGrass(position);
         }
 
-        public async UniTask ExecuteTrapAt(Vector2Int position, ICharacter actor)
+        public async UniTask ExecuteEntityTouchEventsAt(Vector2Int position, IEntity triggerEntity)
         {
-            var eventEntity = EntityManager.GetEventEntityFastAt(position, EntityLayer.Bottom);
-            if (eventEntity != null && eventEntity is Trap trapEntity)
-            {
-                _gameManager.PlaySE(SE.TrapStep);
-                await trapEntity.Event.DoEvent(actor, _gameManager, this);
-            }
+            foreach (var entityEventEntity in EntityManager.GetEntityEventEntitiesFastAt(position,
+                         EntityLayer.Floor, EntityLayer.Bottom))
+                await entityEventEntity.Event.DoEvent(triggerEntity, _gameManager, this);
+        }
+
+        public async UniTask ExecuteCharacterTouchEventsAt(Vector2Int position, ICharacter character)
+        {
+            foreach (var characterEventEntity in EntityManager.GetCharacterEventEntitiesFastAt(position,
+                         EntityLayer.Floor, EntityLayer.Bottom))
+                await characterEventEntity.Event.DoEvent(character, _gameManager, this);
         }
 
         public bool IsInside(Vector2Int position)
@@ -500,21 +508,36 @@ namespace Game
                                 $"{character.GetName(EntityManager.Player)}は<color=yellow>{item.Item.GetName(EntityManager.Player, ItemPlaceholders)}</color>の上に乗った");
                         }
                     }
-                    var eventId = gameManager.StartEvent();
-                    var eventEntity = EntityManager.GetEventEntityFastAt(positionChanged, EntityLayer.Bottom);
-                    if (eventEntity != null)
-                    {
-                        await eventEntity.Event.DoEvent(character, _gameManager, this);
-                    }
+                }
+            ).AddTo(_disposables);
 
+            EntityManager.Entities.SubscribeIncludingCurrentObservables(
+                entity => entity.Entity.Position.SkipLatestValueOnSubscribe(),
+                async (entity, positionChanged) =>
+                {
+                    if (entity.Entity.IsVisualOnly.CurrentValue)
+                        return;
+                    var eventId = gameManager.StartEvent();
+                    await ExecuteEntityTouchEventsAt(positionChanged, entity);
+                    gameManager.EndEvent(eventId);
+                }
+            ).AddTo(_disposables);
+
+            EntityManager.Characters.SubscribeIncludingCurrentObservables(
+                character => character.Entity.Position.SkipLatestValueOnSubscribe(),
+                async (character, positionChanged) =>
+                {
+                    var eventId = gameManager.StartEvent();
+                    await ExecuteCharacterTouchEventsAt(positionChanged, character);
                     if (character.IsPlayer)
                     {
-                        var playerEventEntity = EntityManager.GetPlayerEventEntityFastAt(positionChanged, EntityLayer.Bottom);
-                        if (playerEventEntity != null)
+                        foreach (var playerEventEntity in EntityManager.GetPlayerEventEntitiesFastAt(positionChanged,
+                                     EntityLayer.Floor, EntityLayer.Bottom))
                         {
                             await playerEventEntity.Events.DoEvent(EntityManager.Player, _gameManager, this);
                         }
                     }
+
                     gameManager.EndEvent(eventId);
                 }
             ).AddTo(_disposables);
@@ -524,9 +547,11 @@ namespace Game
                 async (character, affectedByTrap) =>
                 {
                     var eventId = gameManager.StartEvent();
-                    if (affectedByTrap)
+                    if (affectedByTrap && !character.IsGrounded
+                        && EntityManager.GetEntityEventEntityFastAt(character.Entity.CurrentPosition, EntityLayer.Floor)
+                            is Trap trap)
                     {
-                        await ExecuteTrapAt(character.Entity.CurrentPosition, character);
+                        await trap.Event.DoEvent(character, _gameManager, this);
                     }
                     gameManager.EndEvent(eventId);
                 }
@@ -544,7 +569,7 @@ namespace Game
                     var entity = EntityManager.Entities.At(position);
                     foreach (var e in entity)
                     {
-                        if (e.Entity.Layer == EntityLayer.Bottom)
+                        if (e.Entity.Layer == EntityLayer.Bottom || e.Entity.Layer == EntityLayer.Floor)
                             UpdateVisibility(e);
                     }
                 }
@@ -720,22 +745,32 @@ namespace Game
         public IObservableCollection<IEntity> Entities => EntityManager.Entities;
         public IObservableCollection<ICharacter> Characters => EntityManager.Characters;
         public IObservableCollection<IItemEntity> Items => EntityManager.Items;
-        public IObservableCollection<ThrowAnimationEntity> ThrowAnimationEntities => EntityManager.ThrowAnimationEntities;
-        public IObservableCollection<Fire> FireEntities => EntityManager.FireEntities;
-        public IObservableCollection<IEventEntity> EventEntities => EntityManager.EventEntities;
-        public IObservableCollection<IPlayerEventEntity> PlayerEventEntities => EntityManager.PlayerEventEntities;
-        public IObservableCollection<IScheduledEventEntity> ScheduledEventEntities => EntityManager.ScheduledEventEntities;
-        public IObservableCollection<IEventEntity> StandaloneEventEntities => EntityManager.StandaloneEventEntities;
+        public IObservableCollection<IEntityEventEntity> StandaloneEntityEventEntities => EntityManager.StandaloneEntityEventEntities;
+        public IObservableCollection<ICharacterEventEntity> StandaloneCharacterEventEntities => EntityManager.StandaloneCharacterEventEntities;
         public IObservableCollection<IPlayerEventEntity> StandalonePlayerEventEntities => EntityManager.StandalonePlayerEventEntities;
         public IObservableCollection<IScheduledEventEntity> StandaloneScheduledEventEntities => EntityManager.StandaloneScheduledEventEntities;
+        public IObservableCollection<IPlayerEventEntity> PlayerEventEntities => EntityManager.PlayerEventEntities;
+        public IObservableCollection<IScheduledEventEntity> ScheduledEventEntities => EntityManager.ScheduledEventEntities;
+        public IObservableCollection<ThrowAnimationEntity> ThrowAnimationEntities => EntityManager.ThrowAnimationEntities;
+        public IObservableCollection<Fire> FireEntities => EntityManager.FireEntities;
         public List<Stairs> Stairs => EntityManager.Stairs;
         public IEnumerable<ILockedEntity> LockedEntities => EntityManager.LockedEntities;
         public IEntity? GetEntityFastAt(Vector2Int position, EntityLayer layer) => EntityManager.GetEntityFastAt(position, layer);
         public IEnumerable<IEntity> GetEntitiesFastAt(Vector2Int position, IEnumerable<EntityLayer> layers) => EntityManager.GetEntitiesFastAt(position, layers);
+        public IEnumerable<IEntity> GetEntitiesFastAt(Vector2Int position, params EntityLayer[] layers) => EntityManager.GetEntitiesFastAt(position, layers);
         public IEnumerable<IEntity> GetEntitiesFastAt(Vector2Int position) => EntityManager.GetEntitiesFastAt(position);
-        public IEventEntity? GetEventEntityFastAt(Vector2Int position, EntityLayer layer) => EntityManager.GetEventEntityFastAt(position, layer);
+        public IEntityEventEntity? GetEntityEventEntityFastAt(Vector2Int position, EntityLayer layer) => EntityManager.GetEntityEventEntityFastAt(position, layer);
+        public IEnumerable<IEntityEventEntity> GetEntityEventEntitiesFastAt(Vector2Int position, IEnumerable<EntityLayer> layers) => EntityManager.GetEntityEventEntitiesFastAt(position, layers);
+        public IEnumerable<IEntityEventEntity> GetEntityEventEntitiesFastAt(Vector2Int position, params EntityLayer[] layers) => EntityManager.GetEntityEventEntitiesFastAt(position, layers);
+        public ICharacterEventEntity? GetCharacterEventEntityFastAt(Vector2Int position, EntityLayer layer) => EntityManager.GetCharacterEventEntityFastAt(position, layer);
+        public IEnumerable<ICharacterEventEntity> GetCharacterEventEntitiesFastAt(Vector2Int position, IEnumerable<EntityLayer> layers) => EntityManager.GetCharacterEventEntitiesFastAt(position, layers);
+        public IEnumerable<ICharacterEventEntity> GetCharacterEventEntitiesFastAt(Vector2Int position, params EntityLayer[] layers) => EntityManager.GetCharacterEventEntitiesFastAt(position, layers);
         public IPlayerEventEntity? GetPlayerEventEntityFastAt(Vector2Int position, EntityLayer layer) => EntityManager.GetPlayerEventEntityFastAt(position, layer);
+        public IEnumerable<IPlayerEventEntity> GetPlayerEventEntitiesFastAt(Vector2Int position, IEnumerable<EntityLayer> layers) => EntityManager.GetPlayerEventEntitiesFastAt(position, layers);
+        public IEnumerable<IPlayerEventEntity> GetPlayerEventEntitiesFastAt(Vector2Int position, params EntityLayer[] layers) => EntityManager.GetPlayerEventEntitiesFastAt(position, layers);
         public IScheduledEventEntity? GetScheduledEventEntityFastAt(Vector2Int position, EntityLayer layer) => EntityManager.GetScheduledEventEntityFastAt(position, layer);
+        public IEnumerable<IScheduledEventEntity> GetScheduledEventEntitiesFastAt(Vector2Int position, IEnumerable<EntityLayer> layers) => EntityManager.GetScheduledEventEntitiesFastAt(position, layers);
+        public IEnumerable<IScheduledEventEntity> GetScheduledEventEntitiesFastAt(Vector2Int position, params EntityLayer[] layers) => EntityManager.GetScheduledEventEntitiesFastAt(position, layers);
         public IItem? GetItemByIdFromWorldOrInventory(Id<IItem> id) => EntityManager.GetItemByIdFromWorldOrInventory(id);
         public HashSet<Vector2Int> AllCharacterPositionsFast() => EntityManager.AllCharacterPositionsFast();
         public HashSet<Vector2Int> AllItemPositionsFast() => EntityManager.AllItemPositionsFast();

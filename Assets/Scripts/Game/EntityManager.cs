@@ -29,26 +29,28 @@ namespace Game
         private EventEntityManager EventEntityManager { get; init; }
         private ThrowAnimationEntityManager ThrowAnimationEntityManager { get; init; }
         private FireEntityManager FireEntityManager { get; init; }
-        private readonly ObservableList<IEventEntity> _eventEntities = new();
         private readonly ObservableList<IPlayerEventEntity> _playerEventEntities = new();
         private readonly ObservableList<IScheduledEventEntity> _scheduledEventEntities = new();
         private readonly ObservableList<IEntity> _entities = new();
 
         public IObservableCollection<ICharacter> Characters => CharacterManager.Characters;
         public IObservableCollection<IItemEntity> Items => ItemManager.Items;
-        public IObservableCollection<IEventEntity> StandaloneEventEntities => EventEntityManager.StandaloneEventEntities;
+        public IObservableCollection<IEntityEventEntity> StandaloneEntityEventEntities =>
+            EventEntityManager.StandaloneEntityEventEntities;
+        public IObservableCollection<ICharacterEventEntity> StandaloneCharacterEventEntities =>
+            EventEntityManager.StandaloneCharacterEventEntities;
         public IObservableCollection<IPlayerEventEntity> StandalonePlayerEventEntities => EventEntityManager.StandalonePlayerEventEntities;
         public IObservableCollection<IScheduledEventEntity> StandaloneScheduledEventEntities => EventEntityManager.StandaloneScheduledEventEntities;
         public List<Stairs> Stairs => EventEntityManager.Stairs;
         public IEnumerable<ILockedEntity> LockedEntities => EventEntityManager.LockedEntities;
+        public IObservableCollection<IPlayerEventEntity> PlayerEventEntities => _playerEventEntities;
+        public IObservableCollection<IScheduledEventEntity> ScheduledEventEntities => _scheduledEventEntities;
         public IObservableCollection<ThrowAnimationEntity> ThrowAnimationEntities =>
             ThrowAnimationEntityManager.ThrowAnimationEntities;
         public IObservableCollection<Fire> FireEntities => FireEntityManager.FireEntities;
-        public IObservableCollection<IEventEntity> EventEntities => _eventEntities;
-        public IObservableCollection<IPlayerEventEntity> PlayerEventEntities => _playerEventEntities;
-        public IObservableCollection<IScheduledEventEntity> ScheduledEventEntities => _scheduledEventEntities;
         public IObservableCollection<IEntity> Entities => _entities;
 
+        private readonly Dictionary<EntityLayer, Dictionary<Vector2Int, IEntity>> _allEntityPositions = new();
         private readonly CompositeDisposable _disposables = new();
         private readonly IMap _map;
         public EntityManager(EntitiesMemento entitiesMemento, PlayerMemento playerData, List<CharacterMemento> partyMembers, Vector2Int playerPosition, bool resetPertyPositions, CharacterControlInputReceiver receiver, IGameManager gameManager, IMap map)
@@ -86,21 +88,21 @@ namespace Game
 
             foreach (var item in entitiesMemento.Items)
             {
-                SpawnItem(item);
+                ItemManager.SpawnItem(item);
             }
 
             EventEntityManager = new EventEntityManager(entitiesMemento.EventEntities);
             ThrowAnimationEntityManager = new ThrowAnimationEntityManager();
             FireEntityManager = new FireEntityManager(entitiesMemento.Fires);
 
-            _eventEntities.AddWith(StandaloneEventEntities).AddTo(_disposables);
             _playerEventEntities.AddWith(Characters).AddTo(_disposables);
             _playerEventEntities.AddWith(StandalonePlayerEventEntities).AddTo(_disposables);
             _scheduledEventEntities.AddWith(StandaloneScheduledEventEntities).AddTo(_disposables);
 
             _entities.AddWith(Characters).AddTo(_disposables);
             _entities.AddWith(Items).AddTo(_disposables);
-            _entities.AddWith(StandaloneEventEntities).AddTo(_disposables);
+            _entities.AddWith(StandaloneEntityEventEntities).AddTo(_disposables);
+            _entities.AddWith(StandaloneCharacterEventEntities).AddTo(_disposables);
             _entities.AddWith(StandalonePlayerEventEntities).AddTo(_disposables);
             _entities.AddWith(StandaloneScheduledEventEntities).AddTo(_disposables);
             _entities.AddWith(ThrowAnimationEntities).AddTo(_disposables);
@@ -111,7 +113,8 @@ namespace Game
         {
             CharacterManager.Dispose();
             ItemManager.Dispose();
-            StandaloneEventEntities.ForEach(eventEntity => eventEntity.Dispose());
+            StandaloneEntityEventEntities.ForEach(eventEntity => eventEntity.Dispose());
+            StandaloneCharacterEventEntities.ForEach(eventEntity => eventEntity.Dispose());
             StandalonePlayerEventEntities.ForEach(eventEntity => eventEntity.Dispose());
             StandaloneScheduledEventEntities.ForEach(eventEntity => eventEntity.Dispose());
             ThrowAnimationEntities.ForEach(throwAnimationEntity => throwAnimationEntity.Dispose());
@@ -224,9 +227,9 @@ namespace Game
         {
             CharacterManager.RemoveCharacter(character);
         }
-        public void SpawnItem(ItemEntityMemento item)
+        public IItemEntity SpawnItemFromMemento(ItemEntityMemento item)
         {
-            ItemManager.SpawnItem(item);
+            return ItemManager.SpawnItem(item);
         }
         public IItemEntity SpawnItem(IItem item, Vector2Int position)
         {
@@ -287,9 +290,14 @@ namespace Game
             return null;
         }
 
-        public IEventEntity? GetEventEntityFastAt(Vector2Int position, EntityLayer layer)
+        public IEntityEventEntity? GetEntityEventEntityFastAt(Vector2Int position, EntityLayer layer)
         {
-            return GetEntityFastAt(position, layer) as IEventEntity;
+            return GetEntityFastAt(position, layer) as IEntityEventEntity;
+        }
+
+        public ICharacterEventEntity? GetCharacterEventEntityFastAt(Vector2Int position, EntityLayer layer)
+        {
+            return GetEntityFastAt(position, layer) as ICharacterEventEntity;
         }
 
         public IPlayerEventEntity? GetPlayerEventEntityFastAt(Vector2Int position, EntityLayer layer)
@@ -301,7 +309,58 @@ namespace Game
         {
             return GetEntityFastAt(position, layer) as IScheduledEventEntity;
         }
-        private Dictionary<EntityLayer, Dictionary<Vector2Int, IEntity>> _allEntityPositions = new();
+
+        public IEnumerable<IEntityEventEntity> GetEntityEventEntitiesFastAt(Vector2Int position,
+            IEnumerable<EntityLayer> layers)
+        {
+            foreach (var layer in layers)
+            {
+                if (GetEntityEventEntityFastAt(position, layer) is { } entity)
+                    yield return entity;
+            }
+        }
+
+        public IEnumerable<IEntityEventEntity> GetEntityEventEntitiesFastAt(Vector2Int position,
+            params EntityLayer[] layers) => GetEntityEventEntitiesFastAt(position, (IEnumerable<EntityLayer>)layers);
+
+        public IEnumerable<ICharacterEventEntity> GetCharacterEventEntitiesFastAt(Vector2Int position,
+            IEnumerable<EntityLayer> layers)
+        {
+            foreach (var layer in layers)
+            {
+                if (GetCharacterEventEntityFastAt(position, layer) is { } entity)
+                    yield return entity;
+            }
+        }
+
+        public IEnumerable<ICharacterEventEntity> GetCharacterEventEntitiesFastAt(Vector2Int position,
+            params EntityLayer[] layers) => GetCharacterEventEntitiesFastAt(position, (IEnumerable<EntityLayer>)layers);
+
+        public IEnumerable<IPlayerEventEntity> GetPlayerEventEntitiesFastAt(Vector2Int position,
+            IEnumerable<EntityLayer> layers)
+        {
+            foreach (var layer in layers)
+            {
+                if (GetPlayerEventEntityFastAt(position, layer) is { } entity)
+                    yield return entity;
+            }
+        }
+
+        public IEnumerable<IPlayerEventEntity> GetPlayerEventEntitiesFastAt(Vector2Int position,
+            params EntityLayer[] layers) => GetPlayerEventEntitiesFastAt(position, (IEnumerable<EntityLayer>)layers);
+
+        public IEnumerable<IScheduledEventEntity> GetScheduledEventEntitiesFastAt(Vector2Int position,
+            IEnumerable<EntityLayer> layers)
+        {
+            foreach (var layer in layers)
+            {
+                if (GetScheduledEventEntityFastAt(position, layer) is { } entity)
+                    yield return entity;
+            }
+        }
+
+        public IEnumerable<IScheduledEventEntity> GetScheduledEventEntitiesFastAt(Vector2Int position,
+            params EntityLayer[] layers) => GetScheduledEventEntitiesFastAt(position, (IEnumerable<EntityLayer>)layers);
 
         public IEntity? GetEntityFastAt(Vector2Int position, EntityLayer layer)
         {
@@ -317,6 +376,9 @@ namespace Game
                     yield return entity;
             }
         }
+
+        public IEnumerable<IEntity> GetEntitiesFastAt(Vector2Int position, params EntityLayer[] layers) =>
+            GetEntitiesFastAt(position, (IEnumerable<EntityLayer>)layers);
 
         public IEnumerable<IEntity> GetEntitiesFastAt(Vector2Int position)
         {

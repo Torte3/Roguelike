@@ -14,6 +14,7 @@ namespace Domain.Service.Events
     public class Bonfire : ISerializable<BonfireMemento>, IPlayerEventEntity
     {
         public EntityBase Entity { get; init; }
+        public bool IsGrounded => true;
         private readonly ReactiveProperty<bool> _isFire;
         public ReadOnlyReactiveProperty<bool> IsFire => _isFire;
 

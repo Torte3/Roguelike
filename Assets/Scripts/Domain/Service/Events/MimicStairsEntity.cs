@@ -12,11 +12,12 @@ using Utilities;
 
 namespace Domain.Service.Events
 {
-    public class MimicStairs : IDisposable, ISerializable<MimicStairsMemento>, IEventEntity
+    public class MimicStairs : IDisposable, ISerializable<MimicStairsMemento>, ICharacterEventEntity
     {
         public MovementEntityType Type { get; init; }
         public EntityBase Entity { get; init; }
         public EnemyData Mimic { get; init; }
+        public bool IsGrounded => true;
 
         public MimicStairs(MimicStairsMemento data)
         {
@@ -72,7 +73,7 @@ namespace Domain.Service.Events
 
         public static MimicStairsMemento Build(MovementEntityType type, Vector2Int position, EnemyData mimic)
         {
-            return new MimicStairsMemento(type, EntityBase.Build(position, EntityLayer.Bottom), mimic);
+            return new MimicStairsMemento(type, EntityBase.Build(position, EntityLayer.Floor), mimic);
         }
     }
 }

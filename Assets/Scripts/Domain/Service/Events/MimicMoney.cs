@@ -13,11 +13,12 @@ using Utilities;
 
 namespace Domain.Service.Events
 {
-    public class MimicMoney : IDisposable, IEventEntity, IIconEntity
+    public class MimicMoney : IDisposable, ICharacterEventEntity, IIconEntity
     {
         private readonly Money _money;
         public EntityBase Entity => _money.Entity;
         public EnemyData Mimic { get; init; }
+        public bool IsGrounded => true;
 
         public MimicMoney(MimicMoneyMemento data)
         {
@@ -70,8 +71,6 @@ namespace Domain.Service.Events
                 Entity.Teleport(map.FindBlankPositionFrom(destination,
                     position => map.At(position).IsBlankAndStandable(EntityLayer.Bottom)));
             }
-
-            await map.ExecuteTrapAt(destination, actor as ICharacter);
         }
 
         public MimicMoneyMemento Serialize()

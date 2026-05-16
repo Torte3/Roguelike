@@ -31,10 +31,20 @@ namespace Domain.Model.Map
 
         public IEntity? GetEntityFastAt(Vector2Int position, EntityLayer layer);
         public IEnumerable<IEntity> GetEntitiesFastAt(Vector2Int position, IEnumerable<EntityLayer> layers);
+        public IEnumerable<IEntity> GetEntitiesFastAt(Vector2Int position, params EntityLayer[] layers);
         public IEnumerable<IEntity> GetEntitiesFastAt(Vector2Int position);
-        public IEventEntity? GetEventEntityFastAt(Vector2Int position, EntityLayer layer);
+        public IEntityEventEntity? GetEntityEventEntityFastAt(Vector2Int position, EntityLayer layer);
+        public IEnumerable<IEntityEventEntity> GetEntityEventEntitiesFastAt(Vector2Int position, IEnumerable<EntityLayer> layers);
+        public IEnumerable<IEntityEventEntity> GetEntityEventEntitiesFastAt(Vector2Int position, params EntityLayer[] layers);
+        public ICharacterEventEntity? GetCharacterEventEntityFastAt(Vector2Int position, EntityLayer layer);
+        public IEnumerable<ICharacterEventEntity> GetCharacterEventEntitiesFastAt(Vector2Int position, IEnumerable<EntityLayer> layers);
+        public IEnumerable<ICharacterEventEntity> GetCharacterEventEntitiesFastAt(Vector2Int position, params EntityLayer[] layers);
         public IPlayerEventEntity? GetPlayerEventEntityFastAt(Vector2Int position, EntityLayer layer);
+        public IEnumerable<IPlayerEventEntity> GetPlayerEventEntitiesFastAt(Vector2Int position, IEnumerable<EntityLayer> layers);
+        public IEnumerable<IPlayerEventEntity> GetPlayerEventEntitiesFastAt(Vector2Int position, params EntityLayer[] layers);
         public IScheduledEventEntity? GetScheduledEventEntityFastAt(Vector2Int position, EntityLayer layer);
+        public IEnumerable<IScheduledEventEntity> GetScheduledEventEntitiesFastAt(Vector2Int position, IEnumerable<EntityLayer> layers);
+        public IEnumerable<IScheduledEventEntity> GetScheduledEventEntitiesFastAt(Vector2Int position, params EntityLayer[] layers);
         public HashSet<Vector2Int> AllCharacterPositionsFast();
         public HashSet<Vector2Int> AllItemPositionsFast();
 
@@ -43,7 +53,8 @@ namespace Domain.Model.Map
 
         public IItem? GetItemByIdFromWorldOrInventory(Id<IItem> id);
 
-        public UniTask ExecuteTrapAt(Vector2Int position, ICharacter actor);
+        public UniTask ExecuteEntityTouchEventsAt(Vector2Int position, IEntity triggerEntity);
+        public UniTask ExecuteCharacterTouchEventsAt(Vector2Int position, ICharacter character);
 
         public UniTask UpdateTurn(int turn);
 

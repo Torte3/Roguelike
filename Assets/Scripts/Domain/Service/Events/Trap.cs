@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Domain.Model;
+using Domain.Model.Character;
 using Domain.Model.Character.Status;
 using Domain.Model.Effect;
 using Domain.Model.Entity;
@@ -12,10 +13,11 @@ using Utilities;
 
 namespace Domain.Service.Events
 {
-    public class Trap : ISerializable<TrapMemento>, IEventEntity
+    public class Trap : ISerializable<TrapMemento>, IEntityEventEntity
     {
         public readonly string Name;
         public EntityBase Entity { get; init; }
+        public bool IsGrounded => true;
         private readonly SpawnActorlessEffectSkill _skill;
         private readonly float _probabilityOfBreaking;
 
@@ -25,13 +27,19 @@ namespace Domain.Service.Events
             Entity = new EntityBase(memento.Entity);
             _skill = new SpawnActorlessEffectSkill(memento.Skill);
             _probabilityOfBreaking = memento.ProbabilityOfBreaking;
-            Event = new CharacterEvent(
-                character => !character.IsFlying && character.Status.IsFlagStat(FlagStatType.IsAffectedByTrap),
-                async (character, gameManager, map) => { await Execute(map); }
+            Event = new EntityEvent(
+                entity => entity.IsGrounded ||
+                          (entity is ICharacter character &&
+                           character.Status.IsFlagStat(FlagStatType.IsAffectedByTrap)),
+                async (_, gameManager, map) =>
+                {
+                    gameManager.PlaySE(SE.TrapStep);
+                    await Execute(map);
+                }
             );
         }
 
-        public ICharacterEvent Event { get; init; }
+        public IEntityEvent Event { get; init; }
 
         public UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)
         {
@@ -50,7 +58,7 @@ namespace Domain.Service.Events
 
         public static TrapMemento Build(TrapData trap, Vector2Int position)
         {
-            return new TrapMemento(trap.name, EntityBase.Build(position, EntityLayer.Bottom),
+            return new TrapMemento(trap.name, EntityBase.Build(position, EntityLayer.Floor),
                 SpawnActorlessEffectSkill.Build(trap.Skill), trap.ProbabilityOfBreaking);
         }
 

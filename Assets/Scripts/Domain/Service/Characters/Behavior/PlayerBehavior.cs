@@ -82,7 +82,10 @@ namespace Domain.Service.Characters.Behavior
                         var (move, started) = result.move!.Value;
 
                         var destination = character.Entity.CurrentPosition + move.Direction.Vector();
-                        var playerEventEntity = map.GetPlayerEventEntityFastAt(destination, EntityLayer.Middle);
+                        var playerEventEntity = map
+                            .GetPlayerEventEntitiesFastAt(destination, EntityLayer.Middle, EntityLayer.Floor,
+                                EntityLayer.Bottom)
+                            .FirstOrDefault();
                         if (input.IsNoMove() ||
                             (input.IsDiagonalOnly() && !move.Direction.IsDiagonal()) ||
                             character.Status.IsFlagStat(FlagStatType.CannotMove))

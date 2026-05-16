@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Linq;
 using DG.Tweening;
@@ -20,7 +20,7 @@ namespace Provider
     public class SynchronizedIconEntityView : SynchronizedEntityView<IEntity, EntityView>, IDisposable
     {
         private readonly SerialDisposable[] _disposable =
-            EnumerableExtension.CreateNewInstances<SerialDisposable>(4).ToArray();
+            EnumerableExtension.CreateNewInstances<SerialDisposable>(5).ToArray();
 
         protected override InputReceiver _inputReceiver { get; init; }
         protected override GameManager _gameManager { get; init; }
@@ -40,23 +40,28 @@ namespace Provider
 
             world.OnActiveMapChanged.Subscribe(mapChanged =>
             {
-                mapChanged.PreviousMap?.StandaloneEventEntities.ForEach(entity => Remove(entity));
-                _disposable[0].Disposable = mapChanged.Map.StandaloneEventEntities.SubscribeIncludingCurrentItems(Add, Remove);
+                mapChanged.PreviousMap?.StandaloneEntityEventEntities.ForEach(entity => Remove(entity));
+                _disposable[0].Disposable = mapChanged.Map.StandaloneEntityEventEntities.SubscribeIncludingCurrentItems(Add, Remove);
+            });
+            world.OnActiveMapChanged.Subscribe(mapChanged =>
+            {
+                mapChanged.PreviousMap?.StandaloneCharacterEventEntities.ForEach(entity => Remove(entity));
+                _disposable[1].Disposable = mapChanged.Map.StandaloneCharacterEventEntities.SubscribeIncludingCurrentItems(Add, Remove);
             });
             world.OnActiveMapChanged.Subscribe(mapChanged =>
             {
                 mapChanged.PreviousMap?.StandalonePlayerEventEntities.ForEach(entity => Remove(entity));
-                _disposable[1].Disposable = mapChanged.Map.StandalonePlayerEventEntities.SubscribeIncludingCurrentItems(Add, Remove);
+                _disposable[2].Disposable = mapChanged.Map.StandalonePlayerEventEntities.SubscribeIncludingCurrentItems(Add, Remove);
             });
             world.OnActiveMapChanged.Subscribe(mapChanged =>
             {
                 mapChanged.PreviousMap?.StandaloneScheduledEventEntities.ForEach(entity => Remove(entity));
-                _disposable[2].Disposable = mapChanged.Map.StandaloneScheduledEventEntities.SubscribeIncludingCurrentItems(Add, Remove);
+                _disposable[3].Disposable = mapChanged.Map.StandaloneScheduledEventEntities.SubscribeIncludingCurrentItems(Add, Remove);
             });
             world.OnActiveMapChanged.Subscribe(mapChanged =>
             {
                 mapChanged.PreviousMap?.Items.ForEach(item => Remove(item));
-                _disposable[3].Disposable = mapChanged.Map.Items.SubscribeIncludingCurrentItems(Add, Remove);
+                _disposable[4].Disposable = mapChanged.Map.Items.SubscribeIncludingCurrentItems(Add, Remove);
             });
         }
 
@@ -125,7 +130,7 @@ namespace Provider
             {
                 return ObjectLoader.LoadPrefab("Entity").GetComponent<EntityView>();
             }
-            else if (eventEntity.Entity.Layer == EntityLayer.Bottom)
+            else if (eventEntity.Entity.Layer == EntityLayer.Bottom || eventEntity.Entity.Layer == EntityLayer.Floor)
             {
                 return ObjectLoader.LoadPrefab("EntityBottom").GetComponent<EntityView>();
             }

@@ -10,18 +10,19 @@ using Utilities;
 
 namespace Domain.Service.Events
 {
-    public class Teleporter : ISerializable<EntityMemento>, IEventEntity, IIconEntity
+    public class Teleporter : ISerializable<EntityMemento>, IEntityEventEntity, IIconEntity
     {
         public EntityBase Entity { get; init; }
+        public bool IsGrounded => true;
 
         public Teleporter(EntityMemento memento)
         {
             Entity = new EntityBase(memento);
-            Event = new CharacterEvent(
-                character => true,
-                (character, gameManager, map) =>
+            Event = new EntityEvent(
+                entity => entity.IsGrounded,
+                (entity, _, map) =>
                 {
-                    character.Entity.Teleport(map.GetAllBlankAndStandablePositionsOn(EntityLayer.Middle).GetAtRandom().Position);
+                    entity.Entity.Teleport(map.GetAllBlankAndStandablePositionsOn(EntityLayer.Middle).GetAtRandom().Position);
                     return UniTask.CompletedTask;
                 }
             );
@@ -30,7 +31,7 @@ namespace Domain.Service.Events
         public Sprite Icon => Addressables.LoadAssetAsync<Sprite>("MapChip/(Base)BaseChip_pipo.png[(Base)BaseChip_pipo_71]")
             .WaitForCompletion();
 
-        public ICharacterEvent Event { get; init; }
+        public IEntityEvent Event { get; init; }
 
         public UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)
         {
@@ -49,7 +50,7 @@ namespace Domain.Service.Events
 
         public static EntityMemento Build(Vector2Int position)
         {
-            return EntityBase.Build(position, EntityLayer.Bottom);
+            return EntityBase.Build(position, EntityLayer.Floor);
         }
     }
 }

@@ -22,6 +22,7 @@ namespace Domain.Service.Events
     public class Chest : ISerializable<ChestMemento>, IPlayerEventEntity, IIconEntity, ILockedEntity
     {
         public EntityBase Entity { get; init; }
+        public bool IsGrounded => true;
         private List<IItem> _items;
         private Option<EnemyData> _mimic;
         public List<Id<IEntity>> KeyCharacters { get; init; }
@@ -142,7 +143,7 @@ namespace Domain.Service.Events
                 await map.ShowThrowAnimation(Icon, Entity.CurrentPosition, direction, distance, false, EntityLayer.Middle);
                 Entity.Teleport(map.FindBlankPositionFrom(destination,
                     position => map.At(position)
-                        .CanPlace(false, false, false, EntityLayer.Bottom, EntityLayer.Middle)));
+                        .CanPlace(false, false, false, EntityLayer.Bottom, EntityLayer.Floor, EntityLayer.Middle)));
             }
         }
 

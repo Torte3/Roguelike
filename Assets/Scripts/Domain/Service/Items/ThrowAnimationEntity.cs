@@ -13,6 +13,7 @@ namespace Domain.Service.Items
     public class ThrowAnimationEntity : IEntity
     {
         public EntityBase Entity { get; init; }
+        public bool IsGrounded => false;
         private readonly ReactiveProperty<bool> _isVisualOnly = new(true);
         public ReadOnlyReactiveProperty<bool> IsVisualOnly => _isVisualOnly;
         public readonly Sprite Icon;

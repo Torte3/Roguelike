@@ -14,12 +14,13 @@ using Utilities;
 
 namespace Domain.Service.Items
 {
-    public class MimicItemEntity : IEventEntity, IIconEntity
+    public class MimicItemEntity : ICharacterEventEntity, IIconEntity
     {
         private readonly ItemEntity _itemEntity;
         public IItem Item => _itemEntity.Item;
         public EntityBase Entity => _itemEntity.Entity;
         public EnemyData Mimic { get; init; }
+        public bool IsGrounded => true;
 
         public MimicItemEntity(MimicItemMemento data)
         {
@@ -77,8 +78,6 @@ namespace Domain.Service.Items
                 Entity.Teleport(map.FindBlankPositionFrom(destination,
                     position => map.At(position).IsBlankAndStandable(EntityLayer.Bottom)));
             }
-
-            await map.ExecuteTrapAt(destination, actor as ICharacter);
         }
     }
 }

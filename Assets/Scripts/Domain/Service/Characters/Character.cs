@@ -101,6 +101,7 @@ namespace Domain.Service.Characters
         public bool IsShiny { get; init; }
         public bool IsBoss { get; init; }
         public bool IsFlying { get; init; }
+        public bool IsGrounded => !IsFlying;
         public bool _canThroughWalls { get; init; }
         public bool CanThroughWalls => _canThroughWalls ? true : IsPlayer && Settings.WorldSettings.IgnoreWall.CurrentValue;
         public bool CanPickUp { get; init; }
@@ -596,7 +597,6 @@ namespace Domain.Service.Characters
             var itemEntity = map.SpawnItem(item,
                 map.FindBlankPositionFrom(destination, position => map.At(position).IsBlank(EntityLayer.Bottom)));
 
-            await map.ExecuteTrapAt(destination, this);
             item = itemEntity.Item;
             if (item.CanActivateWhenThrown)
             {

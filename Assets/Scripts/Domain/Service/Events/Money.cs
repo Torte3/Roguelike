@@ -13,10 +13,11 @@ using Utilities;
 
 namespace Domain.Service.Events
 {
-    public class Money : IDisposable, ISerializable<MoneyMemento>, IEventEntity, IIconEntity
+    public class Money : IDisposable, ISerializable<MoneyMemento>, ICharacterEventEntity, IIconEntity
     {
         public EntityBase Entity { get; init; }
         public readonly int Amount;
+        public bool IsGrounded => true;
 
         public Money(MoneyMemento data)
         {
@@ -69,8 +70,6 @@ namespace Domain.Service.Events
                 Entity.Teleport(map.FindBlankPositionFrom(destination,
                     position => map.At(position).IsBlankAndStandable(EntityLayer.Bottom)));
             }
-
-            await map.ExecuteTrapAt(destination, actor as ICharacter);
         }
 
         public MoneyMemento Serialize()

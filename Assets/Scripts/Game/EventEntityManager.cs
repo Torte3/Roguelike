@@ -29,7 +29,8 @@ namespace Game
         private Option<MagicPot> _magicPot = Option<MagicPot>.None;
         private Option<Workbench> _workbench = Option<Workbench>.None;
         private Option<Teleporter> _teleporter = Option<Teleporter>.None;
-        private ObservableList<IEventEntity> _standaloneEventEntities = new();
+        private ObservableList<IEntityEventEntity> _standaloneEntityEventEntities = new();
+        private ObservableList<ICharacterEventEntity> _standaloneCharacterEventEntities = new();
         private ObservableList<IPlayerEventEntity> _standalonePlayerEventEntities = new();
         private ObservableList<IScheduledEventEntity> _standaloneScheduledEventEntities = new();
         
@@ -52,6 +53,17 @@ namespace Game
 
         public EventEntityManager(EventEntitiesMemento eventEntities)
         {
+            foreach (var trapMemento in eventEntities.Traps)
+            {
+                var trap = new Trap(trapMemento);
+                _traps.Add(trap);
+                Spawn(trap);
+            }
+
+            _teleporter = eventEntities.Teleporter.Map(teleporter => new Teleporter(teleporter));
+            if (_teleporter.HasValue)
+                Spawn(_teleporter.Value!);
+
             foreach (var mimicItemMemento in eventEntities.MimicItems)
             {
                 var mimicItem = new MimicItemEntity(mimicItemMemento);
@@ -73,6 +85,13 @@ namespace Game
                 Spawn(mimicStairs);
             }
 
+            foreach (var moneyMemento in eventEntities.Money)
+            {
+                var money = new Money(moneyMemento);
+                _money.Add(money);
+                Spawn(money);
+            }
+
             foreach (var stairsMemento in eventEntities.Stairs)
             {
                 var stairs = new Stairs(stairsMemento);
@@ -87,27 +106,6 @@ namespace Game
                 Spawn(chest);
             }
 
-            foreach (var trapMemento in eventEntities.Traps)
-            {
-                var trap = new Trap(trapMemento);
-                _traps.Add(trap);
-                Spawn(trap);
-            }
-
-            foreach (var statueMemento in eventEntities.Statues)
-            {
-                var statue = new Statue(statueMemento);
-                Statues.Add(statue);
-                Spawn(statue);
-            }
-
-            foreach (var moneyMemento in eventEntities.Money)
-            {
-                var money = new Money(moneyMemento);
-                _money.Add(money);
-                Spawn(money);
-            }
-
             _bonfire = eventEntities.Bonfire.Map(bonfire => new Bonfire(bonfire));
             if (_bonfire.HasValue)
                 Spawn(_bonfire.Value!);
@@ -120,11 +118,18 @@ namespace Game
             if (_workbench.HasValue)
                 Spawn(_workbench.Value!);
 
-            _teleporter = eventEntities.Teleporter.Map(teleporter => new Teleporter(teleporter));
-            if (_teleporter.HasValue)
-                Spawn(_teleporter.Value!);
+            foreach (var statueMemento in eventEntities.Statues)
+            {
+                var statue = new Statue(statueMemento);
+                Statues.Add(statue);
+                Spawn(statue);
+            }
 
-            _standaloneEventEntities.SubscribeIncludingCurrentObservables(
+            _standaloneEntityEventEntities.SubscribeIncludingCurrentObservables(
+                entity => entity.Entity.OnDestroyed,
+                (entity, _) => Remove(entity)
+            );
+            _standaloneCharacterEventEntities.SubscribeIncludingCurrentObservables(
                 entity => entity.Entity.OnDestroyed,
                 (entity, _) => Remove(entity)
             );
@@ -189,14 +194,22 @@ namespace Game
             );
         }
 
-        public IObservableCollection<IEventEntity> StandaloneEventEntities => _standaloneEventEntities;
+        public IObservableCollection<IEntityEventEntity> StandaloneEntityEventEntities =>
+            _standaloneEntityEventEntities;
+        public IObservableCollection<ICharacterEventEntity> StandaloneCharacterEventEntities =>
+            _standaloneCharacterEventEntities;
         public IObservableCollection<IPlayerEventEntity> StandalonePlayerEventEntities =>
             _standalonePlayerEventEntities;
         public IObservableCollection<IScheduledEventEntity> StandaloneScheduledEventEntities => _standaloneScheduledEventEntities;
 
-        public void Spawn(IEventEntity eventEntity)
+        public void Spawn(IEntityEventEntity eventEntity)
         {
-            _standaloneEventEntities.Add(eventEntity);
+            _standaloneEntityEventEntities.Add(eventEntity);
+        }
+
+        public void Spawn(ICharacterEventEntity eventEntity)
+        {
+            _standaloneCharacterEventEntities.Add(eventEntity);
         }
 
         public void Spawn(IPlayerEventEntity eventEntity)
@@ -209,9 +222,26 @@ namespace Game
             _standaloneScheduledEventEntities.Add(eventEntity);
         }
 
-        public void Remove(IEventEntity eventEntity)
+        public void Remove(IEntityEventEntity eventEntity)
         {
-            _standaloneEventEntities.Remove(eventEntity);
+            _standaloneEntityEventEntities.Remove(eventEntity);
+            if (eventEntity is Trap trap)
+            {
+                _traps.Remove(trap);
+            }
+            else if (eventEntity is Teleporter)
+            {
+                _teleporter = Option<Teleporter>.None;
+            }
+            else
+            {
+                throw new Exception($"Unknown {nameof(IEntityEventEntity)} implementation: {eventEntity.GetType()}");
+            }
+        }
+
+        public void Remove(ICharacterEventEntity eventEntity)
+        {
+            _standaloneCharacterEventEntities.Remove(eventEntity);
             if (eventEntity is MimicItemEntity mimicItem)
             {
                 MimicItems.Remove(mimicItem);
@@ -224,21 +254,13 @@ namespace Game
             {
                 MimicStairs.Remove(mimicStairs);
             }
-            else if (eventEntity is Trap trap)
-            {
-                _traps.Remove(trap);
-            }
             else if (eventEntity is Money money)
             {
                 _money.Remove(money);
             }
-            else if (eventEntity is Teleporter)
-            {
-                _teleporter = Option<Teleporter>.None;
-            }
             else
             {
-                throw new Exception($"Unknown event entity: {eventEntity.GetType()}");
+                throw new Exception($"Unknown character event entity: {eventEntity.GetType()}");
             }
         }
 
