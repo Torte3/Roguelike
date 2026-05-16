@@ -720,7 +720,24 @@ namespace Domain.Service.Characters
             for (var i = 0; i < distance; i++)
             {
                 if (!CanMove(direction, true, CanThroughWalls, map))
+                {
+                    var remaining = distance - i;
+                    var next = Entity.CurrentPosition + direction.Vector();
+                    if (remaining > 0 && !CanThroughWalls)
+                    {
+                        var mover = BlowAwayCollisionSide.FromCharacter(this);
+                        var blocker = !map.At(next).IsPassableOnMap()
+                            ? BlowAwayCollisionSide.Wall()
+                            : BlowAwayCollisionSide.FromEntity(map.GetEntityFastAt(next, EntityLayer.Middle));
+                        if (blocker.HasValue)
+                        {
+                            await BlowAwayCollision.Apply(mover, blocker.Value, remaining, actor as ICharacter, map);
+                        }
+                    }
+
                     break;
+                }
+
                 await Entity.Move(direction, Settings.GlobalSettings.ThrowMilliseconds.CurrentValue, true);
             }
 

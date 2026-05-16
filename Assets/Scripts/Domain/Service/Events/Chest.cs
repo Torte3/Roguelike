@@ -10,6 +10,7 @@ using Domain.Model.Entity;
 using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Service.Effect;
 using Domain.Service.Items;
 using Domain.Service.Logs;
 using UnityEngine;
@@ -136,7 +137,26 @@ namespace Domain.Service.Events
 
         public async UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)
         {
-            var destination = GetThrowDestination(Entity.CurrentPosition, direction, distance, map);
+            var start = Entity.CurrentPosition;
+            var destination = GetThrowDestination(start, direction, distance, map);
+            var remaining = distance - BlowAwayCollision.CountStepsMoved(start, destination, direction);
+            if (remaining > 0)
+            {
+                var collisionPos = destination + direction.Vector();
+                BlowAwayCollisionSide? blocker = !map.At(collisionPos).IsPassableOnMap()
+                    ? BlowAwayCollisionSide.Wall()
+                    : BlowAwayCollisionSide.FromEntity(map.GetEntityFastAt(collisionPos, EntityLayer.Middle));
+                if (blocker.HasValue)
+                {
+                    await BlowAwayCollision.Apply(
+                        BlowAwayCollisionSide.OtherRigidObject(),
+                        blocker.Value,
+                        remaining,
+                        actor as ICharacter,
+                        map);
+                }
+            }
+
             if (Entity.Visibility.CurrentValue && destination != Entity.CurrentPosition)
             {
                 Entity.SetVisibility(false);

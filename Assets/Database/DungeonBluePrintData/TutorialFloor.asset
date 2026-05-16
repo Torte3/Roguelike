@@ -25,7 +25,7 @@ MonoBehaviour:
   MoneyAverage: 100
   CharacterCount: 1
   TrapCount: 0.5
-  ChestChance: 0.1
+  ChestChance: 1
   StatueChance: 0
   BonfireWeight: 0
   MagicPotWeight: 1

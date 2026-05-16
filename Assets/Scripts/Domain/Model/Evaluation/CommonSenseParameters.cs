@@ -28,6 +28,13 @@ namespace Domain.Model.Evaluation
         public const float WandMasterUsageLossChance = 0.5f;
         public const float ProjectileImpactHitProbability = 2f;
 
+        public const int BlowAwayWallDamagePerRemainingTile = 1;
+
+        public static int BlowAwayWallDamage(int remainingDistance)
+        {
+            return System.Math.Max(1, remainingDistance * BlowAwayWallDamagePerRemainingTile);
+        }
+
         public static float BlowAwayPrice(int distance)
         {
             return distance;
@@ -35,7 +42,7 @@ namespace Domain.Model.Evaluation
 
         public static float BlowAwayEvaluate(int distance)
         {
-            return 0.05f * distance;
+            return 0.2f * distance;
         }
 
         public static float CircleAreaEvaluate(bool canIgnoreWalls, int radius)
