@@ -115,7 +115,7 @@ namespace Domain.Service.Items
             }
             if (features.Contains(ItemFeature.ChargeAttack))
             {
-                powerMagnification *= 1.8f;
+                powerMagnification *= 1.5f;
             }
             power = Mathf.RoundToInt(power * powerMagnification);
             power += upgradeCount;
@@ -157,14 +157,16 @@ namespace Domain.Service.Items
                 effectsOnUse.Add(new AbsorbsEffect(
                     elementPowers,
                     absorbRate,
-                    criticalRate
+                    criticalRate,
+                    isWeaponAttack: true
                 ));
             }
             else
             {
                 effectsOnUse.Add(new AttackEffect(
                     elementPowers,
-                    criticalRate
+                    criticalRate,
+                    isWeaponAttack: true
                 ));
             }
             if (features.Contains(ItemFeature.Knockback))

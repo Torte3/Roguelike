@@ -49,10 +49,11 @@ MonoBehaviour:
   Skills:
   - Skill:
       <Position>k__BackingField:
-        rid: 5486256560184492036
+        rid: 8023009114449248391
       <Area>k__BackingField:
-        rid: 3961643019495538786
-      <Effects>k__BackingField: []
+        rid: 8023009114449248390
+      <Effects>k__BackingField:
+      - rid: 8023009114449248392
       <Repeats>k__BackingField: 1
       <ProbabilityOfSuccess>k__BackingField: 0.95
       <Cost>k__BackingField: 0
@@ -60,7 +61,7 @@ MonoBehaviour:
       <BackStepDistance>k__BackingField: 0
       <ChargeTurn>k__BackingField: 0
       <CoolTime>k__BackingField: 0
-      <Log>k__BackingField: 
+      <Log>k__BackingField: "\u306F\u96F7\u3092\u653E\u3063\u305F"
     Priority: 0
   HasLastSkill: 0
   LastSkill:
@@ -78,6 +79,9 @@ MonoBehaviour:
     <ChargeTurn>k__BackingField: 0
     <CoolTime>k__BackingField: 0
     <Log>k__BackingField: 
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
   ElementDamageRateMultiplier:
     data: []
   ConditionResistance:
@@ -90,13 +94,26 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
-    - rid: 3961643019495538786
-      type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
-      data: 
     - rid: 5486256464210165769
       type: {class: Worm, ns: Domain.Model.Character.Type, asm: Domain.Model}
       data:
         Type: 0
-    - rid: 5486256560184492036
-      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+    - rid: 8023009114449248390
+      type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
       data: 
+    - rid: 8023009114449248391
+      type: {class: NearByCharacter, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data:
+        NumberOfTarget: 1
+        TargetAlly: 0
+        TargetEnemy: 1
+        TargetNeutral: 0
+        TargetSelf: 0
+    - rid: 8023009114449248392
+      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _elementPowers:
+        - _element: 3
+          _power: 3
+        _criticalRate: 0
+        _isWeaponAttack: 0

@@ -10,7 +10,7 @@ using Utilities;
 
 namespace Domain.Service.Rooms
 {
-    public class MonsterHouse : Room<RoomMemento>
+    public class MonsterHouse : Room<RoomMemento>, IMonsterHouse
     {
         public MonsterHouse(RoomMemento data, Vector2Int playerPosition) : base(data, playerPosition)
         {

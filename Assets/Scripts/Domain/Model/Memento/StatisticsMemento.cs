@@ -1,6 +1,9 @@
 #nullable enable
 using System.Collections.Generic;
+using System.Linq;
+using Domain.Model.Item;
 using UnityEngine;
+using Utilities;
 using Utilities.Serialize;
 
 namespace Domain.Model.Memento
@@ -17,6 +20,12 @@ namespace Domain.Model.Memento
         [field: SerializeField] public int MaxDamageDealt { get; private set; }
         [field: SerializeField] public int TotalHealReceived { get; private set; }
         [field: SerializeField] public int MaxHealReceived { get; private set; }
+        [field: SerializeField] public int StealCount { get; private set; }
+        [field: SerializeField] public int MonsterHouseEnterCount { get; private set; }
+        [field: SerializeField] public int CursedItemDiscoverCount { get; private set; }
+        [SerializeField] private List<string> _discoveredCursedItemIds = new();
+        public HashSet<Id<IItem>> DiscoveredCursedItemIds =>
+            _discoveredCursedItemIds.Select(id => new Id<IItem>(id)).ToHashSet();
         [SerializeField] private SerializableDictionary<string, int> _itemUsedCountByBaseName;
         public Dictionary<string, int> ItemUsedCountByBaseName => _itemUsedCountByBaseName.ToDictionary();
         [SerializeField] private SerializableDictionary<string, int> _deathCountByCause;
@@ -34,6 +43,9 @@ namespace Domain.Model.Memento
             int maxDamageDealt,
             int totalHealReceived,
             int maxHealReceived,
+            int stealCount,
+            int monsterHouseEnterCount,
+            IEnumerable<Id<IItem>> discoveredCursedItemIds,
             Dictionary<string, int> itemUsedCountByBaseName,
             Dictionary<string, int> deathCountByCause,
             Dictionary<string, int> enemyTypeKilledCount)
@@ -48,6 +60,10 @@ namespace Domain.Model.Memento
             MaxDamageDealt = maxDamageDealt;
             TotalHealReceived = totalHealReceived;
             MaxHealReceived = maxHealReceived;
+            StealCount = stealCount;
+            MonsterHouseEnterCount = monsterHouseEnterCount;
+            _discoveredCursedItemIds = discoveredCursedItemIds.Select(id => id.ToString()).ToList();
+            CursedItemDiscoverCount = _discoveredCursedItemIds.Count;
             _itemUsedCountByBaseName = itemUsedCountByBaseName.ToSerializable();
             _deathCountByCause = deathCountByCause.ToSerializable();
             _enemyTypeKilledCount = enemyTypeKilledCount.ToSerializable();

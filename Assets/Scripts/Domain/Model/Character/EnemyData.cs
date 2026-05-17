@@ -41,6 +41,8 @@ namespace Domain.Model.Character
         public List<CharacterSkillWithRuleData> Skills;
         public bool HasLastSkill;
         [ShowIf("@" + nameof(HasLastSkill))] public SkillData LastSkill;
+        [MinValue(0)] public float AttackMultiplier = 1f;
+        public SerializableDictionary<Element, float> ElementAttackMultiplier;
         public SerializableDictionary<Element, float> ElementDamageRateMultiplier;
         public SerializableDictionary<ConditionTemplate, float> ConditionResistance;
         [Range(0, 1)] public float DropItemRate;

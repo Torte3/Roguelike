@@ -72,6 +72,11 @@ namespace Domain.Service.Items
                 _character.KnowItem(item, false);
             }
 
+            if (_character.CurseAutoIdentify.CurrentValue)
+            {
+                _character.KnowCurse(item, false);
+            }
+
             if (item.IsPassiveActive.CurrentValue)
             {
                 foreach (var condition in item.PassiveConditions)
@@ -169,6 +174,11 @@ namespace Domain.Service.Items
                 {
                     _character.KnowItem(item, false);
                 }
+
+                if (_character.CurseAutoIdentify.CurrentValue)
+                {
+                    _character.KnowCurse(item, false);
+                }
             }
             else
                 throw new Exception("Can't add item to inventory");
@@ -211,6 +221,12 @@ namespace Domain.Service.Items
                 {
                     _character.KnowItem(item, false);
                 }
+
+                if (_character.CurseAutoIdentify.CurrentValue)
+                {
+                    _character.KnowCurse(item, false);
+                }
+
                 var replacedItem = _storage.Replace(item, index);
                 return replacedItem;
             }

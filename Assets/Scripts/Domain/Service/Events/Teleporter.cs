@@ -5,7 +5,6 @@ using Domain.Model.Entity;
 using Domain.Model.Map;
 using Domain.Model.Memento;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using Utilities;
 
 namespace Domain.Service.Events
@@ -28,8 +27,7 @@ namespace Domain.Service.Events
             );
         }
 
-        public Sprite Icon => Addressables.LoadAssetAsync<Sprite>("MapChip/(Base)BaseChip_pipo.png[(Base)BaseChip_pipo_71]")
-            .WaitForCompletion();
+        public Sprite Icon => ObjectLoader.LoadMapChip("(Base)BaseChip_pipo_71");
 
         public IEntityEvent Event { get; init; }
 

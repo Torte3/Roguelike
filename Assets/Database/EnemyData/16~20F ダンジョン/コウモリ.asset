@@ -1,0 +1,119 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8ad2ba14d6a7844c9e89791070d4735, type: 3}
+  m_Name: "\u30B3\u30A6\u30E2\u30EA"
+  m_EditorClassIdentifier: 
+  Name: "\u30B3\u30A6\u30E2\u30EA"
+  Group: 1
+  CharacterType:
+    rid: 6064254728247705600
+  _sprite: {fileID: 21300000, guid: 596c4e7389db33c4ca8a947cfc88665f, type: 3}
+  IsBoss: 0
+  Hp: 3
+  Aggression: 1
+  Behavior:
+    wanderAround: 1
+    Default: 2
+    PrioritizeMovement: 0
+    UseTopBound: 0
+    greaterThanTopBound: 1
+    distanceTopBound: 6
+    PrioritizeMovementWhenDistanceGreaterThanTopBound: 0
+    UseBottomBound: 0
+    distanceBottomBound: 3
+    lessThanBottomBound: 1
+    PrioritizeMovementWhenDistanceLessThanBottomBound: 0
+    PrioritizeEnemiesOverLeaders: 0
+    ChaseLeader: 1
+  MoveSpeed: 3
+  Flags: 
+  IsFlying: 1
+  CanThroughWalls: 0
+  CanMimic: 0
+  MimicWeights:
+    ItemRevealOnPickUp: 1
+    ItemRevealOnUse: 1
+    Money: 1
+    Stairs: 1
+  CanPickUp: 0
+  CanUseItem: 0
+  Skills:
+  - Skill:
+      <Position>k__BackingField:
+        rid: 2541219281251860496
+      <Area>k__BackingField:
+        rid: 2541219281251860490
+      <Effects>k__BackingField:
+      - rid: 2541219281251860491
+      <Repeats>k__BackingField: 1
+      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
+      <RushDistance>k__BackingField: 2
+      <BackStepDistance>k__BackingField: 0
+      <ChargeTurn>k__BackingField: 0
+      <CoolTime>k__BackingField: 0
+      <Log>k__BackingField: "\u306F\u7A81\u9032\u3057\u305F\u3002"
+    Priority: 0
+  HasLastSkill: 0
+  LastSkill:
+    <Position>k__BackingField:
+      rid: -2
+    <Area>k__BackingField:
+      rid: -2
+    <Effects>k__BackingField:
+    - rid: -2
+    <Repeats>k__BackingField: 1
+    <ProbabilityOfSuccess>k__BackingField: 1
+    <Cost>k__BackingField: 0
+    <RushDistance>k__BackingField: 0
+    <BackStepDistance>k__BackingField: 0
+    <ChargeTurn>k__BackingField: 0
+    <CoolTime>k__BackingField: 0
+    <Log>k__BackingField: 
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
+  ElementDamageRateMultiplier:
+    data:
+    - Key: 4
+      Value: 2
+  ConditionResistance:
+    data: []
+  DropItemRate: 0
+  DropItemTable:
+    items: []
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 2541219281251860490
+      type: {class: LineArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data:
+        ContainsSelf: 0
+        CanIgnoreWalls: 0
+        Length: 1
+    - rid: 2541219281251860491
+      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _elementPowers:
+        - _element: 0
+          _power: 3
+        _criticalRate: 0
+        _isWeaponAttack: 0
+    - rid: 2541219281251860496
+      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data: 
+    - rid: 6064254728247705600
+      type: {class: Bat, ns: Domain.Model.Character.Type, asm: Domain.Model}
+      data:
+        Type: 0

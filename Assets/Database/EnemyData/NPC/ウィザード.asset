@@ -18,7 +18,7 @@ MonoBehaviour:
     rid: 861543580450947072
   _sprite: {fileID: 1451406508, guid: ced9e7c741922fc468522e90d9d7afeb, type: 3}
   IsBoss: 0
-  Hp: 30
+  Hp: 25
   Aggression: 4
   Behavior:
     wanderAround: 1
@@ -127,6 +127,9 @@ MonoBehaviour:
     <ChargeTurn>k__BackingField: 0
     <CoolTime>k__BackingField: 0
     <Log>k__BackingField: 
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
   ElementDamageRateMultiplier:
     data: []
   ConditionResistance:
@@ -159,6 +162,7 @@ MonoBehaviour:
         - _element: 0
           _power: 3
         _criticalRate: 0.05
+        _isWeaponAttack: 0
     - rid: 5486256464210165782
       type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:
@@ -166,6 +170,7 @@ MonoBehaviour:
         - _element: 1
           _power: 8
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 5486256464210165783
       type: {class: CircleArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
       data:
@@ -186,6 +191,7 @@ MonoBehaviour:
         - _element: 2
           _power: 10
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 5486256464210165788
       type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data: 
@@ -202,6 +208,7 @@ MonoBehaviour:
         - _element: 3
           _power: 5
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 5486256464210165793
       type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
       data: 

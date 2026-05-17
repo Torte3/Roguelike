@@ -95,6 +95,9 @@ MonoBehaviour:
     <ChargeTurn>k__BackingField: 0
     <CoolTime>k__BackingField: 0
     <Log>k__BackingField: "\u306F\u5927\u9A12\u304E\u3057\u305F"
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
   ElementDamageRateMultiplier:
     data: []
   ConditionResistance:
@@ -127,6 +130,7 @@ MonoBehaviour:
         - _element: 4
           _power: 3
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 2790137640983199749
       type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data: 
@@ -158,3 +162,4 @@ MonoBehaviour:
         - _element: 0
           _power: 1
         _criticalRate: 0
+        _isWeaponAttack: 0

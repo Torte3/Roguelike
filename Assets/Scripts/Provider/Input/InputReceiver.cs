@@ -15,8 +15,6 @@ namespace Provider.Input
     {
         private readonly MyInputAction _actions = new();
         private readonly CompositeDisposable _disposables = new();
-        private InputActionReference _fieldNavigateRef;
-        private InputActionReference _uiNavigateRef;
 
         private static readonly Dictionary<string, string> FaceButtonSwapMap = new()
         {
@@ -83,7 +81,6 @@ namespace Provider.Input
             _actions.Menu.Enable();
             _actions.Field.Disable();
             _actions.UI.Enable();
-            SetMove(_actions.UI.Navigate, ref _uiNavigateRef);
         }
 
         public void SwitchField()
@@ -92,24 +89,6 @@ namespace Provider.Input
             _actions.Field.Enable();
             _actions.Menu.Disable();
             _actions.UI.Disable();
-            SetMove(_actions.Field.Navigate, ref _fieldNavigateRef);
-        }
-
-        private void SetMove(InputAction moveAction, ref InputActionReference cache)
-        {
-            if (cache == null)
-                cache = InputActionReference.Create(moveAction);
-
-            var eventSystem = EventSystem.current;
-            if (eventSystem == null)
-                return;
-
-            var uiModule = eventSystem.currentInputModule as InputSystemUIInputModule
-                           ?? eventSystem.GetComponent<InputSystemUIInputModule>();
-            if (uiModule == null)
-                return;
-
-            uiModule.move = cache;
         }
 
         public void ApplyFaceButtonSwap(bool enabled)

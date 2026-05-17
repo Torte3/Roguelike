@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using Domain.Model.Character;
 using Domain.Model.Character.Status;
 using Domain.Model.Effect;
+using Domain.Model.Evaluation;
 using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
@@ -63,17 +64,18 @@ namespace Domain.Service.Effect
             _remainingCoolTime.Value = CoolTime + 1;
 
             return Skill.Match(
-                spawnEffectSkill => spawnEffectSkill.Use(actor, position, direction, map),
+                spawnEffectSkill => spawnEffectSkill.Use(actor, item, position, direction, map),
                 itemTargetSkill => itemTargetSkill.Use(map.Player, item, actor, map),
                 inventoryTargetSkill => inventoryTargetSkill.Use(actor.Inventory, actor, map),
                 equipToggleSkill => equipToggleSkill.Use(actor, item!, position, direction, map)
             );
         }
 
-        public float Evaluate(IActorOfEffect actor, Vector2Int position, Direction8 direction, IMap map)
+        public float Evaluate(IActorOfEffect actor, Vector2Int position, Direction8 direction, IMap map,
+            IItem? sourceItem = null)
         {
             return Skill.Match(
-                spawnEffectSkill => spawnEffectSkill.Evaluate(actor, position, direction, map),
+                spawnEffectSkill => spawnEffectSkill.Evaluate(actor, sourceItem, position, direction, map),
                 itemTargetSkill => itemTargetSkill.Evaluate(),
                 inventoryTargetSkill => inventoryTargetSkill.Evaluate(),
                 equipToggleSkill => equipToggleSkill.Evaluate(actor, position, direction, map)

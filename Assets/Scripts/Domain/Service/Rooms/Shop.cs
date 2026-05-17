@@ -47,13 +47,14 @@ namespace Domain.Service.Rooms
                 }
             ));
 
+            _shopItems = data.Items.Select(item => new ShopItemCache(item.Id, item.Price)).ToHashSet();
             if (data.IsStolen)
             {
-                Stolen(gameManager, map);
-                return;
+                _isStolen.Value = true;
+                CanExecute = false;
+                MarkItemsAsStolen(map);
+                gameManager.PlayBGM(BGM.Stolen);
             }
-
-            _shopItems = data.Items.Select(item => new ShopItemCache(item.Id, item.Price)).ToHashSet();
         }
 
         public static ShopMemento Build(RectInt rect, Id<IEntity> clerkId, List<ItemEntityMemento> items, ItemMarketPriceTable market)
@@ -190,6 +191,7 @@ namespace Domain.Service.Rooms
 
         public void Stolen(IGameManager gameManager, IMap map)
         {
+            map.Player.RecordSteal();
             GameLog.AddIgnoreVisibility("<color=red>どろぼう！</color>");
             _clerk.Affiliation.AddForceAffiliation(map.Player.Character.Entity.Id, AffiliationType.Enemy);
             _clerk.AddCondition(

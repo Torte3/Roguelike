@@ -10,16 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f8ad2ba14d6a7844c9e89791070d4735, type: 3}
-  m_Name: "\u30D3\u30C3\u30B0\u30DE\u30C3\u30B7\u30E5\u30EB\u30FC\u30E0"
+  m_Name: "\u304D\u306E\u3053"
   m_EditorClassIdentifier: 
-  Name: "\u30D3\u30C3\u30B0\u30DE\u30C3\u30B7\u30E5\u30EB\u30FC\u30E0"
+  Name: "\u304D\u306E\u3053"
   Group: 1
   CharacterType:
-    rid: 2541219238315819025
-  _sprite: {fileID: 21300000, guid: 5ab39786cdd753742ad4af7f1eec74bf, type: 3}
-  IsBoss: 1
-  Hp: 80
-  Aggression: 3
+    rid: 2541219158355345419
+  _sprite: {fileID: 21300000, guid: c651fd76c1f85054e9254ae9a44cccaf, type: 3}
+  IsBoss: 0
+  Hp: 4
+  Aggression: 1
   Behavior:
     wanderAround: 1
     Default: 2
@@ -49,44 +49,28 @@ MonoBehaviour:
   Skills:
   - Skill:
       <Position>k__BackingField:
-        rid: 4274951402137321487
+        rid: 4274951402137321474
       <Area>k__BackingField:
-        rid: 4274951402137321485
+        rid: 4274951402137321473
       <Effects>k__BackingField:
-      - rid: 4274951402137321486
+      - rid: 7729039033147064320
       <Repeats>k__BackingField: 1
       <ProbabilityOfSuccess>k__BackingField: 0.95
       <Cost>k__BackingField: 0
       <RushDistance>k__BackingField: 0
       <BackStepDistance>k__BackingField: 0
       <ChargeTurn>k__BackingField: 0
-      <CoolTime>k__BackingField: 3
-      <Log>k__BackingField: "\u306F\u6BD2\u80DE\u5B50\u3092\u653E\u51FA\u3057\u305F\u3002"
+      <CoolTime>k__BackingField: 0
+      <Log>k__BackingField: "\u306F\u6BD2\u6DB2\u3092\u5410\u3044\u305F\u3002"
     Priority: 0
-  - Skill:
-      <Position>k__BackingField:
-        rid: 4274951402137321490
-      <Area>k__BackingField:
-        rid: 4274951402137321488
-      <Effects>k__BackingField:
-      - rid: 4274951402137321489
-      <Repeats>k__BackingField: 1
-      <ProbabilityOfSuccess>k__BackingField: 0.95
-      <Cost>k__BackingField: 0
-      <RushDistance>k__BackingField: 0
-      <BackStepDistance>k__BackingField: 0
-      <ChargeTurn>k__BackingField: 0
-      <CoolTime>k__BackingField: 1
-      <Log>k__BackingField: "\u306F\u6BD2\u6DB2\u3092\u653E\u51FA\u3057\u305F\u3002"
-    Priority: 0
-  HasLastSkill: 0
+  HasLastSkill: 1
   LastSkill:
     <Position>k__BackingField:
-      rid: -2
+      rid: 8023009114449248393
     <Area>k__BackingField:
-      rid: -2
+      rid: 8023009114449248394
     <Effects>k__BackingField:
-    - rid: -2
+    - rid: 8023009114449248395
     <Repeats>k__BackingField: 1
     <ProbabilityOfSuccess>k__BackingField: 1
     <Cost>k__BackingField: 0
@@ -94,7 +78,10 @@ MonoBehaviour:
     <BackStepDistance>k__BackingField: 0
     <ChargeTurn>k__BackingField: 0
     <CoolTime>k__BackingField: 0
-    <Log>k__BackingField: 
+    <Log>k__BackingField: "\u306F\u80DE\u5B50\u3092\u307E\u3044\u305F"
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
   ElementDamageRateMultiplier:
     data: []
   ConditionResistance:
@@ -105,39 +92,37 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
-    - rid: 2541219238315819025
+    - rid: 2541219158355345419
       type: {class: Mushroom, ns: Domain.Model.Character.Type, asm: Domain.Model}
       data:
-        Type: 0
-    - rid: 4274951402137321485
-      type: {class: CircleArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
-      data:
-        ContainsSelf: 0
-        CanIgnoreWalls: 0
-        Radius: 1
-    - rid: 4274951402137321486
-      type: {class: AddConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
-      data:
-        _condition:
-          _name: "\u731B\u6BD2"
-        _probabilityOfSuccess: 1
-    - rid: 4274951402137321487
-      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
-      data: 
-    - rid: 4274951402137321488
+        Type: 1
+    - rid: 4274951402137321473
       type: {class: LineArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
       data:
         ContainsSelf: 0
         CanIgnoreWalls: 0
-        Length: 5
-    - rid: 4274951402137321489
+        Length: 2
+    - rid: 4274951402137321474
+      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data: 
+    - rid: 7729039033147064320
       type: {class: AddConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:
         _condition:
-          _name: "\u731B\u6BD2"
+          _name: "\u7761\u7720"
         _probabilityOfSuccess: 1
-    - rid: 4274951402137321490
+    - rid: 8023009114449248393
       type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data: 
+    - rid: 8023009114449248394
+      type: {class: CircleArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data:
+        ContainsSelf: 0
+        CanIgnoreWalls: 0
+        Radius: 2
+    - rid: 8023009114449248395
+      type: {class: AddConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _condition:
+          _name: "\u7761\u7720"
+        _probabilityOfSuccess: 1

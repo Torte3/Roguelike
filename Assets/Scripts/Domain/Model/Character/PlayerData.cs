@@ -31,6 +31,7 @@ namespace Domain.Model.Character
         public List<FlagStatType> Flags;
         public bool IsFlying;
         public bool CanThroughWalls;
+        [MinValue(0)] public float AttackMultiplier = 1f;
         public SerializableDictionary<Element, float> ElementAttackMultiplier;
         public SerializableDictionary<Element, float> ElementDamageRateMultiplier;
         public SerializableDictionary<ConditionTemplate, float> ConditionResistance;
@@ -50,6 +51,8 @@ namespace Domain.Model.Character
             if (CanThroughWalls)
                 info += $"壁を貫通可能\n";
             info += $"\n";
+            if (AttackMultiplier != 1f)
+                info += $"攻撃倍率: {AttackMultiplier:P0}\n";
             foreach (var element in ElementAttackMultiplier.Keys)
             {
                 info += $"{element.Name()}属性攻撃倍率: {ElementAttackMultiplier[element]:P0}\n";

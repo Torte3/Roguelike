@@ -49,11 +49,11 @@ MonoBehaviour:
   Skills:
   - Skill:
       <Position>k__BackingField:
-        rid: -2
+        rid: 8023009114449248375
       <Area>k__BackingField:
-        rid: -2
+        rid: 8023009114449248376
       <Effects>k__BackingField:
-      - rid: -2
+      - rid: 8023009114449248377
       <Repeats>k__BackingField: 1
       <ProbabilityOfSuccess>k__BackingField: 0.95
       <Cost>k__BackingField: 0
@@ -61,7 +61,7 @@ MonoBehaviour:
       <BackStepDistance>k__BackingField: 0
       <ChargeTurn>k__BackingField: 0
       <CoolTime>k__BackingField: 0
-      <Log>k__BackingField: 
+      <Log>k__BackingField: "\u306F\u4F53\u5F53\u305F\u308A\u3057\u305F"
     Priority: 0
   HasLastSkill: 1
   LastSkill:
@@ -79,6 +79,9 @@ MonoBehaviour:
     <ChargeTurn>k__BackingField: 0
     <CoolTime>k__BackingField: 0
     <Log>k__BackingField: "\u306E\u4E00\u90E8\u304C\u98DB\u3073\u6563\u3063\u305F\u3002"
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
   ElementDamageRateMultiplier:
     data: []
   ConditionResistance:
@@ -89,8 +92,6 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
     - rid: 2541219158355345426
       type: {class: SpawnCharacterEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:
@@ -111,3 +112,17 @@ MonoBehaviour:
         ContainsSelf: 0
         CanIgnoreWalls: 0
         Radius: 1
+    - rid: 8023009114449248375
+      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data: 
+    - rid: 8023009114449248376
+      type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data: 
+    - rid: 8023009114449248377
+      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _elementPowers:
+        - _element: 0
+          _power: 2
+        _criticalRate: 0
+        _isWeaponAttack: 0

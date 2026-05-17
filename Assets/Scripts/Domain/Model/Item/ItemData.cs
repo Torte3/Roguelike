@@ -8,6 +8,7 @@ using Domain.Model.Evaluation;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using System.Linq;
+using Utilities.Validation;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -65,14 +66,14 @@ namespace Domain.Model.Item
         #region item target
         [ShowIf(nameof(IsItemTarget))]
         [SerializeReference]
-        [Required]
+        [RequiredIfShown]
         public IItemEffect? ItemEffect;
         #endregion
 
         #region inventory target
         [ShowIf(nameof(IsInventoryTarget))]
         [SerializeReference]
-        [Required]
+        [RequiredIfShown]
         public IInventoryEffect? InventoryEffect;
         #endregion
 

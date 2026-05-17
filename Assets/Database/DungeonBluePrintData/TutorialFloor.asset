@@ -12,21 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5dc7cc301501d8444b4bc50d6fc342e7, type: 3}
   m_Name: TutorialFloor
   m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.FloorData
-  Field: {fileID: 0}
+  Field: {fileID: 11400000, guid: 7710638e9c725b641966015b5590bf73, type: 2}
   ShinyChance: 0
   SleepChance: 0.75
   MimicChance: 0
   ShopChance: 0
   MonsterHouseChance: 0
-  RestRoomChance: 1
+  RestRoomChance: 0.2
   LakeChance: 0
   ItemCount: 2
   MoneyCount: 1
   MoneyAverage: 100
   CharacterCount: 1
-  TrapCount: 0.5
-  ChestChance: 1
+  TrapCount: 0
+  ChestChance: 0
   StatueChance: 0
-  BonfireWeight: 0
+  BonfireWeight: 1
   MagicPotWeight: 1
-  WorkbenchWeight: 0
+  WorkbenchWeight: 1

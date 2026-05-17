@@ -20,6 +20,9 @@ namespace Domain.Model.Memento
         [field: SerializeField] public int MaxDamageDealt { get; private set; }
         [field: SerializeField] public int TotalHealReceived { get; private set; }
         [field: SerializeField] public int MaxHealReceived { get; private set; }
+        [field: SerializeField] public int TotalStealCount { get; private set; }
+        [field: SerializeField] public int TotalMonsterHouseEnterCount { get; private set; }
+        [field: SerializeField] public int TotalCursedItemDiscoverCount { get; private set; }
         [SerializeField] private SerializableDictionary<string, int> _itemUsedCountByBaseName;
         public Dictionary<string, int> ItemUsedCountByBaseName => _itemUsedCountByBaseName.ToDictionary();
         [SerializeField] private SerializableDictionary<string, int> _deathCountByCause;
@@ -36,6 +39,9 @@ namespace Domain.Model.Memento
             int maxDamageDealt,
             int totalHealReceived,
             int maxHealReceived,
+            int totalStealCount,
+            int totalMonsterHouseEnterCount,
+            int totalCursedItemDiscoverCount,
             Dictionary<string, int> itemUsedCountByBaseName,
             Dictionary<string, int> deathCountByCause)
         {
@@ -50,6 +56,9 @@ namespace Domain.Model.Memento
             MaxDamageDealt = maxDamageDealt;
             TotalHealReceived = totalHealReceived;
             MaxHealReceived = maxHealReceived;
+            TotalStealCount = totalStealCount;
+            TotalMonsterHouseEnterCount = totalMonsterHouseEnterCount;
+            TotalCursedItemDiscoverCount = totalCursedItemDiscoverCount;
             _itemUsedCountByBaseName = itemUsedCountByBaseName.ToSerializable();
             _deathCountByCause = deathCountByCause.ToSerializable();
         }

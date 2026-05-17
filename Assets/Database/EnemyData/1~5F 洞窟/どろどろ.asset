@@ -16,7 +16,7 @@ MonoBehaviour:
   Group: 1
   CharacterType:
     rid: 5486256507571666951
-  _sprite: {fileID: 21300000, guid: cd855025da3bd9345a7e3821f729eacd, type: 3}
+  _sprite: {fileID: 21300000, guid: ca3c52ed9dbcf8e4580ec35f680c220b, type: 3}
   IsBoss: 0
   Hp: 6
   Aggression: 1
@@ -96,6 +96,9 @@ MonoBehaviour:
     <ChargeTurn>k__BackingField: 0
     <CoolTime>k__BackingField: 0
     <Log>k__BackingField: 
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
   ElementDamageRateMultiplier:
     data: []
   ConditionResistance:
@@ -121,13 +124,14 @@ MonoBehaviour:
         - _element: 0
           _power: 3
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 2541219281251860495
       type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data: 
     - rid: 5486256507571666951
       type: {class: Puddle, ns: Domain.Model.Character.Type, asm: Domain.Model}
       data:
-        Type: 0
+        Type: 2
     - rid: 5486256507571666952
       type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:
@@ -135,6 +139,7 @@ MonoBehaviour:
         - _element: 0
           _power: 2
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 5486256507571666953
       type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
       data: 
@@ -149,5 +154,5 @@ MonoBehaviour:
       type: {class: AddConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:
         _condition:
-          _name: "\u62D8\u675F"
+          _name: "\u920D\u8DB3"
         _probabilityOfSuccess: 0.5

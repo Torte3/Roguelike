@@ -8,6 +8,8 @@ namespace Domain.Model.Character
     {
         public ICharacter Character { get; }
         public ReadOnlyReactiveProperty<int> Money { get; }
+        public int StealCount { get; }
+        public void RecordSteal();
         public void AddMoney(int value);
         public void ReduceMoney(int value);
     }

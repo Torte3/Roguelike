@@ -88,6 +88,7 @@ MonoBehaviour:
         - _element: 0
           _power: 10
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 5486256542496849926
       type: {class: SpawnRandomCharacterEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:
@@ -100,6 +101,7 @@ MonoBehaviour:
           _power: 5
         _rate: 1
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 5486256542496849941
       type: {class: BlowAwayEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:

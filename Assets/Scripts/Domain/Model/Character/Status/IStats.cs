@@ -11,7 +11,9 @@ namespace Domain.Model.Character.Status
         public bool IsFlagStat(FlagStatType type);
         public ReadOnlyReactiveProperty<bool> GetFlagProperty(FlagStatType type);
         public float GetStatValue(StatType type);
+        public float GetAttackMultiplier();
         public float GetElementAttackMultiplier(Element element);
+        public float GetCombinedElementAttackMultiplier(Element element);
         public float GetElementDamageRateMultiplier(Element element);
         public float GetConditionResistance(ConditionTemplate condition);
     }

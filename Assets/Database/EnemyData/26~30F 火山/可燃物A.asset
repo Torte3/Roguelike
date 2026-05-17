@@ -49,10 +49,11 @@ MonoBehaviour:
   Skills:
   - Skill:
       <Position>k__BackingField:
-        rid: -2
+        rid: 8023009114449248387
       <Area>k__BackingField:
-        rid: -2
-      <Effects>k__BackingField: []
+        rid: 8023009114449248388
+      <Effects>k__BackingField:
+      - rid: 8023009114449248389
       <Repeats>k__BackingField: 1
       <ProbabilityOfSuccess>k__BackingField: 0.95
       <Cost>k__BackingField: 0
@@ -60,7 +61,7 @@ MonoBehaviour:
       <BackStepDistance>k__BackingField: 0
       <ChargeTurn>k__BackingField: 0
       <CoolTime>k__BackingField: 0
-      <Log>k__BackingField: 
+      <Log>k__BackingField: "\u306F\u4F53\u5F53\u305F\u308A\u3057\u305F"
     Priority: 0
   HasLastSkill: 1
   LastSkill:
@@ -75,9 +76,12 @@ MonoBehaviour:
     <Cost>k__BackingField: 0
     <RushDistance>k__BackingField: 0
     <BackStepDistance>k__BackingField: 0
-    <ChargeTurn>k__BackingField: 0
+    <ChargeTurn>k__BackingField: 1
     <CoolTime>k__BackingField: 0
     <Log>k__BackingField: "\u306F\u7206\u767A\u3057\u305F\u3002"
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
   ElementDamageRateMultiplier:
     data: []
   ConditionResistance:
@@ -88,8 +92,6 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
     - rid: 2541219246146060293
       type: {class: Potion, ns: Domain.Model.Character.Type, asm: Domain.Model}
       data:
@@ -103,8 +105,25 @@ MonoBehaviour:
     - rid: 2541219246146060296
       type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:
-        _elementPowers: []
+        _elementPowers:
+        - _element: 0
+          _power: 12
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 2541219246146060297
       type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data: 
+    - rid: 8023009114449248387
+      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data: 
+    - rid: 8023009114449248388
+      type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data: 
+    - rid: 8023009114449248389
+      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _elementPowers:
+        - _element: 0
+          _power: 3
+        _criticalRate: 0
+        _isWeaponAttack: 0

@@ -113,6 +113,6 @@ namespace Provider
             _statisticsText = sb.ToString();
             EditorUtility.SetDirty(this);
         }
-    }
 #endif
+    }
 }

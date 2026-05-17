@@ -74,6 +74,7 @@ MonoBehaviour:
         - _element: 1
           _power: 8
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 4425517232088416258
       type: {class: CircleArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
       data:

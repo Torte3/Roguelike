@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f8ad2ba14d6a7844c9e89791070d4735, type: 3}
-  m_Name: "\u30D3\u30C3\u30B0\u30E4\u30C9\u30AB\u30EA"
+  m_Name: "\u30B9\u30AB\u30EB"
   m_EditorClassIdentifier: 
-  Name: "\u30D3\u30C3\u30B0\u30E4\u30C9\u30AB\u30EA"
+  Name: "\u30B9\u30AB\u30EB"
   Group: 1
   CharacterType:
-    rid: 4425516923575599116
-  _sprite: {fileID: 21300000, guid: 3b6fbc8ea76066f4fbdf949485d3c4a7, type: 3}
-  IsBoss: 1
-  Hp: 25
+    rid: 5486256507571666949
+  _sprite: {fileID: 21300000, guid: d19dbf7d9d22f7a4e928c791a4621345, type: 3}
+  IsBoss: 0
+  Hp: 12
   Aggression: 1
   Behavior:
     wanderAround: 1
@@ -26,11 +26,11 @@ MonoBehaviour:
     PrioritizeMovement: 0
     UseTopBound: 0
     greaterThanTopBound: 1
-    distanceTopBound: 6
+    distanceTopBound: 5
     PrioritizeMovementWhenDistanceGreaterThanTopBound: 0
     UseBottomBound: 0
     distanceBottomBound: 3
-    lessThanBottomBound: 1
+    lessThanBottomBound: 3
     PrioritizeMovementWhenDistanceLessThanBottomBound: 0
     PrioritizeEnemiesOverLeaders: 0
     ChaseLeader: 1
@@ -49,12 +49,12 @@ MonoBehaviour:
   Skills:
   - Skill:
       <Position>k__BackingField:
-        rid: 2541219281251860517
+        rid: 5486256464210165773
       <Area>k__BackingField:
-        rid: 2541219281251860515
+        rid: 5486256464210165774
       <Effects>k__BackingField:
-      - rid: 2541219281251860516
-      - rid: 5486256447100289026
+      - rid: 5486256464210165775
+      - rid: 5486256507571666947
       <Repeats>k__BackingField: 1
       <ProbabilityOfSuccess>k__BackingField: 0.95
       <Cost>k__BackingField: 0
@@ -62,23 +62,7 @@ MonoBehaviour:
       <BackStepDistance>k__BackingField: 0
       <ChargeTurn>k__BackingField: 0
       <CoolTime>k__BackingField: 0
-      <Log>k__BackingField: "\u306F\u4F53\u5F53\u305F\u308A\u3057\u305F\u3002"
-    Priority: 0
-  - Skill:
-      <Position>k__BackingField:
-        rid: 3961642730205741161
-      <Area>k__BackingField:
-        rid: 3961642730205741162
-      <Effects>k__BackingField:
-      - rid: 3961642730205741163
-      <Repeats>k__BackingField: 1
-      <ProbabilityOfSuccess>k__BackingField: 0.95
-      <Cost>k__BackingField: 0
-      <RushDistance>k__BackingField: 0
-      <BackStepDistance>k__BackingField: 0
-      <ChargeTurn>k__BackingField: 1
-      <CoolTime>k__BackingField: 0
-      <Log>k__BackingField: "\u306F\u6C34\u3092\u5410\u3044\u305F\u3002"
+      <Log>k__BackingField: "\u306F\u4F53\u5F53\u305F\u308A\u3057\u305F"
     Priority: 0
   HasLastSkill: 0
   LastSkill:
@@ -96,57 +80,43 @@ MonoBehaviour:
     <ChargeTurn>k__BackingField: 0
     <CoolTime>k__BackingField: 0
     <Log>k__BackingField: 
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
   ElementDamageRateMultiplier:
     data: []
   ConditionResistance:
     data: []
   DropItemRate: 0
   DropItemTable:
-    items:
-    - Item: {fileID: 0}
-      Weight: 1
+    items: []
   references:
     version: 2
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
-    - rid: 2541219281251860515
-      type: {class: FanArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
-      data:
-        ContainsSelf: 0
-        CanIgnoreWalls: 0
-        Radius: 1
-    - rid: 2541219281251860516
-      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
-      data:
-        _elementPowers:
-        - _element: 0
-          _power: 5
-        _criticalRate: 0
-    - rid: 2541219281251860517
+    - rid: 5486256464210165773
       type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data: 
-    - rid: 3961642730205741161
-      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
-      data: 
-    - rid: 3961642730205741162
+    - rid: 5486256464210165774
       type: {class: LineArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
       data:
         ContainsSelf: 0
         CanIgnoreWalls: 0
-        Length: 5
-    - rid: 3961642730205741163
+        Length: 1
+    - rid: 5486256464210165775
       type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:
         _elementPowers:
-        - _element: 2
-          _power: 8
+        - _element: 0
+          _power: 4
         _criticalRate: 0
-    - rid: 4425516923575599116
-      type: {class: Crab, ns: Domain.Model.Character.Type, asm: Domain.Model}
+        _isWeaponAttack: 0
+    - rid: 5486256507571666947
+      type: {class: CurseItemEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:
-        Type: 2
-    - rid: 5486256447100289026
-      type: {class: BlowAwayEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+        _probabilityOfSuccess: 0.25
+    - rid: 5486256507571666949
+      type: {class: Skull, ns: Domain.Model.Character.Type, asm: Domain.Model}
       data:
-        _distance: 1
+        Type: 0

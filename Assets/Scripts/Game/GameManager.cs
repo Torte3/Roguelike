@@ -77,7 +77,7 @@ namespace Game
             });
 
             var globalSaveData = _saveDataManager.LoadGlobal() ?? new GlobalSaveData(GlobalStatistics.Build(), new());
-            _globalStatistics = new GlobalStatistics(globalSaveData.GlobalStatistics, this, _world);
+            _globalStatistics = new GlobalStatistics(globalSaveData.GlobalStatistics);
             Settings.GlobalSettings.SetValues(globalSaveData.GlobalSettings);
 
             var disposable = new SerialDisposable();
@@ -104,15 +104,41 @@ namespace Game
 
         private async UniTask<PlayerData> GetPlayerData()
         {
+            var knownItemCount = _globalStatistics.KnownItemNames.Count;
+            var cursedItemDiscoverCount = _globalStatistics.TotalCursedItemDiscoverCount;
+            var stealCount = _globalStatistics.TotalStealCount;
+            var monsterHouseEnterCount = _globalStatistics.TotalMonsterHouseEnterCount;
+            var totalDamageDealt = _globalStatistics.TotalDamageDealt;
+            var maxMapLevel = _globalStatistics.MaxMapLevel;
+
             var players = new List<(PlayerData data, string unlockCondition, bool usable)> {
                 (ObjectLoader.Load<PlayerData>("Adventurer"),
-                "最初から", true),
+                FormatUnlockCondition("最初から", true), true),
+                (ObjectLoader.Load<PlayerData>("knight"),
+                FormatUnlockCondition("モンスターハウスに3回入る", monsterHouseEnterCount >= 3, monsterHouseEnterCount, 3), true),
+                (ObjectLoader.Load<PlayerData>("Priest"),
+                FormatUnlockCondition("呪われたアイテムを10個発見", cursedItemDiscoverCount >= 10, cursedItemDiscoverCount, 10), true),
+                (ObjectLoader.Load<PlayerData>("Thief"),
+                FormatUnlockCondition("泥棒を3回行う", stealCount >= 3, stealCount, 3),
+                stealCount >= 3),
                 (ObjectLoader.Load<PlayerData>("Witch"),
-                "アイテムを50種類発見", _globalStatistics.KnownItemNames.Count >= 50),
+                FormatUnlockCondition("アイテム50種類発見", knownItemCount >= 50, knownItemCount, 50),
+                knownItemCount >= 50),
+                (ObjectLoader.Load<PlayerData>("Doctor"),
+                FormatUnlockCondition("アイテム70種類発見", knownItemCount >= 70, knownItemCount, 70),
+                knownItemCount >= 70),
+                (ObjectLoader.Load<PlayerData>("Samurai"),
+                FormatUnlockCondition("累計1万ダメージ", totalDamageDealt >= 10000, totalDamageDealt, 10000),
+                totalDamageDealt >= 10000),
                 (ObjectLoader.Load<PlayerData>("Rabbit"),
-                "10Fまで踏破", _globalStatistics.MaxMapLevel >= 10),
+                FormatUnlockCondition("10Fまで踏破", maxMapLevel >= 10, maxMapLevel, 10),
+                maxMapLevel >= 10),
                 (ObjectLoader.Load<PlayerData>("Fairy"),
-                "20Fまで踏破", _globalStatistics.MaxMapLevel >= 20),
+                FormatUnlockCondition("20Fまで踏破", maxMapLevel >= 20, maxMapLevel, 20),
+                maxMapLevel >= 20),
+                (ObjectLoader.Load<PlayerData>("Demon Load"),
+                FormatUnlockCondition("30Fまで踏破", maxMapLevel >= 30, maxMapLevel, 30),
+                maxMapLevel >= 30),
             };
             var index = await _characterSelectReceiver.GetCharacter(
                 players.Select(player => (
@@ -121,6 +147,14 @@ namespace Game
                     $"解放条件\n{player.unlockCondition}\n\n{player.data.InfoWithoutName()}",
                     player.usable)).ToList());
             return players[index].data;
+        }
+
+        private static string FormatUnlockCondition(string description, bool usable, int current = 0, int required = 0)
+        {
+            if (usable || required <= 0)
+                return description;
+
+            return $"{description}\n進捗: {Math.Min(current, required)}/{required}";
         }
 
         public UniTask<string> GetTextInput()
@@ -212,7 +246,7 @@ namespace Game
 
         private MapManager CreateSaveData(PlayerData playerData)
         {
-            _activeStatistics.Value = new WorldStatistics(WorldStatistics.Build(), this, _world);
+            _activeStatistics.Value = new WorldStatistics(WorldStatistics.Build(), this, _world, _globalStatistics);
             Settings.WorldSettings.Reset();
 
             _world.CreateNew();
@@ -239,7 +273,7 @@ namespace Game
 
         private MapManager LoadSaveData(SaveData saveData)
         {
-            _activeStatistics.Value = new WorldStatistics(saveData.Statistics, this, _world);
+            _activeStatistics.Value = new WorldStatistics(saveData.Statistics, this, _world, _globalStatistics);
             Settings.SetValues(saveData.Settings);
             if (saveData.IsRollbacked)
             {

@@ -80,6 +80,9 @@ MonoBehaviour:
     <ChargeTurn>k__BackingField: 0
     <CoolTime>k__BackingField: 0
     <Log>k__BackingField: 
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
   ElementDamageRateMultiplier:
     data: []
   ConditionResistance:
@@ -112,6 +115,7 @@ MonoBehaviour:
         - _element: 0
           _power: 5
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 5486256464210165776
       type: {class: RemoveUpgradeEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:

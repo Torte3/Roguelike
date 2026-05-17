@@ -95,6 +95,9 @@ MonoBehaviour:
     <ChargeTurn>k__BackingField: 0
     <CoolTime>k__BackingField: 0
     <Log>k__BackingField: 
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
   ElementDamageRateMultiplier:
     data: []
   ConditionResistance:
@@ -114,6 +117,7 @@ MonoBehaviour:
         - _element: 0
           _power: 4
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 3794997872339714061
       type: {class: NearByCharacter, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data:

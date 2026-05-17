@@ -8,12 +8,16 @@ namespace Utilities.Serialize
     [Serializable]
     public class IconSerializable
     {
-        [Required]
         [ShowInInspector]
+#if UNITY_EDITOR
         [OnValueChanged(nameof(OnValidate))]
+#endif
         private Sprite _value;
 
-        [ReadOnly][SerializeField] private string _name;
+        [Required]
+        [ReadOnly]
+        [SerializeField]
+        private string _name;
 
         public Sprite Value
         {

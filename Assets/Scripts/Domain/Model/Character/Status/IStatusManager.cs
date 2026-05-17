@@ -14,6 +14,7 @@ namespace Domain.Model.Character.Status
         public IObservableCollection<ICondition> Conditions { get; }
         public UniTask UpdateTurn(bool enemyVisible);
         public IStat GetStat(StatType type);
+        public IStat GetAttackMultiplierStat();
         public IStat GetElementAttackMultiplierStat(Element element);
         public IStat GetElementDamageRateMultiplierStat(Element element);
         public IStat GetConditionResistanceStat(ConditionTemplate condition);

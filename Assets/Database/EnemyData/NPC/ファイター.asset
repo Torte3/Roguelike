@@ -18,7 +18,7 @@ MonoBehaviour:
     rid: 861543580450947072
   _sprite: {fileID: 1465634788, guid: eca6ad6f85d552347a9d1d89bfabdf8d, type: 3}
   IsBoss: 0
-  Hp: 30
+  Hp: 40
   Aggression: 4
   Behavior:
     wanderAround: 1
@@ -111,6 +111,9 @@ MonoBehaviour:
     <ChargeTurn>k__BackingField: 0
     <CoolTime>k__BackingField: 0
     <Log>k__BackingField: 
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
   ElementDamageRateMultiplier:
     data: []
   ConditionResistance:
@@ -134,6 +137,7 @@ MonoBehaviour:
         - _element: 0
           _power: 5
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 5486256287083921410
       type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data: 
@@ -159,6 +163,7 @@ MonoBehaviour:
         - _element: 0
           _power: 3
         _criticalRate: 0.05
+        _isWeaponAttack: 0
     - rid: 5486256464210165780
       type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data: 
@@ -175,3 +180,4 @@ MonoBehaviour:
         - _element: 0
           _power: 4
         _criticalRate: 0
+        _isWeaponAttack: 0

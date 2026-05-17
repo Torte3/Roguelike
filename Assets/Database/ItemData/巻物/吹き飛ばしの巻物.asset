@@ -62,7 +62,7 @@ MonoBehaviour:
     - rid: 861543420369829890
       type: {class: BlowAwayEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:
-        _distance: 10
+        _distance: 4
     - rid: 2541219106150416406
       type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data: 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using Domain.Model.Character;
+using Domain.Model.Character.Status;
 using Domain.Model.Effect;
 using Domain.Model.Item;
 using Domain.Model.Map;
@@ -21,12 +22,14 @@ namespace Domain.Service.Effect
         private List<ElementPower> _elementPowers;
 
         [Range(0, 1)][SerializeField] private float _criticalRate;
+        [SerializeField][HideInInspector] private bool _isWeaponAttack;
         private float _fixedCriticalRate => Mathf.Clamp(_criticalRate, 0, 1);
 
-        public AttackEffect(List<ElementPower> elementPowers, float criticalRate)
+        public AttackEffect(List<ElementPower> elementPowers, float criticalRate, bool isWeaponAttack = false)
         {
             _elementPowers = elementPowers;
             _criticalRate = criticalRate;
+            _isWeaponAttack = isWeaponAttack;
         }
 
         public List<ElementPower> MultiplyPower(float multiplier)
@@ -44,7 +47,7 @@ namespace Domain.Service.Effect
 
         public override async UniTask Apply(IActorOfEffect actor, ITargetOfEffect target, Vector2Int position, IMap map)
         {
-            if (RandUtils.IsLessThanProbability(_fixedCriticalRate))
+            if (RandUtils.IsLessThanProbability(GetEffectiveCriticalRate(actor)))
             {
                 var damage = Formula.Calc(actor, target, _elementPowers, true);
                 GameLog.AddAppend(target.IsVisible, $"<color=red>クリティカル！{target.GetName(map.Player)}に{damage}のダメージ。</color>");
@@ -60,13 +63,14 @@ namespace Domain.Service.Effect
 
         public override float Evaluate(IActorOfEffect actor, ITargetOfEffect target)
         {
+            var criticalRate = GetEffectiveCriticalRate(actor);
             var result = Mathf.Min(1,
                              Mathf.Min(target.CurrentHp, (float)Formula.Calc(actor, target, _elementPowers)) /
                              target.CurrentMaxHp) *
-                         (1 - _fixedCriticalRate);
+                         (1 - criticalRate);
             result += Mathf.Min(1,
                 Mathf.Min(target.CurrentHp, (float)Formula.Calc(actor, target, _elementPowers, true)) /
-                target.CurrentMaxHp) * _fixedCriticalRate;
+                target.CurrentMaxHp) * criticalRate;
             return result;
         }
 
@@ -75,6 +79,16 @@ namespace Domain.Service.Effect
             var result = Formula.EvaluateDamage(_elementPowers) * (1 - _fixedCriticalRate) +
                          Formula.EvaluateDamage(_elementPowers, true) * _fixedCriticalRate;
             return result;
+        }
+
+        private float GetEffectiveCriticalRate(IActorOfEffect actor)
+        {
+            if (_isWeaponAttack
+                && actor.Status.IsFlagStat(FlagStatType.FullHpCritical)
+                && actor.CurrentHp >= actor.CurrentMaxHp)
+                return 1f;
+
+            return _fixedCriticalRate;
         }
 
         public override string Info()

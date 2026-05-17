@@ -5,6 +5,7 @@ namespace Domain.Model.Character.Status
         MaxHp,
         HpNaturalRecovery,
         ViewRange,
-        MaxWaitTime
+        MaxWaitTime,
+        AttackMultiplier,
     }
 }

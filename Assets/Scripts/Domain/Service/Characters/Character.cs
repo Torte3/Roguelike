@@ -90,6 +90,14 @@ namespace Domain.Service.Characters
                     KnowItem(item, false);
                 }
             });
+
+            CurseAutoIdentify.Subscribe(_ =>
+            {
+                foreach (var item in Inventory.AllItems)
+                {
+                    KnowCurse(item, false);
+                }
+            });
         }
 
         public Location CurrentLocation => new(_map.Id, Entity.CurrentPosition);
@@ -113,6 +121,8 @@ namespace Domain.Service.Characters
                 Settings.WorldSettings.AutoIdentify.Value,
                 (statusFlag, worldSetting) => statusFlag || worldSetting
             ).ToReadOnlyReactiveProperty();
+        public ReadOnlyReactiveProperty<bool> CurseAutoIdentify =>
+            _statusManager.GetFlagProperty(FlagStatType.CurseIdentify);
         public CharacterState State { get; set; } = CharacterState.Wait;
         public IReadOnlyList<IPlayerEvent> Events => _events;
         public ReadOnlyReactiveProperty<bool> HasEvent { get; init; }
@@ -159,7 +169,16 @@ namespace Domain.Service.Characters
                     _chargeSkill.Map(
                         skill => skill.Skill.Match<ChargedActionPreviewEffectData?>(
                             spawnEffectSkill => new ChargedActionPreviewEffectData(
-                                spawnEffectSkill.GetArea(this, Entity.CurrentPosition, CurrentDirection, _map, true),
+                                spawnEffectSkill.GetArea(
+                                    this,
+                                    Entity.CurrentPosition,
+                                    _chargeAction.Value switch
+                                    {
+                                        UseSkill useSkill => useSkill.Direction,
+                                        UseItem useItem => useItem.Direction,
+                                        _ => throw new InvalidOperationException()
+                                    }, _map,
+                                    true),
                                 spawnEffectSkill.Color
                             ),
                             itemTargetSkill => null,
@@ -263,7 +282,7 @@ namespace Domain.Service.Characters
             _chargeSkill = Option.None<ISkillWithCost>();
             _chargeTurn.Value = 0;
         }
-
+        
         public async UniTask DoNextAction(IGameManager gameManager, IMap map, IInput input)
         {
             State = CharacterState.Think;
@@ -306,6 +325,7 @@ namespace Domain.Service.Characters
                         _chargeAction = Option.Some((IAction)useSkill);
                         _chargeSkill = Option.Some(useSkill.Skill);
                         _chargeTurn.Value = useSkill.Skill.ChargeTurn;
+                        Turn(useSkill.Direction);
                         DoNothing();
                         return;
                     }
@@ -327,6 +347,7 @@ namespace Domain.Service.Characters
                         _chargeAction = Option.Some((IAction)useItem);
                         _chargeSkill = Option.Some(skillOnUse);
                         _chargeTurn.Value = skillOnUse.ChargeTurn;
+                        Turn(useItem.Direction);
                         DoNothing();
                         return;
                     }
@@ -432,7 +453,8 @@ namespace Domain.Service.Characters
         public async UniTask UseSkill(ISkillWithCost skill, Direction8 direction, IMap map)
         {
             Log.Debug($"[Action]{_name}:UseSkill\n{skill.Info()}\ndirection:{direction}");
-            Turn(direction);
+            if (!_chargeAction.HasValue)
+                Turn(direction);
             for (var i = 0; i < skill.RushDistance; i++)
             {
                 if (CanMove(direction, map) && !_statusManager.IsFlagStat(FlagStatType.CannotMove))
@@ -464,14 +486,15 @@ namespace Domain.Service.Characters
         {
             if (_lastSkill != null)
             {
-                await _lastSkill.Use(this, Entity.CurrentPosition, CurrentDirection, _map);
+                await _lastSkill.Use(this, null, Entity.CurrentPosition, CurrentDirection, _map);
             }
         }
 
         public async UniTask UseItem(IItem item, Direction8 direction, IMap map)
         {
             Log.Debug($"[Action]{_name}:UseItem\n{item.Info(map.Player, map.ItemPlaceholders)}\ndirection:{direction}");
-            Turn(direction);
+            if (!_chargeAction.HasValue)
+                Turn(direction);
             _onItemUsed.OnNext(item.BaseName);
 
             var playerName = GetName(map.Player);
@@ -557,7 +580,7 @@ namespace Domain.Service.Characters
                 $"[Action]{_name}:ThrowItem\n{item.Info(map.Player, map.ItemPlaceholders)}\n direction:{direction}");
             Turn(direction);
 
-            item.SetCurseIdentified(true, map.Player, this, map.ItemPlaceholders);
+            KnowCurse(item, true);
             if (!item.CanAttemptThrow)
             {
                 GameLog.Add(Entity.IsVisible, $"{item.GetName(map.Player, map.ItemPlaceholders)}は呪われていて投げられない");
@@ -800,6 +823,19 @@ namespace Domain.Service.Characters
                 _knownItemNames.Add(item.BaseName);
             }
         }
+
+        public void KnowCurse(IItem item, bool log)
+        {
+            if (!IsPlayer)
+                return;
+
+            if (!IsCurseKnown(item) && log)
+                item.SetCurseIdentified(true, _map.Player, this, _map.ItemPlaceholders);
+            else
+                item.SetCurseIdentified(true);
+        }
+
+        public bool IsCurseKnown(IItem item) => item.IsCurseIdentified;
 
         public bool IsKnownItem(IItem item)
         {

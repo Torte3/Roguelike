@@ -24,5 +24,10 @@ namespace Domain.Model.Character.Status
         RandomExplosion,
         BookMaster,
         WandMaster,
+        PotionMaster,
+        CurseIdentify,
+        AdjacentAttackGuard,
+        FullHpCritical,
+        StealEmpower,
     }
 }

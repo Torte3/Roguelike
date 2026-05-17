@@ -29,6 +29,7 @@ namespace Domain.Service.Characters
         public Stat HpNaturalRecoveryAmount { get; init; }
         public Stat ViewRange { get; init; }
         public Resource WaitTime { get; init; }
+        public Stat AttackMultiplier { get; init; }
         public Dictionary<Element, Stat> ElementAttackMultiplier { get; init; }
         public Dictionary<Element, Stat> ElementDamageRateMultiplier { get; init; }
         public Dictionary<string, Stat> ConditionResistance { get; init; }
@@ -41,6 +42,7 @@ namespace Domain.Service.Characters
         {
             Hp = new IntResource(data.Stats.Hp);
             HpNaturalRecoveryAmount = new Stat(data.Stats.HpNaturalRecoveryAmount);
+            AttackMultiplier = new Stat(data.Stats.AttackMultiplier);
             ElementAttackMultiplier =
                 data.Stats.ElementAttackMultiplier.ToDictionary(pair => pair.Key, pair => new Stat(pair.Value));
             ElementDamageRateMultiplier =
@@ -63,6 +65,7 @@ namespace Domain.Service.Characters
             HpNaturalRecoveryAmount.Dispose();
             ViewRange.Dispose();
             WaitTime.Dispose();
+            AttackMultiplier.Dispose();
             foreach (var element in ElementAttackMultiplier.Values)
             {
                 element.Dispose();
@@ -88,6 +91,7 @@ namespace Domain.Service.Characters
                 (
                     Hp.GetData(),
                     HpNaturalRecoveryAmount.GetData(),
+                    AttackMultiplier.GetData(),
                     ElementAttackMultiplier.ToDictionary(pair => pair.Key, pair => pair.Value.GetData()),
                     ElementDamageRateMultiplier.ToDictionary(pair => pair.Key, pair => pair.Value.GetData()),
                     ConditionResistance.ToDictionary(pair => pair.Key, pair => pair.Value.GetData()),
@@ -114,9 +118,12 @@ namespace Domain.Service.Characters
                 StatType.HpNaturalRecovery => HpNaturalRecoveryAmount,
                 StatType.ViewRange => ViewRange,
                 StatType.MaxWaitTime => WaitTime.Max,
+                StatType.AttackMultiplier => AttackMultiplier,
                 _ => throw new ArgumentException($"Invalid stat type: {type}")
             };
         }
+
+        public IStat GetAttackMultiplierStat() => AttackMultiplier;
 
         public IStat GetElementAttackMultiplierStat(Element element)
         {
@@ -158,9 +165,16 @@ namespace Domain.Service.Characters
             return GetStat(type).CurrentValue;
         }
 
+        public float GetAttackMultiplier() => AttackMultiplier.CurrentValue;
+
         public float GetElementAttackMultiplier(Element element)
         {
             return GetElementAttackMultiplierStat(element).CurrentValue;
+        }
+
+        public float GetCombinedElementAttackMultiplier(Element element)
+        {
+            return GetAttackMultiplier() + GetElementAttackMultiplier(element) - 1f;
         }
 
         public float GetElementDamageRateMultiplier(Element element)
@@ -283,7 +297,7 @@ namespace Domain.Service.Characters
             return WaitTime.IsFull();
         }
 
-        public static CharacterStatusMemento Build(int maxHp, float hpNaturalRecoveryAmount,
+        public static CharacterStatusMemento Build(int maxHp, float hpNaturalRecoveryAmount, float attackMultiplier,
             Dictionary<Element, float> elementAttackMultiplier, Dictionary<Element, float> elementDamageRateMultiplier,
             Dictionary<ConditionTemplate, float> conditionResistance, float viewRange, HashSet<FlagStatType> flags, float waitTime, bool isSlept, bool doActImmediately)
         {
@@ -316,6 +330,7 @@ namespace Domain.Service.Characters
                 (
                     hp: new ResourceData(new StatData(maxHp, minValue: 0f), maxHp),
                     hpNaturalRecovery: new StatData(hpNaturalRecoveryAmount),
+                    attackMultiplier: new StatData(attackMultiplier, minValue: 0f),
                     elementAttackMultiplier: elementAttackMultiplier.ToDictionary(pair => pair.Key, pair => new StatData(pair.Value, minValue: 0f)),
                     elementDamageRateMultiplier: elementDamageRateMultiplier.ToDictionary(pair => pair.Key, pair => new StatData(pair.Value, minValue: 0f)),
                     conditionResistance: conditionResistance.ToDictionary(pair => pair.Key.name, pair => new StatData(pair.Value, minValue: 0f, maxValue: 1f)),
@@ -349,6 +364,8 @@ namespace Domain.Service.Characters
             info += $"Hp自然回復量:{HpNaturalRecoveryAmount.CurrentValue}\n";
             info += $"視界範囲:{ViewRange.CurrentValue}\n";
             info += $"待機時間:{WaitTime.Max.CurrentValue}\n";
+            if (AttackMultiplier.CurrentValue != 1)
+                info += $"攻撃倍率:{AttackMultiplier.CurrentValue:P0}\n";
             foreach (var element in ElementAttackMultiplier.Keys)
             {
                 if (ElementAttackMultiplier[element].CurrentValue == 1)

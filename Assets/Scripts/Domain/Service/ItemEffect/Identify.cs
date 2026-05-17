@@ -9,13 +9,13 @@ namespace Domain.Service.ItemEffect
     {
         public bool CanApplyTo(IPlayer player, IItem item)
         {
-            return !player.Character.IsKnownItem(item);
+            return !player.Character.IsKnownItem(item) || !player.Character.IsCurseKnown(item);
         }
 
         public void Apply(IPlayer player, IItem item, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
         {
             player.Character.KnowItem(item, true);
-            item.SetCurseIdentified(true, player, itemHolder, itemPlaceholders);
+            player.Character.KnowCurse(item, true);
         }
 
         public float EvaluatePrice()

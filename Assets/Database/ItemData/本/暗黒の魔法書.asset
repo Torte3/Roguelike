@@ -75,3 +75,4 @@ MonoBehaviour:
         - _element: 5
           _power: 10
         _criticalRate: 0
+        _isWeaponAttack: 0

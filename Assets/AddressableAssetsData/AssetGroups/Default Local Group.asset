@@ -95,6 +95,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 932d0297d5f408141b20c2891b6c4b22
+    m_Address: MapChip
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 95fda9077916e264598251505583fb60
     m_Address: Assets/Database/ItemData
     m_ReadOnly: 0
@@ -152,11 +157,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: dffe806f6e4a2aa4ca577e71a76b2fbf
     m_Address: Assets/Database/ItemData
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: e9e3c0dc1c99c0541acfad4909ca107b
-    m_Address: "Assets/Database/ItemData/\u85AC\u8349.asset"
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

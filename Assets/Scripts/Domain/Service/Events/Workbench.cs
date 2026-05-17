@@ -12,7 +12,6 @@ using Domain.Service.Items;
 using Domain.Service.Logs;
 using R3;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using Utilities;
 
 namespace Domain.Service.Events
@@ -54,8 +53,7 @@ namespace Domain.Service.Events
             Entity.Dispose();
         }
 
-        public Sprite Icon => Addressables.LoadAssetAsync<Sprite>($"MapChip/(Base)BaseChip_pipo.png[(Base)BaseChip_pipo_683]")
-            .WaitForCompletion();
+        public Sprite Icon => ObjectLoader.LoadMapChip("(Base)BaseChip_pipo_683");
 
         public IReadOnlyList<IPlayerEvent> Events { get; init; }
 

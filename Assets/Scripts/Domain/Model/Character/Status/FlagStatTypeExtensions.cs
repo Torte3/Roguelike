@@ -28,6 +28,11 @@ namespace Domain.Model.Character.Status
             FlagStatType.RandomExplosion => "気まぐれ爆発",
             FlagStatType.BookMaster => "魔法書マスター",
             FlagStatType.WandMaster => "杖マスター",
+            FlagStatType.PotionMaster => "ポーションマスター",
+            FlagStatType.CurseIdentify => "呪い識別",
+            FlagStatType.AdjacentAttackGuard => "隣接ダメージ半減",
+            FlagStatType.FullHpCritical => "満タンクリティカル",
+            FlagStatType.StealEmpower => "盗むたびダメージ強化",
             _ => throw new ArgumentException($"Invalid flag stat type: {type}")
         };
 
@@ -52,6 +57,11 @@ namespace Domain.Model.Character.Status
             FlagStatType.RandomExplosion => ParticleType.None,
             FlagStatType.BookMaster => ParticleType.None,
             FlagStatType.WandMaster => ParticleType.None,
+            FlagStatType.PotionMaster => ParticleType.None,
+            FlagStatType.CurseIdentify => ParticleType.None,
+            FlagStatType.AdjacentAttackGuard => ParticleType.None,
+            FlagStatType.FullHpCritical => ParticleType.None,
+            FlagStatType.StealEmpower => ParticleType.None,
             _ => throw new ArgumentException($"Invalid flag stat type: {type}")
         };
 
@@ -76,6 +86,11 @@ namespace Domain.Model.Character.Status
             FlagStatType.RandomExplosion => Impact.Harmful,
             FlagStatType.BookMaster => Impact.Beneficial,
             FlagStatType.WandMaster => Impact.Beneficial,
+            FlagStatType.PotionMaster => Impact.Beneficial,
+            FlagStatType.CurseIdentify => Impact.Beneficial,
+            FlagStatType.AdjacentAttackGuard => Impact.Beneficial,
+            FlagStatType.FullHpCritical => Impact.Beneficial,
+            FlagStatType.StealEmpower => Impact.Beneficial,
             _ => throw new ArgumentException($"Invalid flag stat type: {type}")
         };
 
@@ -104,6 +119,11 @@ namespace Domain.Model.Character.Status
                 FlagStatType.RandomExplosion => 0.1f,
                 FlagStatType.BookMaster => 0.2f,
                 FlagStatType.WandMaster => 0.2f,
+                FlagStatType.PotionMaster => 0.2f,
+                FlagStatType.CurseIdentify => 0.3f,
+                FlagStatType.AdjacentAttackGuard => 0.2f,
+                FlagStatType.FullHpCritical => 0.2f,
+                FlagStatType.StealEmpower => 0.2f,
                 _ => throw new ArgumentException($"Invalid flag stat type: {type}")
             };
         }
@@ -129,6 +149,11 @@ namespace Domain.Model.Character.Status
             FlagStatType.RandomExplosion => 1f,
             FlagStatType.BookMaster => 0.4f,
             FlagStatType.WandMaster => 0.4f,
+            FlagStatType.PotionMaster => 0.4f,
+            FlagStatType.CurseIdentify => 0.5f,
+            FlagStatType.AdjacentAttackGuard => 0.5f,
+            FlagStatType.FullHpCritical => 0.5f,
+            FlagStatType.StealEmpower => 0.5f,
             _ => 0f
         };
     }

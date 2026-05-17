@@ -135,6 +135,12 @@ namespace Domain.Model.Item
                 ItemFeature.Restraint => "拘束",
                 ItemFeature.EnhanceAbnormalCondition => "状態異常付与率強化",
 
+                ItemFeature.Fire => "火",
+                ItemFeature.Ice => "氷",
+                ItemFeature.Thunder => "雷",
+                ItemFeature.Light => "光",
+                ItemFeature.Dark => "闇",
+
                 ItemFeature.EnhanceDurability => "耐久強化",
                 ItemFeature.Artistic => "美術品",
                 _ => throw new Exception("Invalid DirectWeaponFeature")
@@ -174,6 +180,12 @@ namespace Domain.Model.Item
                 ItemFeature.Restraint => ApplicabilityTag.Weapons,
                 ItemFeature.EnhanceAbnormalCondition => ApplicabilityTag.Weapons,
 
+                ItemFeature.Fire => ApplicabilityTag.Weapons,
+                ItemFeature.Ice => ApplicabilityTag.Weapons,
+                ItemFeature.Thunder => ApplicabilityTag.Weapons,
+                ItemFeature.Light => ApplicabilityTag.Weapons,
+                ItemFeature.Dark => ApplicabilityTag.Weapons,
+
                 ItemFeature.EnhanceDurability => ApplicabilityTag.Weapons,
                 ItemFeature.Artistic => ApplicabilityTag.Weapons,
                 _ => throw new Exception("Invalid DirectWeaponFeature")
@@ -204,6 +216,7 @@ namespace Domain.Model.Item
             var maxOverlap = feature switch
             {
                 ItemFeature.Lunge => CANNOT_OVERLAP,
+                ItemFeature.ChargeAttack => CANNOT_OVERLAP,
                 ItemFeature.Knockback => CANNOT_OVERLAP,
                 ItemFeature.Critical => 4,
                 ItemFeature.Dig => CANNOT_OVERLAP,

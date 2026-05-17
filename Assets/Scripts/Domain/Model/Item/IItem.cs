@@ -47,7 +47,9 @@ namespace Domain.Model.Item
         public Option<bool> IsEquipped { get; }
         public int MaxUsages { get; }
         public ReadOnlyReactiveProperty<int> RemainingUses { get; }
+        public ReadOnlyReactiveProperty<bool> Cursed { get; }
         public bool IsCursed { get; }
+        public ReadOnlyReactiveProperty<bool> CurseIdentified { get; }
         public bool IsDiscardBlocked { get; }
         public ReadOnlyReactiveProperty<bool> IsPassiveActive { get; }
         public bool RequiresLiteracy { get; }

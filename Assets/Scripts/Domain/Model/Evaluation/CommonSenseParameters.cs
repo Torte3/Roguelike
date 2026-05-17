@@ -26,7 +26,11 @@ namespace Domain.Model.Evaluation
         public const float DestroyFireProbabilityPerTurn = 1 / 4f;
         public const float BookMasterUsageLossChance = 0.5f;
         public const float WandMasterUsageLossChance = 0.5f;
+        public const int PotionMasterEffectRepeatBonus = 1;
         public const float ProjectileImpactHitProbability = 2f;
+        public const float AdjacentDamageMultiplier = 0.5f;
+        public const float StealAttackBonusPerCount = 0.2f;
+        public const int StealAttackBonusMaxCount = 5;
 
         public const int BlowAwayWallDamagePerRemainingTile = 1;
 

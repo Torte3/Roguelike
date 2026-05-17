@@ -78,6 +78,7 @@ MonoBehaviour:
         - _element: 3
           _power: 5
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 5486256623760965632
       type: {class: AddConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:

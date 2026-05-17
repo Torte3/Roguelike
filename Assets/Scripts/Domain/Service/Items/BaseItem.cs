@@ -40,8 +40,11 @@ namespace Domain.Service.Items
         private protected ReactiveProperty<int> _remainingUsages;
         public float UsageLossChance { get; private set; }
         private protected ReactiveProperty<bool> _isCursed;
+        public ReadOnlyReactiveProperty<bool> Cursed => _isCursed;
         public bool IsCursed => _isCursed.CurrentValue;
-        public bool IsCurseIdentified { get; private set; }
+        private protected ReactiveProperty<bool> _isCurseIdentified;
+        public ReadOnlyReactiveProperty<bool> CurseIdentified => _isCurseIdentified;
+        public bool IsCurseIdentified => _isCurseIdentified.CurrentValue;
         public int UpgradeLimit { get; private set; }
         private protected List<IConditionData> _conditions;
         private protected Subject<Unit> _onItemUpdated = new();
@@ -125,7 +128,7 @@ namespace Domain.Service.Items
             _remainingUsages = new ReactiveProperty<int>(baseItem.RemainingUsages);
             UsageLossChance = baseItem.UsageLossChance;
             _isCursed = new ReactiveProperty<bool>(baseItem.IsCursed);
-            IsCurseIdentified = baseItem.IsCurseIdentified;
+            _isCurseIdentified = new ReactiveProperty<bool>(baseItem.IsCurseIdentified);
             UpgradeLimit = baseItem.UpgradeLimit;
             _conditions = baseItem.Conditions;
             _mimic = baseItem.Mimic;
@@ -236,7 +239,7 @@ namespace Domain.Service.Items
 
             return SkillOnUse.MapOr(
                 0,
-                skill => skill.Evaluate(actor, position, direction, map)
+                skill => skill.Evaluate(actor, position, direction, map, this)
             );
         }
 
@@ -244,7 +247,7 @@ namespace Domain.Service.Items
         {
             return SkillOnThrow.MapOr(
                 0,
-                skill => skill.Evaluate(actor, position, direction, map)
+                skill => skill.Evaluate(actor, position, direction, map, this)
             );
         }
 
@@ -334,8 +337,6 @@ namespace Domain.Service.Items
 
         public void SetCursed(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool isCursed)
         {
-            SetCurseIdentified(true);
-
             if (isCursed)
             {
                 GameLog.Add(itemHolder.IsVisible, $"{GetName(player, itemPlaceholders)}は呪われた");
@@ -347,6 +348,7 @@ namespace Domain.Service.Items
 
             if (_isCursed.CurrentValue == isCursed)
             {
+                SetCurseIdentified(true);
                 return;
             }
 
@@ -356,6 +358,7 @@ namespace Domain.Service.Items
                 UsedWhileCursed = false;
             }
 
+            SetCurseIdentified(true);
             _onItemUpdated.OnNext(Unit.Default);
         }
 
@@ -363,7 +366,7 @@ namespace Domain.Service.Items
             IEntity? logVisibleEntity = null, ItemPlaceholders? logPlaceholders = null)
         {
             var wasUnidentified = !IsCurseIdentified;
-            IsCurseIdentified = isCurseIdentified;
+            _isCurseIdentified.Value = isCurseIdentified;
             if (isCurseIdentified && wasUnidentified && IsCursed
                 && logPlayer != null && logVisibleEntity != null && logPlaceholders != null)
             {

@@ -29,6 +29,7 @@ namespace Domain.Model.Character
         public ReadOnlyReactiveProperty<Direction8> Direction { get; }
         public ReadOnlyReactiveProperty<bool> HasEvent { get; }
         public ReadOnlyReactiveProperty<bool> AutoIdentify { get; }
+        public ReadOnlyReactiveProperty<bool> CurseAutoIdentify { get; }
         public Observable<Unit> OnAttacked { get; }
         public Observable<Unit> OnDead { get; }
         public Observable<OnStartItemSelectMessage> OnStartItemSelect { get; }

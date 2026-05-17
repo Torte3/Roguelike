@@ -23,6 +23,7 @@ MonoBehaviour:
   Flags: 
   IsFlying: 0
   CanThroughWalls: 0
+  AttackMultiplier: 1
   ElementAttackMultiplier:
     data: []
   ElementDamageRateMultiplier:

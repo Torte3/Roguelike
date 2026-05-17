@@ -3,13 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Domain.Model.Character.Status;
 using Domain.Model.Memento;
 using ObservableCollections;
 using R3;
-using Unity.Logging;
 using UnityEngine;
-using Utilities;
 
 namespace Game
 {
@@ -28,6 +25,7 @@ namespace Game
         private int _totalDamageReceived;
         private int _maxDamageReceived;
         private int _totalDamageDealt;
+        public int TotalDamageDealt => _totalDamageDealt;
         private int _maxDamageDealt;
         private int _totalHealReceived;
         private int _maxHealReceived;
@@ -42,103 +40,104 @@ namespace Game
 
         // 死亡
         private readonly Dictionary<string, int> _deathCountByCause = new();
-        public GlobalStatistics(GlobalStatisticsMemento memento, GameManager game, World world)
+
+        public int TotalStealCount { get; private set; }
+
+        public int TotalMonsterHouseEnterCount { get; private set; }
+
+        public int TotalCursedItemDiscoverCount { get; private set; }
+
+        public GlobalStatistics(GlobalStatisticsMemento memento)
         {
             _knownItemNames = new(memento.KnownItemNames);
             _enemyTypeKilledCount = new Dictionary<string, int>(memento.EnemyTypeKilledCount);
             _lastSaveTotalPlayTime = TimeSpan.FromTicks(memento.TotalPlayTime);
             _sessionStartTime = DateTime.Now;
             _totalTurns = new ReactiveProperty<int>(memento.TotalTurns);
+            MaxMapLevel = memento.MaxMapLevel;
             _totalDamageReceived = memento.TotalDamageReceived;
             _maxDamageReceived = memento.MaxDamageReceived;
             _totalDamageDealt = memento.TotalDamageDealt;
             _maxDamageDealt = memento.MaxDamageDealt;
             _totalHealReceived = memento.TotalHealReceived;
             _maxHealReceived = memento.MaxHealReceived;
+            TotalStealCount = memento.TotalStealCount;
+            TotalMonsterHouseEnterCount = memento.TotalMonsterHouseEnterCount;
+            TotalCursedItemDiscoverCount = memento.TotalCursedItemDiscoverCount;
             foreach (var kvp in memento.ItemUsedCountByBaseName)
                 _itemUsedCountByBaseName[kvp.Key] = kvp.Value;
             foreach (var kvp in memento.DeathCountByCause)
                 _deathCountByCause[kvp.Key] = kvp.Value;
-
-            world.OnActiveMapChanged.Subscribe(mapChanged =>
-            {
-                var map = mapChanged.Map;
-                if (map.Depth > MaxMapLevel)
-                    MaxMapLevel = map.Depth;
-                map.Player.Character.KnownItemNames.ObserveAdd().Subscribe(item =>
-                {
-                    _knownItemNames.Add(item.Value);
-                });
-                map.Characters.SubscribeIncludingCurrentObservables(
-                    character => character.Status.OnDamageReceived,
-                    (character, msg) =>
-                    {
-                        if (character.IsPlayer)
-                        {
-                            _totalDamageReceived += msg.Damage;
-                            if (msg.Damage > _maxDamageReceived)
-                                _maxDamageReceived = msg.Damage;
-                        }
-                        else if (map.Player.Character.Affiliation.IsEnemy(character.Affiliation) &&
-                                 msg.Attacker?.IsPlayer == true)
-                        {
-                            _totalDamageDealt += msg.Damage;
-                            if (msg.Damage > _maxDamageDealt)
-                                _maxDamageDealt = msg.Damage;
-                        }
-                    }
-                );
-                map.Characters.SubscribeIncludingCurrentObservables(
-                    character => character.Status.OnHealReceived,
-                    (character, amount) =>
-                    {
-                        if (character.IsPlayer)
-                        {
-                            _totalHealReceived += amount;
-                            if (amount > _maxHealReceived)
-                                _maxHealReceived = amount;
-                        }
-                    }
-                );
-                map.Player.Character.OnItemUsed.Subscribe(baseName =>
-                {
-                    _itemUsedCountByBaseName.TryGetValue(baseName, out var count);
-                    _itemUsedCountByBaseName[baseName] = count + 1;
-                });
-                map.Player.Character.Entity.OnDestroyed.Subscribe(cause =>
-                {
-                    _deathCountByCause.TryGetValue(cause, out var count);
-                    _deathCountByCause[cause] = count + 1;
-                });
-                map.Characters.SubscribeIncludingCurrentObservables(
-                    character => character.OnDead,
-                    (character, _) =>
-                    {
-                        if (!character.IsPlayer && map.Player.Character.Affiliation.IsEnemy(character.Affiliation))
-                        {
-                            var enemyName = character.Name;
-                            _enemyTypeKilledCount.TryGetValue(enemyName, out var count);
-                            _enemyTypeKilledCount[enemyName] = count + 1;
-                        }
-                    }
-                );
-            });
-            game.OnTurnChanged.Subscribe(_ =>
-            {
-                _totalTurns.Value++;
-            });
         }
+
+        public void RecordTurn() => _totalTurns.Value++;
+
+        public void RecordMaxMapLevel(int depth)
+        {
+            if (depth > MaxMapLevel)
+                MaxMapLevel = depth;
+        }
+
+        public void RecordDamageReceived(int damage)
+        {
+            _totalDamageReceived += damage;
+            if (damage > _maxDamageReceived)
+                _maxDamageReceived = damage;
+        }
+
+        public void RecordDamageDealt(int damage)
+        {
+            _totalDamageDealt += damage;
+            if (damage > _maxDamageDealt)
+                _maxDamageDealt = damage;
+        }
+
+        public void RecordHealReceived(int amount)
+        {
+            _totalHealReceived += amount;
+            if (amount > _maxHealReceived)
+                _maxHealReceived = amount;
+        }
+
+        public void RecordItemUsed(string baseName)
+        {
+            _itemUsedCountByBaseName.TryGetValue(baseName, out var count);
+            _itemUsedCountByBaseName[baseName] = count + 1;
+        }
+
+        public void RecordDeath(string cause)
+        {
+            _deathCountByCause.TryGetValue(cause, out var count);
+            _deathCountByCause[cause] = count + 1;
+        }
+
+        public void RecordEnemyKilled(string enemyName)
+        {
+            _enemyTypeKilledCount.TryGetValue(enemyName, out var count);
+            _enemyTypeKilledCount[enemyName] = count + 1;
+        }
+
+        public void RecordSteal() => TotalStealCount++;
+
+        public void RecordMonsterHouseEntered() => TotalMonsterHouseEnterCount++;
+
+        public void RecordCursedItemDiscovery() => TotalCursedItemDiscoverCount++;
+
+        public void RecordKnownItem(string baseName) => _knownItemNames.Add(baseName);
 
         public GlobalStatisticsMemento Serialize()
         {
             return new GlobalStatisticsMemento(MaxMapLevel, _knownItemNames.ToList(), _enemyTypeKilledCount,
                 TotalPlayTime.Ticks, TotalTurns.CurrentValue,
                 _totalDamageReceived, _maxDamageReceived, _totalDamageDealt, _maxDamageDealt,
-                _totalHealReceived, _maxHealReceived, _itemUsedCountByBaseName, _deathCountByCause);
+                _totalHealReceived, _maxHealReceived, TotalStealCount, TotalMonsterHouseEnterCount,
+                TotalCursedItemDiscoverCount, _itemUsedCountByBaseName, _deathCountByCause);
         }
+
         public static GlobalStatisticsMemento Build()
         {
-            return new GlobalStatisticsMemento(1, new(), new Dictionary<string, int>(), 0, 0, 0, 0, 0, 0, 0, 0, new Dictionary<string, int>(), new Dictionary<string, int>());
+            return new GlobalStatisticsMemento(1, new(), new Dictionary<string, int>(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                new Dictionary<string, int>(), new Dictionary<string, int>());
         }
 
         public string GetStatisticsText()
@@ -153,6 +152,12 @@ namespace Game
             sb.AppendLine($"TotalDamageReceived: {_totalDamageReceived} (Max: {_maxDamageReceived})");
             sb.AppendLine($"TotalDamageDealt: {_totalDamageDealt} (Max: {_maxDamageDealt})");
             sb.AppendLine($"TotalHealReceived: {_totalHealReceived} (Max: {_maxHealReceived})");
+            sb.AppendLine("--- 盗み ---");
+            sb.AppendLine($"通算盗み回数: {TotalStealCount}");
+            sb.AppendLine("--- モンスターハウス ---");
+            sb.AppendLine($"通算進入回数: {TotalMonsterHouseEnterCount}");
+            sb.AppendLine("--- 呪い ---");
+            sb.AppendLine($"呪われたアイテムを発見した回数: {TotalCursedItemDiscoverCount}");
             sb.AppendLine("--- 敵撃破 ---");
             sb.AppendLine($"EnemyKilledCount: {_enemyTypeKilledCount.Values.Sum()}");
             foreach (var kvp in _enemyTypeKilledCount.OrderByDescending(x => x.Value))

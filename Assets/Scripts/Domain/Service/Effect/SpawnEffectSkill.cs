@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Character.Status;
+using Domain.Model.Dungeon;
 using Domain.Model.Effect;
 using Domain.Model.Effect.Area;
 using Domain.Model.Effect.Position;
@@ -112,13 +113,14 @@ namespace Domain.Service.Effect
             return spawnPositions
                 .SelectMany(spawnPosition => _area.Get(spawnPosition, direction, map));
         }
-        public async UniTask<ISkillResult> Use(IActorOfEffect actor, Vector2Int position, Direction8 direction,
-            IMap map)
+        public async UniTask<ISkillResult> Use(IActorOfEffect actor, IItem? sourceItem, Vector2Int position,
+            Direction8 direction, IMap map)
         {
             if (_log != null && _log != "")
                 GameLog.Add(actor.IsVisible, $"{actor.GetName(map.Player)}{_log}");
 
-            var successes = RandUtils.RollSuccesses(Repeats, ProbabilityOfSuccess);
+            var effectiveRepeats = GetEffectiveRepeats(actor, sourceItem);
+            var successes = RandUtils.RollSuccesses(effectiveRepeats, ProbabilityOfSuccess);
 
             for (var i = 0; i < successes; i++)
             {
@@ -205,7 +207,7 @@ namespace Domain.Service.Effect
                 GameLog.AddAppend(actor.IsVisible, "しかし効果がなかった");
                 return SpawnEffectSkillResult.Failed;
             }
-            else if (successes < Repeats)
+            else if (successes < effectiveRepeats)
             {
                 GameLog.AddAppend(actor.IsVisible, $"{successes}回成功した");
             }
@@ -213,7 +215,8 @@ namespace Domain.Service.Effect
             return SpawnEffectSkillResult.Success;
         }
 
-        public float Evaluate(IActorOfEffect actor, Vector2Int position, Direction8 direction, IMap map)
+        public float Evaluate(IActorOfEffect actor, IItem? sourceItem, Vector2Int position, Direction8 direction,
+            IMap map)
         {
             for (var i = 0; i < RushDistance; i++)
             {
@@ -262,7 +265,17 @@ namespace Domain.Service.Effect
                 totalEvaluation += effect.Evaluate(actor, area);
             }
 
-            return totalEvaluation * Repeats * ProbabilityOfSuccess;
+            return totalEvaluation * GetEffectiveRepeats(actor, sourceItem) * ProbabilityOfSuccess;
+        }
+
+        private int GetEffectiveRepeats(IActorOfEffect actor, IItem? sourceItem)
+        {
+            var repeats = Repeats;
+            if (sourceItem?.Category == ItemCategory.Potions
+                && actor.Status.IsFlagStat(FlagStatType.PotionMaster))
+                repeats += CommonSenseParameters.PotionMasterEffectRepeatBonus;
+
+            return repeats;
         }
 
         public float EvaluatePrice()

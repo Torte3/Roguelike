@@ -148,6 +148,41 @@ namespace Domain.Model.Dungeon
             + GetIndex(mapId);
 
 #if UNITY_EDITOR
+        public override void OnCreateConnection(NodePort from, NodePort to)
+        {
+            base.OnCreateConnection(from, to);
+            ClearOverrideBackingFieldsWhenConnected();
+        }
+
+        private void OnValidate()
+        {
+            ClearOverrideBackingFieldsWhenConnected();
+        }
+
+        internal bool ClearOverrideBackingFieldsWhenConnected()
+        {
+            Debug.Log("ClearOverrideBackingFieldsWhenConnected");
+            var changed = false;
+            if (GetInputPort(nameof(_sectionData)).IsConnected && _sectionData != null)
+            {
+                _sectionData = null;
+                changed = true;
+            }
+
+            if (GetInputPort(nameof(_enemies)).IsConnected && _enemies != null)
+            {
+                _enemies = null;
+                changed = true;
+            }
+
+            if (changed)
+            {
+                EditorUtility.SetDirty(this);
+            }
+
+            return changed;
+        }
+
         protected override void Init()
         {
             base.Init();

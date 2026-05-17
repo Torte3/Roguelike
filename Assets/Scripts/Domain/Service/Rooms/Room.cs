@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Map;
 using Domain.Model.Memento;
@@ -15,6 +15,8 @@ namespace Domain.Service.Rooms
         public bool CanExecute { get; protected set; } = true;
         private ReactiveProperty<bool> _isInside;
         public ReadOnlyReactiveProperty<bool> IsInside => _isInside;
+        private readonly ReactiveProperty<bool> _hasEverEntered;
+        public ReadOnlyReactiveProperty<bool> HasEverEntered => _hasEverEntered;
 
         public Room(RoomMemento data, Vector2Int playerPosition)
         {
@@ -22,6 +24,7 @@ namespace Domain.Service.Rooms
             _isInside = new ReactiveProperty<bool>(Rect.Contains(playerPosition));
             hasEntered = data.HasEntered;
             hasEverEntered = data.HasEverEntered;
+            _hasEverEntered = new ReactiveProperty<bool>(hasEverEntered);
         }
 
         public RectInt Rect { get; init; }
@@ -43,6 +46,7 @@ namespace Domain.Service.Rooms
                     {
                         await FirstTimeEnter(gameManager, map);
                         hasEverEntered = true;
+                        _hasEverEntered.Value = true;
                         if (!CanExecute)
                             return;
                     }

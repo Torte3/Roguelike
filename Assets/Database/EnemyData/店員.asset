@@ -101,14 +101,14 @@ MonoBehaviour:
       <Area>k__BackingField:
         rid: 5486256464210165761
       <Effects>k__BackingField:
-      - rid: 5486256464210165762
+      - rid: 8023009177181097618
       <Repeats>k__BackingField: 1
       <ProbabilityOfSuccess>k__BackingField: 0.95
       <Cost>k__BackingField: 0
-      <RushDistance>k__BackingField: 0
+      <RushDistance>k__BackingField: 10
       <BackStepDistance>k__BackingField: 0
       <ChargeTurn>k__BackingField: 0
-      <CoolTime>k__BackingField: 30
+      <CoolTime>k__BackingField: 10
       <Log>k__BackingField: "\u306F\u6025\u63A5\u8FD1\u3057\u305F\u3002"
     Priority: 0
   HasLastSkill: 0
@@ -127,6 +127,9 @@ MonoBehaviour:
     <ChargeTurn>k__BackingField: 0
     <CoolTime>k__BackingField: 0
     <Log>k__BackingField: 
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
   ElementDamageRateMultiplier:
     data: []
   ConditionResistance:
@@ -154,6 +157,7 @@ MonoBehaviour:
         - _element: 0
           _power: 10
         _criticalRate: 1
+        _isWeaponAttack: 0
     - rid: 2541219281251860526
       type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data: 
@@ -170,6 +174,7 @@ MonoBehaviour:
         - _element: 1
           _power: 10
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 2541219281251860530
       type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data: 
@@ -186,6 +191,7 @@ MonoBehaviour:
         - _element: 0
           _power: 7
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 2541219281251860533
       type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data: 
@@ -204,6 +210,11 @@ MonoBehaviour:
     - rid: 5486256464210165761
       type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
       data: 
-    - rid: 5486256464210165762
-      type: {class: TeleportToAreaEffect, ns: Domain.Service.Effect, asm: Domain.Service}
-      data: 
+    - rid: 8023009177181097618
+      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _elementPowers:
+        - _element: 0
+          _power: 8
+        _criticalRate: 0
+        _isWeaponAttack: 0

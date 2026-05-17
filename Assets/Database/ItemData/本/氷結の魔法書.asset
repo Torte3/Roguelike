@@ -76,6 +76,7 @@ MonoBehaviour:
         - _element: 2
           _power: 10
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 5486256600805015552
       type: {class: SpawnIceEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data: 

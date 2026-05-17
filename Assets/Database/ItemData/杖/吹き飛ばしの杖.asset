@@ -72,4 +72,4 @@ MonoBehaviour:
     - rid: 4425516923575599132
       type: {class: BlowAwayEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:
-        _distance: 5
+        _distance: 6

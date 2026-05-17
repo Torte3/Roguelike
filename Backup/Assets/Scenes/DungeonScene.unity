@@ -8385,7 +8385,7 @@ MonoBehaviour:
   m_PointAction: {fileID: -7989457068064801114, guid: b8ac9e681da54b84481b9e17bdeb51a0, type: 3}
   m_MoveAction: {fileID: -4151817134333268539, guid: b8ac9e681da54b84481b9e17bdeb51a0, type: 3}
   m_SubmitAction: {fileID: 6396224126896934572, guid: b8ac9e681da54b84481b9e17bdeb51a0, type: 3}
-  m_CancelAction: {fileID: 7025117370119188548, guid: b8ac9e681da54b84481b9e17bdeb51a0, type: 3}
+  m_CancelAction: {fileID: -9071785491647466296, guid: b8ac9e681da54b84481b9e17bdeb51a0, type: 3}
   m_LeftClickAction: {fileID: 4474414710419998062, guid: b8ac9e681da54b84481b9e17bdeb51a0, type: 3}
   m_MiddleClickAction: {fileID: 4737225063186731715, guid: b8ac9e681da54b84481b9e17bdeb51a0, type: 3}
   m_RightClickAction: {fileID: -3975495568824156761, guid: b8ac9e681da54b84481b9e17bdeb51a0, type: 3}
@@ -9835,7 +9835,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1728659731
 RectTransform:
   m_ObjectHideFlags: 0

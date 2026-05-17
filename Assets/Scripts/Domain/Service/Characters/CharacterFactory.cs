@@ -28,7 +28,8 @@ namespace Domain.Service.Characters
         {
             var flags = data.Flags.ToHashSet();
             flags.Add(FlagStatType.IsAffectedByTrap);
-
+            if (data.Name == "Thief")
+                flags.Add(FlagStatType.StealEmpower);
             var defaultSkill = new SkillData(
                 position: new AtFeet(),
                 area: new LineArea(1, false, false),
@@ -60,6 +61,7 @@ namespace Domain.Service.Characters
                 status: CharacterStatusManager.Build(
                     maxHp: data.Hp,
                     hpNaturalRecoveryAmount: CommonSenseParameters.PlayerNaturalRecoveryRate,
+                    attackMultiplier: data.AttackMultiplier,
                     elementAttackMultiplier: data.ElementAttackMultiplier,
                     elementDamageRateMultiplier: data.ElementDamageRateMultiplier,
                     conditionResistance: data.ConditionResistance,
@@ -111,9 +113,9 @@ namespace Domain.Service.Characters
             }
             var inventory = Storage.Build(20, items, true, true);
 
-            var elementAttackMultiplier = isShiny
-                ? Enum.GetValues(typeof(Element)).Cast<Element>().ToDictionary(element => element, _ => 2f)
-                : new Dictionary<Element, float>();
+            var attackMultiplier = data.AttackMultiplier;
+            if (isShiny)
+                attackMultiplier += 1f;
 
             return new CharacterMemento
             (
@@ -126,7 +128,8 @@ namespace Domain.Service.Characters
                 status: CharacterStatusManager.Build(
                     maxHp: isShiny ? data.Hp * 10 : data.Hp,
                     hpNaturalRecoveryAmount: 0.1f,
-                    elementAttackMultiplier: elementAttackMultiplier,
+                    attackMultiplier: attackMultiplier,
+                    elementAttackMultiplier: data.ElementAttackMultiplier,
                     elementDamageRateMultiplier: data.ElementDamageRateMultiplier,
                     conditionResistance: data.ConditionResistance,
                     viewRange: 8,

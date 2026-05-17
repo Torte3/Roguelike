@@ -117,7 +117,7 @@ namespace Domain.Service.Items
                 return SpawnEffectSkillResult.Failed;
             }
 
-            SetCurseIdentified(true, map.Player, actor, map.ItemPlaceholders);
+            actor.KnowCurse(this, true);
 
             if (!actor.CanReadItem && RequiresLiteracy)
             {
@@ -155,7 +155,8 @@ namespace Domain.Service.Items
                 return SpawnEffectSkillResult.Failed;
             }
 
-            SetCurseIdentified(true, map.Player, actor, map.ItemPlaceholders);
+            if (actor is IHasInventory holder)
+                holder.KnowCurse(this, true);
 
             if (!actor.CanReadItem && RequiresLiteracy)
             {
@@ -177,7 +178,7 @@ namespace Domain.Service.Items
 
             var result = await SkillExtension.Match(
                 skill.Skill,
-                spawnEffectSkill => spawnEffectSkill.Use(actor, position, direction, map),
+                spawnEffectSkill => spawnEffectSkill.Use(actor, this, position, direction, map),
                 itemTargetSkill => throw new Exception(
                     "The item is not configured to activate this type of skill when thrown."),
                 inventoryTargetSkill => throw new Exception(

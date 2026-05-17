@@ -21,6 +21,7 @@ namespace Domain.Model.Map
         public ItemPlaceholders ItemPlaceholders { get; }
         public ItemMarketPriceTable MarketPriceTable { get; }
         public IShop? Shop { get; }
+        public IMonsterHouse? MonsterHouse { get; }
         public IPlayer Player { get; }
 
         public IObservableCollection<IEntity> Entities { get; }

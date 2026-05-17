@@ -146,7 +146,8 @@ MonoBehaviour:
       items:
       - {fileID: 11400000, guid: 3686947615f6f3a4092e428ed051b93f, type: 2}
     ChestItems:
-      items: []
+      items:
+      - {fileID: 11400000, guid: 3686947615f6f3a4092e428ed051b93f, type: 2}
     ChestDirectWeapons:
       items:
       - {fileID: 11400000, guid: 5484172c81b51a94b8ca56cfaa81b79b, type: 2}

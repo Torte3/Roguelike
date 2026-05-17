@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 509257745484700074}
   - component: {fileID: 1391828256205352540}
   m_Layer: 0
-  m_Name: evArrow
+  m_Name: EvArrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

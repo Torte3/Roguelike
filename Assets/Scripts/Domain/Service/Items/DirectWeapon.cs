@@ -109,7 +109,7 @@ namespace Domain.Service.Items
             var usePowerMagnification = powerMagnification;
             if (features.Contains(ItemFeature.ChargeAttack))
             {
-                usePowerMagnification *= 1.8f;
+                usePowerMagnification *= 1.5f;
             }
             var usePower = Mathf.RoundToInt(power * usePowerMagnification);
             usePower += upgradeCount;
@@ -161,7 +161,8 @@ namespace Domain.Service.Items
                 effectsOnUse.Add(new AbsorbsEffect(
                     elementPowersOnUse,
                     absorbRate,
-                    criticalRate
+                    criticalRate,
+                    isWeaponAttack: true
                 ));
                 effectsOnThrow.Add(new AbsorbsEffect(
                     elementPowersOnThrow,
@@ -173,7 +174,8 @@ namespace Domain.Service.Items
             {
                 effectsOnUse.Add(new AttackEffect(
                     elementPowersOnUse,
-                    criticalRate
+                    criticalRate,
+                    isWeaponAttack: true
                 ));
                 effectsOnThrow.Add(new AttackEffect(
                     elementPowersOnThrow,

@@ -23,7 +23,7 @@ namespace Domain.Model.Effect
         public int RushDistance { get; }
         public int BackStepDistance { get; }
         public UniTask<ISkillResult> Use(IActor actor, IItem? item, Vector2Int position, Direction8 direction, IMap map);
-        public float Evaluate(IActorOfEffect actor, Vector2Int position, Direction8 direction, IMap map);
+        public float Evaluate(IActorOfEffect actor, Vector2Int position, Direction8 direction, IMap map, IItem? sourceItem = null);
         public float EvaluatePrice();
     }
 }

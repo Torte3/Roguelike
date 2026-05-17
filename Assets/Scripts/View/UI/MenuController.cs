@@ -25,7 +25,7 @@ namespace View.UI
         [SerializeField] private MainMenu _mainMenu;
         private readonly ObservableStack<IMenu> _menuStack = new();
         private readonly Dictionary<IMenu, GameObject> _selectedObject = new();
-        private ReactiveProperty<MenuType> _menuState = new(MenuType.Field);
+        private ReactiveProperty<MenuType> _menuState = new(MenuType.Menu);
         public ReadOnlyReactiveProperty<MenuType> MenuState => _menuState;
 
         [Inject]

@@ -18,7 +18,7 @@ MonoBehaviour:
     rid: 861543580450947072
   _sprite: {fileID: 1996816407, guid: 16a4cf2300c3f0840a4a116846e4d7d1, type: 3}
   IsBoss: 0
-  Hp: 25
+  Hp: 30
   Aggression: 3
   Behavior:
     wanderAround: 1
@@ -79,6 +79,9 @@ MonoBehaviour:
     <ChargeTurn>k__BackingField: 0
     <CoolTime>k__BackingField: 0
     <Log>k__BackingField: 
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
   ElementDamageRateMultiplier:
     data: []
   ConditionResistance:
@@ -112,3 +115,4 @@ MonoBehaviour:
         - _element: 0
           _power: 5
         _criticalRate: 0
+        _isWeaponAttack: 0

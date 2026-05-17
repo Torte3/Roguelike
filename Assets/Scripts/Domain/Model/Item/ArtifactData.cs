@@ -2,6 +2,7 @@
 
 using Sirenix.OdinInspector;
 using UnityEngine;
+using Utilities.Validation;
 
 namespace Domain.Model.Item
 {
@@ -25,7 +26,7 @@ namespace Domain.Model.Item
         public bool HasBuiltInPassive;
 
         [ShowIf(nameof(HasBuiltInPassive))]
-        [Required]
+        [RequiredIfShown]
         public ArtifactPassiveConditionBundle BuiltInPassiveConditionBundle;
     }
 }

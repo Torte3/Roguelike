@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Map
   m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.MapNode
   graph: {fileID: 11400000}
-  position: {x: 1144, y: 360}
+  position: {x: 1400, y: 360}
   ports:
     keys:
     - _prevMap
@@ -100,14 +100,17 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 94c194319c4806244af0cddd6be62281, type: 2}
   _bossReward:
   - _item: {fileID: 0}
-    _directWeapon: {fileID: 0}
-    _rangedWeapon: {fileID: 11400000, guid: 4f2a1d8d1c8d71943b890fede999c865, type: 2}
-  - _item: {fileID: 11400000, guid: 7b8f3b9f5ac72f649b44f962b210f8d4, type: 2}
+    _directWeapon: {fileID: 11400000, guid: 77a4253d09355b54399a665a28be330f, type: 2}
+    _rangedWeapon: {fileID: 0}
+    _artifact: {fileID: 0}
+  - _item: {fileID: 0}
     _directWeapon: {fileID: 0}
     _rangedWeapon: {fileID: 0}
+    _artifact: {fileID: 11400000, guid: 2b045713cb7d6e54ea5ffe25d92d2c2e, type: 2}
   - _item: {fileID: 11400000, guid: 6d1c3aefd2797974983b12f0273cf0fa, type: 2}
     _directWeapon: {fileID: 0}
     _rangedWeapon: {fileID: 0}
+    _artifact: {fileID: 0}
   FloorData: {fileID: 11400000, guid: 19f7e11c54a2e08499d59577a26f7f57, type: 2}
   _prevMap: 0
   _nextMap: 0
@@ -534,6 +537,8 @@ MonoBehaviour:
       Weight: 1
     - Item: {fileID: 11400000, guid: f9c1c6dab8d4383489f2ffc917b9e043, type: 2}
       Weight: 1
+    - Item: {fileID: 11400000, guid: cdff4c525ad265948ac59aa15feb2930, type: 2}
+      Weight: 1
   Output:
     items: []
 --- !u!114 &-5935572277212226768
@@ -549,7 +554,7 @@ MonoBehaviour:
   m_Name: Volcano
   m_EditorClassIdentifier: Domain.Model.Dungeon.MapGraph::Domain.Model.Dungeon.MapGraph.SectionNode
   graph: {fileID: 11400000}
-  position: {x: -328, y: 1448}
+  position: {x: -312, y: 1448}
   ports:
     keys:
     - Output
@@ -584,6 +589,125 @@ MonoBehaviour:
     WeaponChanceInChest: 0
     Mimic: {fileID: 0}
     Clerk: {fileID: 0}
+--- !u!114 &-5694984428929691559
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fa5fd60aa0d2c24bba053555fad3ebb, type: 3}
+  m_Name: Map
+  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.MapNode
+  graph: {fileID: 11400000}
+  position: {x: 1144, y: 632}
+  ports:
+    keys:
+    - _prevMap
+    - _teleportIn
+    - _sectionData
+    - _nextMap
+    - _teleportOut
+    - _enemies
+    values:
+    - _fieldName: _prevMap
+      _node: {fileID: -5694984428929691559}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: _teleportIn
+      _node: {fileID: -5694984428929691559}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: _teleportOut
+        node: {fileID: -4483304813621188059}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: _sectionData
+      _node: {fileID: -5694984428929691559}
+      _typeQualifiedName: Domain.Model.Dungeon.SectionData, Domain.Model, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      connections:
+      - fieldName: Output
+        node: {fileID: 5437942102726374776}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 1
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: _nextMap
+      _node: {fileID: -5694984428929691559}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: _teleportOut
+      _node: {fileID: -5694984428929691559}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: _enemies
+      _node: {fileID: -5694984428929691559}
+      _typeQualifiedName: Utilities.Table.Table`1[[Domain.Model.Character.EnemyData,
+        Domain.Model, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], Utilities,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections: []
+      _direction: 0
+      _connectionType: 1
+      _typeConstraint: 0
+      _dynamic: 0
+  Repeat: 1
+  _sectionData:
+    Type: 0
+    RoundRoomCorner: 0
+    CaveInOneRoom: 0
+    WaterChance: 0
+    GrassChance: 0.3
+    WeaponChanceInChest: 0
+    Mimic: {fileID: 0}
+    Clerk: {fileID: 0}
+  _enemies:
+    items: []
+  Boss:
+  - {fileID: 11400000, guid: efaf890b40f7fc240b3ef37971f6f983, type: 2}
+  _bossReward:
+  - _item: {fileID: 0}
+    _directWeapon: {fileID: 0}
+    _rangedWeapon: {fileID: 11400000, guid: 4f2a1d8d1c8d71943b890fede999c865, type: 2}
+    _artifact: {fileID: 0}
+  - _item: {fileID: 0}
+    _directWeapon: {fileID: 0}
+    _rangedWeapon: {fileID: 0}
+    _artifact: {fileID: 11400000, guid: 801b4c821fb899e4d9d6914d8c8720dd, type: 2}
+  - _item: {fileID: 11400000, guid: 6d1c3aefd2797974983b12f0273cf0fa, type: 2}
+    _directWeapon: {fileID: 0}
+    _rangedWeapon: {fileID: 0}
+    _artifact: {fileID: 0}
+  FloorData: {fileID: 11400000, guid: 19f7e11c54a2e08499d59577a26f7f57, type: 2}
+  _prevMap: 0
+  _nextMap: 0
+  _teleportIn: 0
+  _teleportOut: 0
+  _isGoal: 0
+  _mapIds:
+  - e5539fd0-3c9b-48fb-be0a-2efc34ff334f
 --- !u!114 &-5128896849670103603
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -699,6 +823,122 @@ MonoBehaviour:
   _isGoal: 0
   _mapIds:
   - 7964040d-1ce9-4a82-bbc3-24d067d4a143
+--- !u!114 &-4774477168991558682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fa5fd60aa0d2c24bba053555fad3ebb, type: 3}
+  m_Name: Map
+  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.MapNode
+  graph: {fileID: 11400000}
+  position: {x: 1400, y: 904}
+  ports:
+    keys:
+    - _prevMap
+    - _teleportIn
+    - _sectionData
+    - _nextMap
+    - _teleportOut
+    - _enemies
+    values:
+    - _fieldName: _prevMap
+      _node: {fileID: -4774477168991558682}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: _teleportIn
+      _node: {fileID: -4774477168991558682}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: _teleportOut
+        node: {fileID: -1809702279880884196}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: _sectionData
+      _node: {fileID: -4774477168991558682}
+      _typeQualifiedName: Domain.Model.Dungeon.SectionData, Domain.Model, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      connections: []
+      _direction: 0
+      _connectionType: 1
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: _nextMap
+      _node: {fileID: -4774477168991558682}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: _teleportOut
+      _node: {fileID: -4774477168991558682}
+      _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: _enemies
+      _node: {fileID: -4774477168991558682}
+      _typeQualifiedName: Utilities.Table.Table`1[[Domain.Model.Character.EnemyData,
+        Domain.Model, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], Utilities,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections: []
+      _direction: 0
+      _connectionType: 1
+      _typeConstraint: 0
+      _dynamic: 0
+  Repeat: 1
+  _sectionData:
+    Type: 0
+    RoundRoomCorner: 0
+    CaveInOneRoom: 0
+    WaterChance: 0
+    GrassChance: 0.3
+    WeaponChanceInChest: 0
+    Mimic: {fileID: 0}
+    Clerk: {fileID: 0}
+  _enemies:
+    items: []
+  Boss:
+  - {fileID: 11400000, guid: 6fd32df8dbcc9314a8be35ea233b0f3d, type: 2}
+  _bossReward:
+  - _item: {fileID: 0}
+    _directWeapon: {fileID: 0}
+    _rangedWeapon: {fileID: 11400000, guid: 4f2a1d8d1c8d71943b890fede999c865, type: 2}
+    _artifact: {fileID: 0}
+  - _item: {fileID: 0}
+    _directWeapon: {fileID: 0}
+    _rangedWeapon: {fileID: 0}
+    _artifact: {fileID: 11400000, guid: 801b4c821fb899e4d9d6914d8c8720dd, type: 2}
+  - _item: {fileID: 11400000, guid: 6d1c3aefd2797974983b12f0273cf0fa, type: 2}
+    _directWeapon: {fileID: 0}
+    _rangedWeapon: {fileID: 0}
+    _artifact: {fileID: 0}
+  FloorData: {fileID: 11400000, guid: 19f7e11c54a2e08499d59577a26f7f57, type: 2}
+  _prevMap: 0
+  _nextMap: 0
+  _teleportIn: 0
+  _teleportOut: 0
+  _isGoal: 0
+  _mapIds:
+  - f7213e5f-bb11-4191-b7f6-52860ed13272
 --- !u!114 &-4483304813621188059
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -771,7 +1011,10 @@ MonoBehaviour:
       _node: {fileID: -4483304813621188059}
       _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
         PublicKeyToken=b77a5c561934e089
-      connections: []
+      connections:
+      - fieldName: _teleportIn
+        node: {fileID: -5694984428929691559}
+        reroutePoints: []
       _direction: 1
       _connectionType: 0
       _typeConstraint: 0
@@ -853,6 +1096,8 @@ MonoBehaviour:
       Weight: 1
     - Item: {fileID: 11400000, guid: 31dc3254afcbf984db6ea1f251aca18f, type: 2}
       Weight: 1
+    - Item: {fileID: 11400000, guid: e4d902dfd521c9541b7660eb1ebde543, type: 2}
+      Weight: 1
   Output:
     items: []
 --- !u!114 &-4355002057650542490
@@ -893,7 +1138,7 @@ MonoBehaviour:
     items:
     - Item: {fileID: 11400000, guid: 121481700a3ebe542bfcf96979f3e16f, type: 2}
       Weight: 1
-    - Item: {fileID: 11400000, guid: 471e3b95a5fbf354780047c377f69258, type: 2}
+    - Item: {fileID: 11400000, guid: bc9bf32090a2f4c4eb49a6e310c3e03d, type: 2}
       Weight: 1
     - Item: {fileID: 11400000, guid: a161c346f3914d24bb7aeca7ae4b5b89, type: 2}
       Weight: 1
@@ -989,7 +1234,7 @@ MonoBehaviour:
   m_Name: Map
   m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.MapNode
   graph: {fileID: 11400000}
-  position: {x: 1144, y: -184}
+  position: {x: 1144, y: 72}
   ports:
     keys:
     - _prevMap
@@ -1078,12 +1323,15 @@ MonoBehaviour:
   - _item: {fileID: 0}
     _directWeapon: {fileID: 11400000, guid: e554e921d09e12641b64a9d7d94e8da5, type: 2}
     _rangedWeapon: {fileID: 0}
-  - _item: {fileID: 11400000, guid: 7f801f48e2ffbe34498eed3a79b02832, type: 2}
+    _artifact: {fileID: 0}
+  - _item: {fileID: 0}
     _directWeapon: {fileID: 0}
     _rangedWeapon: {fileID: 0}
+    _artifact: {fileID: 11400000, guid: 7f801f48e2ffbe34498eed3a79b02832, type: 2}
   - _item: {fileID: 11400000, guid: b1e2f102e80ab044e9cd44e032bb9151, type: 2}
     _directWeapon: {fileID: 0}
     _rangedWeapon: {fileID: 0}
+    _artifact: {fileID: 0}
   FloorData: {fileID: 11400000, guid: 19f7e11c54a2e08499d59577a26f7f57, type: 2}
   _prevMap: 0
   _nextMap: 0
@@ -1220,7 +1468,7 @@ MonoBehaviour:
   m_Name: Forest
   m_EditorClassIdentifier: Domain.Model.Dungeon.MapGraph::Domain.Model.Dungeon.MapGraph.SectionNode
   graph: {fileID: 11400000}
-  position: {x: -328, y: 360}
+  position: {x: -312, y: 360}
   ports:
     keys:
     - Output
@@ -1336,7 +1584,10 @@ MonoBehaviour:
       _node: {fileID: -1809702279880884196}
       _typeQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
         PublicKeyToken=b77a5c561934e089
-      connections: []
+      connections:
+      - fieldName: _teleportIn
+        node: {fileID: -4774477168991558682}
+        reroutePoints: []
       _direction: 1
       _connectionType: 0
       _typeConstraint: 0
@@ -1438,7 +1689,7 @@ MonoBehaviour:
   m_Name: Desert
   m_EditorClassIdentifier: Domain.Model.Dungeon.MapGraph::Domain.Model.Dungeon.MapGraph.SectionNode
   graph: {fileID: 11400000}
-  position: {x: -328, y: 1176}
+  position: {x: -312, y: 1176}
   ports:
     keys:
     - Output
@@ -1515,6 +1766,8 @@ MonoBehaviour:
   - {fileID: -3215648688688740827}
   - {fileID: 5647552165553658979}
   - {fileID: -1809702279880884196}
+  - {fileID: -5694984428929691559}
+  - {fileID: -4774477168991558682}
 --- !u!114 &132433583354238991
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1804,7 +2057,7 @@ MonoBehaviour:
   m_Name: Snow
   m_EditorClassIdentifier: Domain.Model.Dungeon.MapGraph::Domain.Model.Dungeon.MapGraph.SectionNode
   graph: {fileID: 11400000}
-  position: {x: -328, y: 632}
+  position: {x: -312, y: 632}
   ports:
     keys:
     - Output
@@ -1819,6 +2072,9 @@ MonoBehaviour:
         reroutePoints: []
       - fieldName: _sectionData
         node: {fileID: -4483304813621188059}
+        reroutePoints: []
+      - fieldName: _sectionData
+        node: {fileID: -5694984428929691559}
         reroutePoints: []
       _direction: 1
       _connectionType: 0
@@ -2624,6 +2880,12 @@ MonoBehaviour:
       Weight: 1
     - Item: {fileID: 11400000, guid: ab82fa010f8c60149be4a61bc4245395, type: 2}
       Weight: 1
+    - Item: {fileID: 11400000, guid: 1b6ce8ad8b4310e489667928dba8865c, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: 471e3b95a5fbf354780047c377f69258, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: 3831e82ab7874294585c6db96d086f07, type: 2}
+      Weight: 1
   Output:
     items: []
 --- !u!114 &8777509353249933111
@@ -2895,7 +3157,7 @@ MonoBehaviour:
   m_Name: Dungeon
   m_EditorClassIdentifier: Domain.Model.Dungeon.MapGraph::Domain.Model.Dungeon.MapGraph.SectionNode
   graph: {fileID: 11400000}
-  position: {x: -328, y: 904}
+  position: {x: -312, y: 904}
   ports:
     keys:
     - Output

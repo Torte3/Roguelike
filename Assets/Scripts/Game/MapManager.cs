@@ -46,6 +46,7 @@ namespace Game
         private MonsterHouse? _monsterHouse;
         private Shop? _shop;
         public IShop? Shop => _shop;
+        public IMonsterHouse? MonsterHouse => _monsterHouse;
         public ReadOnlyReactiveProperty<bool>? IsStolen => _shop?.IsStolen;
         public RectInt? ShopRect => _shop?.Rect;
         private readonly Subject<OnEffectSpawnedMessage> _onEffectSpawned = new();
@@ -112,6 +113,7 @@ namespace Game
             {
                 GameLog.AddIgnoreVisibility("<color=yellow>不穏な気配を感じる……</color>");
             }
+
         }
 
         public MapManager(MapMemento map, DungeonMapData data, PlayerMemento playerMemento,
@@ -179,6 +181,7 @@ namespace Game
             {
                 GameLog.AddIgnoreVisibility("<color=yellow>不穏な気配を感じる……</color>");
             }
+
         }
 
         public Observable<OnEffectSpawnedMessage> OnEffectSpawned => _onEffectSpawned;
