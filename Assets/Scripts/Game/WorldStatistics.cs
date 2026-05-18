@@ -8,6 +8,7 @@ using Domain.Model.Character;
 using Domain.Model.Character.Status;
 using Domain.Model.Item;
 using Domain.Model.Memento;
+using ObservableCollections;
 using R3;
 using Unity.Logging;
 using Utilities;

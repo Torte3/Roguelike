@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Linq;
 using Domain.Model.Map;
@@ -21,18 +21,17 @@ namespace Provider
         {
             world.OnActiveMapChanged.Subscribe(mapChanged =>
                 {
+                    _disposables.Clear();
                     var map = mapChanged.Map;
                     tileView.Clear();
                     overlayTileView.Clear();
                     minimapController.Clear();
 
-                    var overlayTileSet = ToTileSet(map.Type);
-
                     foreach (var (position, tileData) in map.TilemapViewer.GetAllTiles())
                     {
                         SetTile(tileView, minimapController, tilePalette, tileData, position, map.ShopRect);
                         if (map.TilemapViewer.GetAllGrasses().Contains(position))
-                            overlayTileView.SetGrass(position, overlayTileSet);
+                            overlayTileView.SetGrass(position, ToTileSet(tileData.MapType));
                         if (map.TilemapViewer.GetAllIces().Contains(position))
                             overlayTileView.SetIce(position);
                         SetVisibility(tileView, overlayTileView, minimapController, position,
@@ -64,7 +63,12 @@ namespace Provider
                             switch (category)
                             {
                                 case OverlayTileCategory.Grass:
-                                    overlayTileView.SetGrass(position, overlayTileSet, GetTileVisibility(map, position));
+                                    overlayTileView.SetGrass(
+                                        position,
+                                        map.TilemapViewer.GetTile(position)
+                                            .Map(tile => ToTileSet(tile.MapType))
+                                            .UnwrapOr(() => ToTileSet(map.Type)),
+                                        GetTileVisibility(map, position));
                                     break;
                                 case OverlayTileCategory.FloatingIce:
                                     overlayTileView.SetIce(position, GetTileVisibility(map, position));

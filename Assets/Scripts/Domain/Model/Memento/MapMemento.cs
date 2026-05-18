@@ -1,6 +1,6 @@
-﻿#nullable enable
+#nullable enable
 using System;
-using System.Collections.Generic;
+using Domain.Model.Entity;
 using Domain.Model.Map;
 using UnityEngine;
 using Utilities;

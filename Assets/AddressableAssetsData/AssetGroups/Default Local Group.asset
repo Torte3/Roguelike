@@ -35,6 +35,16 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 19dcd01b9352e254e8c3ea896940d91f
+    m_Address: Assets/Database/DungeonBluePrintData/SectionData/Cave.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2000a3006e285254492d1c3c65068164
+    m_Address: Assets/Database/SectionData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2f9eacf138db96944a43fe95523ed093
     m_Address: Assets/Database/EnemyData
     m_ReadOnly: 0

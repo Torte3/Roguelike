@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a77cbbf8b5440294e8b713251d2c050c, type: 3}
   m_Name: Dungeon
   m_EditorClassIdentifier: Domain.Model:Domain.Model:DungeonBluePrintData
-  MapGraph: {fileID: 11400000, guid: 889f3c233a74dc34785be383148a6a26, type: 2}
+  _mapGraph: {fileID: 11400000, guid: 889f3c233a74dc34785be383148a6a26, type: 2}
   Fields:
     items:
     - Item: {fileID: 11400000, guid: 68e9de5972a77e54696183ab4d0100bf, type: 2}

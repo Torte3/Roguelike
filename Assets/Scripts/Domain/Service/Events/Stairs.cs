@@ -123,7 +123,7 @@ namespace Domain.Service.Events
             (
                 type,
                 destination,
-                entity: EntityBase.Build(id, position, EntityLayer.Floor),
+                entity: EntityBase.Build(id, position, EntityLayer.Floor, ignoreGrass: true),
                 destinationId: destinationId,
                 keyCharacters: keyCharacters
             );

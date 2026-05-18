@@ -73,7 +73,7 @@ namespace Domain.Service.Events
 
         public static MimicStairsMemento Build(MovementEntityType type, Vector2Int position, EnemyData mimic)
         {
-            return new MimicStairsMemento(type, EntityBase.Build(position, EntityLayer.Floor), mimic);
+            return new MimicStairsMemento(type, EntityBase.Build(position, EntityLayer.Floor, ignoreGrass: true), mimic);
         }
     }
 }

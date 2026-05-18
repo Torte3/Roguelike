@@ -10,23 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5dc7cc301501d8444b4bc50d6fc342e7, type: 3}
-  m_Name: BossFloor
+  m_Name: NormalShopFloor
   m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.FloorData
-  Field: {fileID: 11400000, guid: 7042be0eb365704439c061dcc4a54cfb, type: 2}
-  ShinyChance: 0
-  SleepChance: 0
-  MimicChance: 0
-  ShopChance: 0
-  MonsterHouseChance: 0
-  RestRoomChance: 0
-  LakeChance: 0
-  ItemCount: 0
-  MoneyCount: 0
-  MoneyAverage: 0
-  CharacterCount: 0
-  TrapCount: 0
-  ChestChance: 0
-  StatueChance: 0
+  Field: {fileID: 0}
+  ShinyChance: 0.01
+  SleepChance: 0.75
+  MimicChance: 0.1
+  ShopChance: 1
+  MonsterHouseChance: 0.2
+  RestRoomChance: 0.2
+  ItemCount: 1.5
+  MoneyCount: 1
+  MoneyAverage: 100
+  CharacterCount: 1
+  ChestChance: 0.1
+  StatueChance: 0.1
   BonfireWeight: 1
   MagicPotWeight: 1
   WorkbenchWeight: 1

@@ -38,6 +38,7 @@ namespace Game
         public ReadOnlyReactiveProperty<WorldStatistics?> ActiveStatistics => _activeStatistics;
         private readonly Subject<BGM> _onPlayBGM = new();
         public Observable<BGM> OnPlayBGM => _onPlayBGM;
+        private BGM? _currentBgm;
         private readonly Subject<SE> _onPlaySE = new();
         public Observable<SE> OnPlaySE => _onPlaySE;
         private readonly Subject<ItemCategory> _onPlayItemUseSE = new();
@@ -169,9 +170,9 @@ namespace Game
             var saveData = _saveDataManager.Load();
             if (saveData != null)
             {
+                PlayBGM(saveData.Bgm);
                 var revivePlayer = false;
                 LoadPreview(saveData);
-                PlayBGM(BGM.Normal);
                 var firstWaitTime = saveData.TurnWaitTime;
                 if (!saveData.World.IsPlayerDead)
                 {
@@ -207,8 +208,6 @@ namespace Game
                     firstWaitTime = 0;
                 }
 
-                PlayBGM(BGM.Normal);
-
                 MapManager map;
                 if (saveData == null)
                 {
@@ -229,6 +228,7 @@ namespace Game
             }
             else
             {
+                PlayBGM(BGM.Normal);
                 var playerData = ObjectLoader.Load<PlayerData>("Adventurer");
                 var map = CreateSaveData(playerData);
                 var _ = await GetChoice(null, "New Game");
@@ -246,6 +246,7 @@ namespace Game
 
         private MapManager CreateSaveData(PlayerData playerData)
         {
+            PlayBGM(BGM.Normal);
             _activeStatistics.Value = new WorldStatistics(WorldStatistics.Build(), this, _world, _globalStatistics);
             Settings.WorldSettings.Reset();
 
@@ -273,6 +274,7 @@ namespace Game
 
         private MapManager LoadSaveData(SaveData saveData)
         {
+            PlayBGM(saveData.Bgm);
             _activeStatistics.Value = new WorldStatistics(saveData.Statistics, this, _world, _globalStatistics);
             Settings.SetValues(saveData.Settings);
             if (saveData.IsRollbacked)
@@ -331,6 +333,9 @@ namespace Game
 
         public void PlayBGM(BGM bgm)
         {
+            if (_currentBgm == bgm)
+                return;
+            _currentBgm = bgm;
             _onPlayBGM.OnNext(bgm);
         }
 
@@ -365,7 +370,7 @@ namespace Game
             var maps = _world.SerializeUpdatedMaps().ToDictionary(map => map.Id, map => map);
             var statistics = _activeStatistics.Value.Serialize();
             var settings = Settings.WorldSettings.GetValues();
-            var saveData = new SaveData(world, maps, statistics, settings, _turnController.GetWaitTime(), false);
+            var saveData = new SaveData(world, maps, statistics, settings, _turnController.GetWaitTime(), false, _currentBgm ?? BGM.Normal);
             _saveDataManager.SaveFull(globalSaveData, saveData);
             Log.Info("[Game]End Save");
         }

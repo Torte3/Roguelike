@@ -32,30 +32,34 @@ namespace Game
 {
     public class MapManager : IDisposable, ISerializable<MapMemento>, IMap
     {
-        public Id<IMap> Id { get; init; }
+        public Id<IMap> Id { get; }
         public string Name => "Dungeon";
-        public int Depth => _dungeonData.Depth;
-        public MapType Type => _dungeonData.Type;
-        public ItemDatabase ItemDatabase => _dungeonData.ItemDatabase;
-        public ItemPlaceholders ItemPlaceholders { get; init; }
-        public ItemMarketPriceTable MarketPriceTable { get; init; }
+        public int Depth { get; }
+        public MapType Type => _floorSpec.Type;
+        public ItemDatabase ItemDatabase => _floorSpec.ItemDatabase;
+        public ItemPlaceholders ItemPlaceholders { get; }
+        public ItemMarketPriceTable MarketPriceTable { get; }
         private readonly CompositeDisposable _disposables = new();
         private readonly ITilemap _tilemap;
-        private DungeonMapData _dungeonData;
-        private List<IEventArea> _rooms = new();
-        private MonsterHouse? _monsterHouse;
-        private Shop? _shop;
+        private readonly FloorSpec _floorSpec;
+        private readonly float _progress;
+        private readonly List<IEventArea> _rooms;
+        private readonly MonsterHouse? _monsterHouse;
+        private readonly Shop? _shop;
         public IShop? Shop => _shop;
         public IMonsterHouse? MonsterHouse => _monsterHouse;
         public ReadOnlyReactiveProperty<bool>? IsStolen => _shop?.IsStolen;
         public RectInt? ShopRect => _shop?.Rect;
         private readonly Subject<OnEffectSpawnedMessage> _onEffectSpawned = new();
         private readonly IGameManager _gameManager;
-        public EntityManager EntityManager { get; init; }
+        public EntityManager EntityManager { get; }
 
-        public MapManager(MapMemento map, DungeonMapData data, PlayerData playerData, IGameManager gameManager, CharacterControlInputReceiver receiver, ItemPlaceholders itemPlaceholders, ItemMarketPriceTable marketPriceTable)
+        public MapManager(MapMemento map, FloorSpec spec, int depth, float progress, PlayerData playerData, IGameManager gameManager, CharacterControlInputReceiver receiver, ItemPlaceholders itemPlaceholders, ItemMarketPriceTable marketPriceTable)
         {
             Id = map.Id;
+            Depth = depth;
+            _floorSpec = spec;
+            _progress = progress;
             ItemPlaceholders = itemPlaceholders;
             MarketPriceTable = marketPriceTable;
             _gameManager = gameManager;
@@ -68,59 +72,18 @@ namespace Game
 
             EntityManager = new EntityManager(map.Entities, playerMemento, new(), playerPosition, false, receiver, gameManager, this);
 
-            _dungeonData = data;
-
-            if (map.MonsterHouse.HasValue)
-            {
-                _monsterHouse = new MonsterHouse(map.MonsterHouse.Value, EntityManager.Player.Character.Entity.CurrentPosition);
-                _rooms.Add(_monsterHouse);
-            }
-
-            if (map.Shop.HasValue)
-            {
-                var clerk = EntityManager.Characters.FirstOrDefault(character =>
-                    character.Entity.Id == map.Shop.Value.ClerkId);
-                if (clerk == null && !map.Shop.Value.IsStolen)
-                {
-                    var clerkPosition = GetAllBlankAndStandablePositions()
-                        .In(map.Shop.Value.Room.Room.RectRange())
-                        .GetAtRandom();
-                    clerk = EntityManager.SpawnCharacter(
-                        CharacterFactory.BuildCharacter(
-                            _dungeonData.Clerk,
-                            clerkPosition.Position,
-                            homeLocation: new Location(Id, clerkPosition.Position)),
-                            gameManager,
-                            this);
-                }
-
-                if (clerk != null)
-                {
-                    _shop = new Shop(map.Shop.Value, clerk, gameManager, this);
-                    _rooms.Add(_shop);
-                }
-            }
-
-            SetRules(gameManager);
-
-            var visibleArea = EntityManager.Player.Character.VisionRange.VisibleArea;
-            _tilemap.UpdateChunk(EntityManager.Player.Character.Entity.CurrentPosition);
-            _tilemap.SetTilesKnown(visibleArea, true);
-
-            UpdateVisibility(EntityManager.Entities);
-
-            if (map.MonsterHouse.HasValue && !map.MonsterHouse.Value.HasEverEntered)
-            {
-                GameLog.AddIgnoreVisibility("<color=yellow>不穏な気配を感じる……</color>");
-            }
-
+            (_monsterHouse, _shop, _rooms) = BuildRooms(map, gameManager);
+            ApplyInitialMapState(map, gameManager);
         }
 
-        public MapManager(MapMemento map, DungeonMapData data, PlayerMemento playerMemento,
+        public MapManager(MapMemento map, FloorSpec spec, int depth, float progress, PlayerMemento playerMemento,
             List<CharacterMemento> partyMembers,
             Vector2Int? playerPosition, bool resetPertyPositions, IGameManager gameManager, CharacterControlInputReceiver receiver, ItemPlaceholders itemPlaceholders, ItemMarketPriceTable marketPriceTable)
         {
             Id = map.Id;
+            Depth = depth;
+            _floorSpec = spec;
+            _progress = progress;
             ItemPlaceholders = itemPlaceholders;
             MarketPriceTable = marketPriceTable;
             _gameManager = gameManager;
@@ -136,14 +99,24 @@ namespace Game
 
             EntityManager = new EntityManager(map.Entities, playerMemento, partyMembers, playerPosition.Value, resetPertyPositions, receiver, gameManager, this);
 
-            _dungeonData = data;
+            (_monsterHouse, _shop, _rooms) = BuildRooms(map, gameManager);
+            ApplyInitialMapState(map, gameManager);
+        }
 
+        private (MonsterHouse? MonsterHouse, Shop? Shop, List<IEventArea> Rooms) BuildRooms(
+            MapMemento map,
+            IGameManager gameManager)
+        {
+            var rooms = new List<IEventArea>();
+
+            MonsterHouse? monsterHouse = null;
             if (map.MonsterHouse.HasValue)
             {
-                _monsterHouse = new MonsterHouse(map.MonsterHouse.Value, EntityManager.Player.Character.Entity.CurrentPosition);
-                _rooms.Add(_monsterHouse);
+                monsterHouse = new MonsterHouse(map.MonsterHouse.Value, EntityManager.Player.Character.Entity.CurrentPosition);
+                rooms.Add(monsterHouse);
             }
 
+            Shop? shop = null;
             if (map.Shop.HasValue)
             {
                 var clerk = EntityManager.Characters.FirstOrDefault(character =>
@@ -155,7 +128,7 @@ namespace Game
                         .GetAtRandom();
                     clerk = EntityManager.SpawnCharacter(
                         CharacterFactory.BuildCharacter(
-                            _dungeonData.Clerk,
+                            _floorSpec.Clerk,
                             clerkPosition.Position,
                             homeLocation: new Location(Id, clerkPosition.Position)),
                             gameManager,
@@ -164,11 +137,16 @@ namespace Game
 
                 if (clerk != null)
                 {
-                    _shop = new Shop(map.Shop.Value, clerk, gameManager, this);
-                    _rooms.Add(_shop);
+                    shop = new Shop(map.Shop.Value, clerk, gameManager, this);
+                    rooms.Add(shop);
                 }
             }
 
+            return (monsterHouse, shop, rooms);
+        }
+
+        private void ApplyInitialMapState(MapMemento map, IGameManager gameManager)
+        {
             SetRules(gameManager);
 
             var visibleArea = EntityManager.Player.Character.VisionRange.VisibleArea;
@@ -181,7 +159,6 @@ namespace Game
             {
                 GameLog.AddIgnoreVisibility("<color=yellow>不穏な気配を感じる……</color>");
             }
-
         }
 
         public Observable<OnEffectSpawnedMessage> OnEffectSpawned => _onEffectSpawned;
@@ -236,7 +213,7 @@ namespace Game
                 CharacterFactory.BuildCharacter(
                     enemy,
                     FindBlankPositionFrom(position, position => At(position).IsBlankAndStandable(EntityLayer.Middle)),
-                    isSlept: isSlept ?? RandUtils.IsLessThanProbability(_dungeonData.SleepChance),
+                    isSlept: isSlept ?? RandUtils.IsLessThanProbability(_floorSpec.SleepChance),
                     isShiny: isShiny ?? false,
                     affiliation: affiliation,
                     doActImmediately: doActImmediately
@@ -248,7 +225,7 @@ namespace Game
 
         public void SpawnMimicItemRevealOnPickup(EnemyData enemy, Vector2Int position)
         {
-            var dummyItem = _dungeonData.ItemDatabase.GetRandomItem(_dungeonData.Progress).Build();
+            var dummyItem = _floorSpec.ItemDatabase.GetRandomItem(_progress).Build();
             EntityManager.SpawnMimicItem(MimicItemEntity.Build(ItemEntity.Build(position, dummyItem), enemy));
         }
 
@@ -263,14 +240,14 @@ namespace Game
                 4 => ItemCategory.Weapons,
                 _ => throw new NotImplementedException()
             };
-            var dummyItem = _dungeonData.ItemDatabase.GetRandomItem(category, _dungeonData.Progress).Build(mimic: enemy);
+            var dummyItem = _floorSpec.ItemDatabase.GetRandomItem(category, _progress).Build(mimic: enemy);
             var itemEntity = EntityManager.SpawnItemFromMemento(ItemEntity.Build(position, dummyItem));
             ExecuteEntityTouchEventsAt(itemEntity.Entity.CurrentPosition, itemEntity).Forget();
         }
 
         public void SpawnMimicMoney(EnemyData enemy, Vector2Int position)
         {
-            EntityManager.SpawnMimicMoney(MimicMoney.Build(position, _dungeonData.MoneyAmount(), enemy));
+            EntityManager.SpawnMimicMoney(MimicMoney.Build(position, _floorSpec.MoneyAmount(), enemy));
         }
 
         public void SpawnMimicStairs(EnemyData enemy, Vector2Int position)
@@ -280,10 +257,10 @@ namespace Game
 
         public bool SpawnRandomEnemy(Vector2Int position, bool? isSlept = null)
         {
-            if (_dungeonData.Enemies.Count == 0)
+            if (_floorSpec.Enemies.Count == 0)
                 return false;
             SpawnEnemy(
-                _dungeonData.Enemies.GetRandomItem(),
+                _floorSpec.Enemies.GetRandomItem(),
                 position,
                 doActImmediately: false,
                 isSlept: isSlept
@@ -293,10 +270,10 @@ namespace Game
 
         public ICharacter? SpawnRandomEnemyIgnoreMimic(Vector2Int position, bool? isSlept = null)
         {
-            if (_dungeonData.Enemies.Count == 0)
+            if (_floorSpec.Enemies.Count == 0)
                 return null;
             return SpawnEnemyIgnoreMimic(
-                _dungeonData.Enemies.GetRandomItem(),
+                _floorSpec.Enemies.GetRandomItem(),
                 position,
                 doActImmediately: false,
                 isSlept: isSlept
@@ -329,6 +306,7 @@ namespace Game
         {
             bool visibility;
             if (IsGrass(entity.Entity.CurrentPosition) &&
+                !entity.Entity.IgnoreGrass &&
                 (entity.Entity.Layer == EntityLayer.Bottom || entity.Entity.Layer == EntityLayer.Floor))
                 visibility = false;
             else

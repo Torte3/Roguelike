@@ -18,6 +18,7 @@ namespace Domain.Model.Entity
     {
         public readonly Id<IEntity> Id;
         private readonly EntityLayer _layer;
+        private readonly bool _ignoreGrass;
         private readonly Subject<(Direction8 direction, Vector2Int destination, bool isThrown)> _onMove = new();
         private readonly Subject<Vector2Int> _onTeleport = new();
         private readonly ReactiveProperty<Vector2Int> _position;
@@ -29,6 +30,7 @@ namespace Domain.Model.Entity
             Id = new Id<IEntity>(data.Id);
             _position = new(data.Position);
             _layer = data.Layer;
+            _ignoreGrass = data.IgnoreGrass;
             _destroyLog = new(data.DestroyLog.Value);
             IsVisualOnly = new(isVisualOnly);
         }
@@ -41,6 +43,7 @@ namespace Domain.Model.Entity
         public bool IsVisible => Visibility.CurrentValue;
         public ReactiveProperty<bool> IsVisualOnly;
         public EntityLayer Layer => _layer;
+        public bool IgnoreGrass => _ignoreGrass;
         public bool IsDestroyed => _destroyLog.CurrentValue != null;
         public Observable<string> OnDestroyed => _destroyLog.WhereNotNull();
         public string? DestroyLog => _destroyLog.CurrentValue;
@@ -58,28 +61,31 @@ namespace Domain.Model.Entity
                 Id.ToString(),
                 _position.CurrentValue,
                 _layer,
-                _destroyLog.CurrentValue.ToOption()
+                _destroyLog.CurrentValue.ToOption(),
+                _ignoreGrass
             );
         }
 
-        public static EntityMemento Build(Vector2Int position, EntityLayer layer)
+        public static EntityMemento Build(Vector2Int position, EntityLayer layer, bool ignoreGrass = false)
         {
             return Build
             (
                 Id<IEntity>.Generate(),
                 position,
-                layer
+                layer,
+                ignoreGrass
             );
         }
 
-        public static EntityMemento Build(Id<IEntity> id, Vector2Int position, EntityLayer layer)
+        public static EntityMemento Build(Id<IEntity> id, Vector2Int position, EntityLayer layer, bool ignoreGrass = false)
         {
             return new EntityMemento
             (
                 id.ToString(),
                 position,
                 layer,
-                Option<string>.None
+                Option<string>.None,
+                ignoreGrass
             );
         }
 

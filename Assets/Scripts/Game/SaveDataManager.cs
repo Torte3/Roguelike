@@ -1,5 +1,6 @@
 #nullable enable
 using System.Collections.Generic;
+using Domain.Model;
 using Domain.Model.Map;
 using Domain.Model.Memento;
 using Unity.Logging;
@@ -16,7 +17,9 @@ namespace Game
         Dictionary<Id<IMap>, MapMemento> Maps,
         StatisticsMemento Statistics,
         Dictionary<string, int> Settings,
-        float TurnWaitTime, bool IsRollbacked);
+        float TurnWaitTime,
+        bool IsRollbacked,
+        BGM Bgm);
     public class SaveDataManager
     {
         private SQLiteDatabase db;
@@ -51,7 +54,7 @@ namespace Game
             db.SaveGlobalStatistics(JsonUtility.ToJson(globalSaveData.GlobalStatistics));
             db.SaveGlobalSettings(globalSaveData.GlobalSettings);
 
-            db.Save(_saveDataSlot, JsonUtility.ToJson(saveData.World), saveData.TurnWaitTime);
+            db.Save(_saveDataSlot, JsonUtility.ToJson(saveData.World), saveData.TurnWaitTime, (int)saveData.Bgm);
             db.SaveTurn(_saveDataSlot, saveData.Statistics.Turn);
             foreach (var map in saveData.Maps)
             {
@@ -84,7 +87,7 @@ namespace Game
                 return null;
             }
             Log.Debug("[Save]Start Load");
-            var (worldData, turnWaitTime) = db.Load(_saveDataSlot);
+            var (worldData, turnWaitTime, bgm) = db.Load(_saveDataSlot);
             var world = JsonUtility.FromJson<WorldMemento>(worldData);
             Dictionary<Id<IMap>, MapMemento> maps = new();
             foreach (var mapId in world.MapIds)
@@ -101,7 +104,7 @@ namespace Game
             var isRollbacked = latestTurn != statistics.Turn;
 
             Log.Debug("[Save]End Load");
-            return new SaveData(world, maps, statistics, settings, turnWaitTime, isRollbacked);
+            return new SaveData(world, maps, statistics, settings, turnWaitTime, isRollbacked, (BGM)bgm);
         }
 
         private int LoadLatestTurn()

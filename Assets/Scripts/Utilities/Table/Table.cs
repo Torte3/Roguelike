@@ -16,6 +16,17 @@ namespace Utilities.Table
 
         public int Count => items.Count;
 
+        public IReadOnlyList<T> GetItems() => items.Select(item => item.Item).ToList();
+
+        public Table()
+        {
+        }
+
+        public Table(IReadOnlyList<T> source)
+        {
+            items = source.Select(item => new WeightedItem { Item = item, Weight = 1f }).ToList();
+        }
+
         public T GetRandomItem()
         {
             return items[items.Select(items => items.Weight).WeightedIndex()].Item;

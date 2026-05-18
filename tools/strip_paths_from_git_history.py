@@ -51,17 +51,20 @@ from pathlib import Path
 
 # 履歴から除くパス（主にここを編集）
 STRIP_TARGET_PATHS: list[str] = [
+    "save.db",
     "Assets/Plugins/Sirenix/",
     "Assets/ConsolePro/",
     "Packages/com.singularitygroup.hotreload/",
     "Assets/Aevus/",
     "Assets/HotReload",
+    "Assets/kyouma0220/",
     "Assets/Editor/WakaTime/",
     "Assets/Editor/HiArda/",
-    "Assets/kyouma0220/",
     "Assets/Editor/tsubaki-wakepon/",
+    "Assets/Plugins/Demigiant/DOTween/",
     ".VSCodeCounter/",
     "Assets/Animations/",
+    "Assets/Fonts/",
     "Assets/Images/",
     "Assets/Sounds/",
     "Assets/StateEffect/",

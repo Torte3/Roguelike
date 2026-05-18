@@ -19,13 +19,12 @@ MonoBehaviour:
   ShopChance: 0
   MonsterHouseChance: 0
   RestRoomChance: 0.2
-  LakeChance: 0
   ItemCount: 2
   MoneyCount: 1
   MoneyAverage: 100
   CharacterCount: 1
-  TrapCount: 0
   ChestChance: 0
+  WeaponChanceInChest: 0
   StatueChance: 0
   BonfireWeight: 1
   MagicPotWeight: 1

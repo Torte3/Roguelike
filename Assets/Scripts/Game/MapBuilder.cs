@@ -47,8 +47,11 @@ namespace Game
         private readonly List<Id<Room>> _canPlaceStairRooms = new();
         private readonly Dictionary<Id<Room>, HashSet<Vector2Int>> _blankPositionsInRooms;
 
-        public MapBuilder(FieldBluePrint bluePrint, float waterChance, DungeonMapData data, Id<IMap> mapId)
+        private readonly float _progress;
+
+        public MapBuilder(FieldBluePrint bluePrint, float waterChance, FloorSpec data, float progress, Id<IMap> mapId)
         {
+            _progress = progress;
             _marketPriceTable = Addressables.LoadAssetAsync<ItemMarketPriceTable>("Assets/Database/ItemData/ItemMarketPriceTable.asset")
                 .WaitForCompletion();
             _tilemap = new TilemapBuilder(data.Type, bluePrint, waterChance);
@@ -170,7 +173,7 @@ namespace Game
             return GetRandomBlankPositionInRoom(_canPlaceStairRooms.GetAtRandom());
         }
 
-        private void AddGrasses(DungeonMapData data, Id<Room> roomId)
+        private void AddGrasses(FloorSpec data, Id<Room> roomId)
         {
             var randomValue = Random.value * 1024;
             foreach (var position in _tilemap.GetWalkablePositionsIn(roomId))
@@ -189,7 +192,7 @@ namespace Game
             _tilemap.SetIces(new[] { position }, true);
         }
 
-        private void CreateRoom(DungeonMapData data, Id<Room> roomId)
+        private void CreateRoom(FloorSpec data, Id<Room> roomId)
         {
             if (data.RoundRoomCorner)
                 _tilemap.RoundRoomCorner(roomId);
@@ -211,7 +214,7 @@ namespace Game
                 AddStatueToRoom(data, roomId);
         }
 
-        private bool CreateLakeRoom(DungeonMapData data, Id<Room> roomId)
+        private bool CreateLakeRoom(FloorSpec data, Id<Room> roomId)
         {
             if (data.RoundRoomCorner)
                 _tilemap.RoundRoomCorner(roomId);
@@ -233,7 +236,7 @@ namespace Game
             var itemPositions = islandRect.RectRange().Where(position => position != teleporterPosition);
             foreach (var position in itemPositions)
             {
-                var item = data.ItemDatabase.GetRandomItem(data.Progress);
+                var item = data.ItemDatabase.GetRandomItem(_progress);
                 _items.Add(ItemEntity.Build(position, item.Build()));
             }
 
@@ -254,7 +257,7 @@ namespace Game
             return true;
         }
 
-        private ShopMemento? CreateShop(DungeonMapData data, Id<Room> roomId)
+        private ShopMemento? CreateShop(FloorSpec data, Id<Room> roomId)
         {
             var shopItems = data.ShopItems.GetRandomItem().Items;
 
@@ -269,7 +272,7 @@ namespace Game
 
             foreach (var position in rect.Value.RectRange())
             {
-                var item = shopItems.GetRandomItem(data.Progress);
+                var item = shopItems.GetRandomItem(_progress);
                 _items.Add(ItemEntity.Build(position, Item.Build(item, state: ItemState.ShopItem)));
                 GetAllBlankPositionInRoom(roomId).Remove(position);
             }
@@ -282,7 +285,7 @@ namespace Game
             return Shop.Build(_tilemap.GetRoom(roomId), new Id<IEntity>(clerk.Entity.Id), _items.ToList(), _marketPriceTable);
         }
 
-        private RoomMemento? CreateMonsterHouse(DungeonMapData data, Id<Room> roomId)
+        private RoomMemento? CreateMonsterHouse(FloorSpec data, Id<Room> roomId)
         {
             if (data.RoundRoomCorner)
                 _tilemap.RoundRoomCorner(roomId);
@@ -296,7 +299,7 @@ namespace Game
             return MonsterHouse.Build(_tilemap.GetRoom(roomId));
         }
 
-        private bool CreateRestRoom(DungeonMapData data, Id<Room> roomId)
+        private bool CreateRestRoom(FloorSpec data, Id<Room> roomId)
         {
             if (data.RoundRoomCorner)
                 _tilemap.RoundRoomCorner(roomId);
@@ -355,7 +358,7 @@ namespace Game
             return true;
         }
 
-        private void AddCharactersToRoom(DungeonMapData data, Id<Room> roomId, int count)
+        private void AddCharactersToRoom(FloorSpec data, Id<Room> roomId, int count)
         {
             foreach (var position in GetRandomBlankPositionsInRoom(roomId, count))
             {
@@ -367,11 +370,11 @@ namespace Game
                     switch (enemy.MimicWeights.GetRandomIndex())
                     {
                         case 0:
-                            var item = data.ItemDatabase.GetRandomItem(data.Progress);
+                            var item = data.ItemDatabase.GetRandomItem(_progress);
                             _mimicItems.Add(MimicItemEntity.Build(ItemEntity.Build(position, item.Build()), enemy));
                             break;
                         case 1:
-                            item = data.ItemDatabase.GetRandomItem(data.Progress);
+                            item = data.ItemDatabase.GetRandomItem(_progress);
                             _items.Add(ItemEntity.Build(position, item.Build(mimic: enemy)));
                             break;
                         case 2:
@@ -396,16 +399,16 @@ namespace Game
             }
         }
 
-        private void AddItemsToRoom(DungeonMapData data, Id<Room> roomId, int count)
+        private void AddItemsToRoom(FloorSpec data, Id<Room> roomId, int count)
         {
             foreach (var position in GetRandomBlankPositionsInRoom(roomId, count))
             {
-                var item = data.ItemDatabase.GetRandomItem(data.Progress);
+                var item = data.ItemDatabase.GetRandomItem(_progress);
                 _items.Add(ItemEntity.Build(position, item.Build()));
             }
         }
 
-        public void AddMoneyToRoom(DungeonMapData data, Id<Room> roomId, int count)
+        public void AddMoneyToRoom(FloorSpec data, Id<Room> roomId, int count)
         {
             foreach (var position in GetRandomBlankPositionsInRoom(roomId, count))
             {
@@ -413,7 +416,7 @@ namespace Game
             }
         }
 
-        private void AddTrapsToRoom(DungeonMapData data, Id<Room> roomId, int count)
+        private void AddTrapsToRoom(FloorSpec data, Id<Room> roomId, int count)
         {
             foreach (var position in GetRandomBlankPositionsInRoom(roomId, count))
             {
@@ -421,10 +424,10 @@ namespace Game
             }
         }
 
-        private void AddShinyToRoom(DungeonMapData data, Id<Room> roomId)
+        private void AddShinyToRoom(FloorSpec data, Id<Room> roomId)
         {
             var position = GetRandomBlankPositionInRoom(roomId);
-            var weaponData = data.ItemDatabase.GetRandomItem(ItemCategory.Weapons, data.Progress);
+            var weaponData = data.ItemDatabase.GetRandomItem(ItemCategory.Weapons, _progress);
             var item = weaponData.Build(
                 upgradeCount: Random.Range(1, 5),
                 isCursed: false);
@@ -437,7 +440,7 @@ namespace Game
             _characters.Add(character);
         }
 
-        private void AddChestToRoom(DungeonMapData data, Id<Room> roomId)
+        private void AddChestToRoom(FloorSpec data, Id<Room> roomId)
         {
             var position = GetRandomBlankPositionInRoom(roomId);
             if (RandUtils.IsLessThanProbability(data.MimicChance))
@@ -448,12 +451,12 @@ namespace Game
 
             if (RandUtils.IsLessThanProbability(data.WeaponChanceInChest))
             {
-                var weaponData = data.ItemDatabase.GetRandomItem(ItemCategory.Weapons, data.Progress);
+                var weaponData = data.ItemDatabase.GetRandomItem(ItemCategory.Weapons, _progress);
                 if (weaponData is DirectWeaponData directWeapon)
                 {
                     var weapon = DirectWeapon.Build(
                         directWeapon,
-                        prefix: data.WeaponPrefixes.GetRandomItem(data.Progress),
+                        prefix: data.WeaponPrefixes.GetRandomItem(_progress),
                         isCursed: false);
                     _chests.Add(Chest.Build(weapon, position));
                 }
@@ -461,7 +464,7 @@ namespace Game
                 {
                     var weapon = RangedWeapon.Build(
                         rangedWeapon,
-                        prefix: data.WeaponPrefixes.GetRandomItem(data.Progress),
+                        prefix: data.WeaponPrefixes.GetRandomItem(_progress),
                         isCursed: false);
                     _chests.Add(Chest.Build(weapon, position));
                 }
@@ -472,17 +475,17 @@ namespace Game
             }
             else
             {
-                _chests.Add(Chest.Build(data.ChestItems.GetRandomItem(data.Progress), position));
+                _chests.Add(Chest.Build(data.ChestItems.GetRandomItem(_progress), position));
             }
         }
 
-        private void AddStatueToRoom(DungeonMapData data, Id<Room> roomId)
+        private void AddStatueToRoom(FloorSpec data, Id<Room> roomId)
         {
             var position = GetRandomBlankPositionInRoom(roomId);
             _statues.Add(Statue.Build(data.Statues.GetRandomItem(), position));
         }
 
-        private bool CreateIsolateRoom(DungeonMapData data, Id<Room> roomId)
+        private bool CreateIsolateRoom(FloorSpec data, Id<Room> roomId)
         {
             var teleporterPosition = GetRandomBlankPositionInRoom(roomId);
             _teleporter = Teleporter.Build(teleporterPosition);
