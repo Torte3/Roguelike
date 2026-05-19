@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Domain.Model::Domain.Model.Item.DirectWeaponData
   Icon: {fileID: 1269613576, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
   IsShiny: 0
-  _rarity: 0
+  _rarity: 2
   Power: 7
   _features:
   - stringValue: TwoRangeAttack
   FeatureLimit: 3
-  UsageLimit: 40
-  UpgradeLimit: 30
+  UsageLimit: 35
+  UpgradeLimit: 20
   PassiveConditions: []
   references:
     version: 2

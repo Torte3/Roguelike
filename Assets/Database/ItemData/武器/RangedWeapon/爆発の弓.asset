@@ -24,7 +24,7 @@ MonoBehaviour:
   - stringValue: Explosive
   FeatureLimit: 3
   UsageLimit: 10
-  UpgradeLimit: 30
+  UpgradeLimit: 25
   PassiveConditions: []
   references:
     version: 2

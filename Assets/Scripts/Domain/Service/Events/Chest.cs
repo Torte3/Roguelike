@@ -70,8 +70,8 @@ namespace Domain.Service.Events
             if (_items.Count > 1)
             {
                 var choices = _items.Select(item => item.GetName(map.Player, map.ItemPlaceholders)).ToArray();
-                var selectedIndex = await gameManager.GetChoice("報酬を選択してください", choices);
-                if (selectedIndex < 0 || selectedIndex >= _items.Count)
+                var selectedIndex = await gameManager.GetChoice("報酬を選択してください", choices: choices);
+                if (selectedIndex >= _items.Count)
                     return;
                 selectedItem = _items[selectedIndex];
             }

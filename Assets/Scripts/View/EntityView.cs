@@ -1,4 +1,4 @@
-﻿using DG.Tweening;
+using DG.Tweening;
 using R3;
 using UnityEngine;
 using Utilities;
@@ -54,9 +54,11 @@ namespace View
         public void Move(Vector2Int destination, Direction8 direction, bool isThrown)
         {
             _disposable.Disposable = null;
+            transform.DOKill();
+
             if (_isVisible)
             {
-                var position = destination - direction.Vector();
+                SetPosition(destination - direction.Vector());
 
                 var totalDuration = 1f;
                 if (isThrown)
@@ -75,6 +77,7 @@ namespace View
             else
             {
                 SetPosition(destination);
+                IsMoving = false;
             }
         }
     }

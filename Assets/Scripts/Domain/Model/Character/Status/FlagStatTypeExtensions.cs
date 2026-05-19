@@ -32,7 +32,7 @@ namespace Domain.Model.Character.Status
             FlagStatType.CurseIdentify => "呪い識別",
             FlagStatType.AdjacentAttackGuard => "隣接ダメージ半減",
             FlagStatType.FullHpCritical => "満タンクリティカル",
-            FlagStatType.StealEmpower => "盗むたびダメージ強化",
+            FlagStatType.StealEmpower => "盗むたび攻撃強化",
             _ => throw new ArgumentException($"Invalid flag stat type: {type}")
         };
 

@@ -93,17 +93,22 @@ namespace Game
             );
         }
 
-        public UniTask<int> GetChoiceWithInfo(string? text, params (string choice, string infoTitle, string info)[] choices)
-        {
-            return _choiceReceiver.GetChoiceWithInfo(text, choices);
-        }
+        public UniTask<int> GetChoiceWithInfo(string? text, params (string choice, string infoTitle, string info)[] choices) =>
+            _choiceReceiver.GetChoiceWithInfo(text, choices);
 
-        public UniTask<int> GetChoice(string? text, params string[] choices)
-        {
-            return _choiceReceiver.GetChoice(text, choices);
-        }
+        public UniTask<int> GetChoiceWithInfo(
+            string? text,
+            int cancelChoiceIndex,
+            params (string choice, string infoTitle, string info)[] choices) =>
+            _choiceReceiver.GetChoiceWithInfo(text, cancelChoiceIndex, choices);
 
-        private async UniTask<PlayerData> GetPlayerData()
+        public UniTask<int> GetChoice(string? text, params string[] choices) =>
+            _choiceReceiver.GetChoice(text, choices);
+
+        public UniTask<int> GetChoice(string? text, int cancelChoiceIndex, params string[] choices) =>
+            _choiceReceiver.GetChoice(text, cancelChoiceIndex, choices);
+
+        private async UniTask<PlayerData?> GetPlayerData()
         {
             var knownItemCount = _globalStatistics.KnownItemNames.Count;
             var cursedItemDiscoverCount = _globalStatistics.TotalCursedItemDiscoverCount;
@@ -116,9 +121,9 @@ namespace Game
                 (ObjectLoader.Load<PlayerData>("Adventurer"),
                 FormatUnlockCondition("最初から", true), true),
                 (ObjectLoader.Load<PlayerData>("knight"),
-                FormatUnlockCondition("モンスターハウスに3回入る", monsterHouseEnterCount >= 3, monsterHouseEnterCount, 3), true),
+                FormatUnlockCondition("モンスターハウスに3回入る", monsterHouseEnterCount >= 3, monsterHouseEnterCount, 3), monsterHouseEnterCount >= 3),
                 (ObjectLoader.Load<PlayerData>("Priest"),
-                FormatUnlockCondition("呪われたアイテムを10個発見", cursedItemDiscoverCount >= 10, cursedItemDiscoverCount, 10), true),
+                FormatUnlockCondition("呪われたアイテムを10個発見", cursedItemDiscoverCount >= 10, cursedItemDiscoverCount, 10), cursedItemDiscoverCount >= 10),
                 (ObjectLoader.Load<PlayerData>("Thief"),
                 FormatUnlockCondition("泥棒を3回行う", stealCount >= 3, stealCount, 3),
                 stealCount >= 3),
@@ -147,7 +152,9 @@ namespace Game
                     player.data.CharacterType.SubtypeName(),
                     $"解放条件\n{player.unlockCondition}\n\n{player.data.InfoWithoutName()}",
                     player.usable)).ToList());
-            return players[index].data;
+            if (index == null)
+                return null;
+            return players[index.Value].data;
         }
 
         private static string FormatUnlockCondition(string description, bool usable, int current = 0, int required = 0)
@@ -158,9 +165,9 @@ namespace Game
             return $"{description}\n進捗: {Math.Min(current, required)}/{required}";
         }
 
-        public UniTask<string> GetTextInput()
+        public UniTask<string?> GetTextInput(bool canCancel = false)
         {
-            return _textInputReceiver.GetTextInput();
+            return _textInputReceiver.GetTextInput(canCancel);
         }
 
         public async UniTask Title()
@@ -212,6 +219,11 @@ namespace Game
                 if (saveData == null)
                 {
                     var playerData = await GetPlayerData();
+                    if (playerData == null)
+                    {
+                        await Title();
+                        return;
+                    }
                     map = CreateSaveData(playerData);
                     await ChoiceDifficulty();
                 }

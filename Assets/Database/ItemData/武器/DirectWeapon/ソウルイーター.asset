@@ -20,7 +20,7 @@ MonoBehaviour:
   - stringValue: Absorbing
   FeatureLimit: 3
   UsageLimit: 25
-  UpgradeLimit: 30
+  UpgradeLimit: 25
   PassiveConditions: []
   references:
     version: 2

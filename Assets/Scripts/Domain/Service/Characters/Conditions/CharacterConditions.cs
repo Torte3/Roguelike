@@ -33,7 +33,8 @@ namespace Domain.Service.Characters.Conditions
             _conditions.ObserveAdd()
                 .Subscribe(add =>
                 {
-                    if (!_conditions.Any(condition => condition.IsEqualCondition(add.Value)))
+                    if (!_conditions.Any(condition =>
+                            !ReferenceEquals(condition, add.Value) && condition.IsEqualCondition(add.Value)))
                     {
                         var inflictLog = add.Value.GetInflictLog(hasCondition, map.Player);
                         if (inflictLog != null)

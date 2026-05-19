@@ -15,12 +15,12 @@ MonoBehaviour:
   Icon: {fileID: 693879433, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
   IsShiny: 0
   _rarity: 2
-  Power: 7
+  Power: 8
   _features:
   - stringValue: ChargeAttack
   FeatureLimit: 3
   UsageLimit: 30
-  UpgradeLimit: 30
+  UpgradeLimit: 20
   PassiveConditions: []
   references:
     version: 2

@@ -13,7 +13,8 @@ namespace View.UI
 {
     public class ChoiceMenu : MonoBehaviour, IMenu
     {
-        public bool CanClose => false;
+        private bool _canClose;
+        public bool CanClose => _canClose;
         private readonly ReactiveProperty<int> _selectedIndex = new(-1);
         public ReadOnlyReactiveProperty<int> SelectedIndex => _selectedIndex;
         private readonly AsyncReactiveProperty<int> _choicedIndex = new(-1);
@@ -29,6 +30,8 @@ namespace View.UI
         {
             _gameManager = gameManager;
         }
+
+        public void SetCanCancel(bool canCancel) => _canClose = canCancel;
 
         public void SetChoices(string? choiceText, params string[] choices)
         {

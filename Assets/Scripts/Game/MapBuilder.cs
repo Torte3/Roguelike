@@ -60,6 +60,7 @@ namespace Game
 
             var roomIds = _tilemap.RoomIds.ToList();
             var grassRoomIds = _tilemap.RoomIds.ToList();
+            var stairEligibleSpecialRooms = new List<Id<Room>>();
 
             foreach (var isolateRoomId in _tilemap.IsolateRooms)
             {
@@ -86,21 +87,30 @@ namespace Game
                 var monsterHouseRoom = roomIds.GetAtRandom();
                 _monsterHouse = CreateMonsterHouse(data, monsterHouseRoom);
                 if (_monsterHouse != null)
+                {
+                    stairEligibleSpecialRooms.Add(monsterHouseRoom);
                     roomIds.Remove(monsterHouseRoom);
+                }
             }
 
             if (RandUtils.IsLessThanProbability(data.RestRoomChance) && roomIds.Count() > 1)
             {
                 var restRoom = roomIds.GetAtRandom();
                 if (CreateRestRoom(data, restRoom))
+                {
+                    stairEligibleSpecialRooms.Add(restRoom);
                     roomIds.Remove(restRoom);
+                }
             }
 
             if (RandUtils.IsLessThanProbability(data.LakeChance) && roomIds.Count() > 1)
             {
                 var lakeRoom = roomIds.GetAtRandom();
                 if (CreateLakeRoom(data, lakeRoom))
+                {
+                    stairEligibleSpecialRooms.Add(lakeRoom);
                     roomIds.Remove(lakeRoom);
+                }
             }
 
             foreach (var room in roomIds)
@@ -108,7 +118,7 @@ namespace Game
                 CreateRoom(data, room);
             }
 
-            _canPlaceStairRooms = roomIds.ToList();
+            _canPlaceStairRooms = roomIds.Concat(stairEligibleSpecialRooms).ToList();
 
             if (RandUtils.IsLessThanProbability(data.ShinyChance))
             {

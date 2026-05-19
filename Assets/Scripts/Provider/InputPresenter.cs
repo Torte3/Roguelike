@@ -57,10 +57,9 @@ namespace Provider
             receiver.OnRenamePerformed.Subscribe(_ => actionReceiver.SetRenameInput());
 
             input.Bind(
-                isDash: receiver.IsDash,
-                isNoMove: receiver.IsNoMove,
-                isDiagonalOnly: receiver.IsDiagonalOnly
-            );
+                () => receiver.IsDashPressed,
+                () => receiver.IsNoMovePressed,
+                () => receiver.IsDiagonalOnlyPressed);
             
             receiver.IsNoMove
                 .DistinctUntilChanged()
@@ -89,13 +88,17 @@ namespace Provider
 
             choiceReceiver.OnShownChoiceWithInfo.Subscribe(async message =>
             {
-                var index = await menuController.GetChoiceWithInfo(message.text, message.choices);
+                var index = message.cancelChoiceIndex is { } cancelIndex
+                    ? await menuController.GetChoiceWithInfo(message.text, cancelIndex, message.choices)
+                    : await menuController.GetChoiceWithInfo(message.text, message.choices);
                 choiceReceiver.SetChoicedIndex(index);
             });
 
             choiceReceiver.OnShownChoice.Subscribe(async message =>
             {
-                var index = await menuController.GetChoice(message.text, message.choices);
+                var index = message.cancelChoiceIndex is { } cancelIndex
+                    ? await menuController.GetChoice(message.text, cancelIndex, message.choices)
+                    : await menuController.GetChoice(message.text, message.choices);
                 choiceReceiver.SetChoicedIndex(index);
             });
 
@@ -105,10 +108,10 @@ namespace Provider
                 characterSelectReceiver.SetChoicedIndex(index);
             });
 
-            textInputReceiver.OnShownTextInput.Subscribe(async _ =>
+            textInputReceiver.OnShownTextInput.Subscribe(async canCancel =>
             {
                 textInputShown.Value = true;
-                var text = await menuController.GetTextInput();
+                var text = await menuController.GetTextInput(canCancel);
                 textInputReceiver.SetTextInput(text);
                 textInputShown.Value = false;
             });

@@ -51,8 +51,8 @@ namespace Domain.Model.Dungeon
 
         [Required] public SectionData SectionData;
         [Required] public FloorData FloorData;
-        [Required] public EnemyTableData EnemyTable;
-        public Table<EnemyData> Enemies => EnemyTable.Enemies;
+        public EnemyTableData EnemyTable;
+        public Table<EnemyData> Enemies => EnemyTable?.Enemies ?? new();
 
         public List<EnemyData> Boss = new();
         private bool HasBoss => Boss.Count > 0;

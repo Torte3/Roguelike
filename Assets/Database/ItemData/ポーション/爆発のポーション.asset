@@ -15,7 +15,7 @@ MonoBehaviour:
   Category: 0
   Icon: {fileID: 187119880, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
   IsShiny: 0
-  _rarity: 0
+  _rarity: 3
   _useCustomBasePrice: 0
   CustomBasePrice: 0
   AdditionalPrice: 0

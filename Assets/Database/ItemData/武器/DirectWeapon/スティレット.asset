@@ -19,8 +19,8 @@ MonoBehaviour:
   _features:
   - stringValue: Lunge
   FeatureLimit: 3
-  UsageLimit: 40
-  UpgradeLimit: 30
+  UsageLimit: 45
+  UpgradeLimit: 15
   PassiveConditions: []
   references:
     version: 2

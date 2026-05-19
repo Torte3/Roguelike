@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Data:Data:WeaponPrefix
   Name: "\u5DE8\u5927\u306A"
   _rarity: 0
-  PowerMagnification: 1
-  FeatureLimitAdditional: 3
-  UsageLimitMagnification: 1
+  PowerMagnification: 0.8
+  FeatureLimitAdditional: 4
+  UsageLimitMagnification: 0.8
   AdditionalUpgradeLimit: 0
+  IsCursed: 0

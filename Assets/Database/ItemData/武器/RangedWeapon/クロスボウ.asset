@@ -15,6 +15,8 @@ MonoBehaviour:
   Icon: {fileID: 811223021, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
   IsShiny: 0
   _rarity: 1
+  UseCustomBasePrice: 0
+  CustomBasePrice: 0
   Power: 5
   ProjectileIcon:
     _name: icons_full_16_539
@@ -22,7 +24,7 @@ MonoBehaviour:
   - stringValue: Piercing
   FeatureLimit: 3
   UsageLimit: 30
-  UpgradeLimit: 30
+  UpgradeLimit: 15
   PassiveConditions: []
   references:
     version: 2

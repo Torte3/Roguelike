@@ -43,13 +43,18 @@ namespace Domain.Service.Events
                     choices.Add("次のぺージ");
                 }
 
+                var cancelChoiceIndex = choices.Count;
                 choices.Add("やめる");
 
                 var choiceIndex = 0;
                 if (choices.Count > 1)
                 {
-                    choiceIndex = await gameManager.GetChoice(playerEvents[index].ChoiceMessage, choices.ToArray());
+                    choiceIndex = await gameManager.GetChoice(
+                        playerEvents[index].ChoiceMessage, cancelChoiceIndex, choices.ToArray());
                 }
+
+                if (choiceIndex == cancelChoiceIndex)
+                    return false;
 
                 switch (choices[choiceIndex])
                 {
@@ -59,10 +64,8 @@ namespace Domain.Service.Events
                     case "次のぺージ":
                         index += 1;
                         continue;
-                    case "やめる":
-                        return false;
                     default:
-                        await executableEvents[choiceIndex].DoEvent(player, gameManager, map);
+                        await executableEvents[choiceIndex - firstChoiceIndex].DoEvent(player, gameManager, map);
                         return true;
                 }
             }
@@ -101,14 +104,18 @@ namespace Domain.Service.Events
                     choices.Add("次のぺージ");
                 }
 
+                var cancelChoiceIndex = choices.Count;
                 choices.Add("やめる");
 
                 var choiceIndex = 0;
                 if (choices.Count > 1)
                 {
-                    choiceIndex =
-                        await gameManager.GetChoice(playerEvents[index].ChoiceMessage, choices.ToArray());
+                    choiceIndex = await gameManager.GetChoice(
+                        playerEvents[index].ChoiceMessage, cancelChoiceIndex, choices.ToArray());
                 }
+
+                if (choiceIndex == cancelChoiceIndex)
+                    return null;
 
                 switch (choices[choiceIndex])
                 {
@@ -120,8 +127,6 @@ namespace Domain.Service.Events
                         continue;
                     case "入れ替わる":
                         return swap;
-                    case "やめる":
-                        return null;
                     default:
                         await executableEvents[choiceIndex - firstChoiceIndex]
                             .DoEvent(player, gameManager, map);

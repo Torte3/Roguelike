@@ -13,17 +13,18 @@ MonoBehaviour:
   m_Name: NormalFloor
   m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.FloorData
   Field: {fileID: 0}
-  ShinyChance: 0.01
+  ShinyChance: 0.1
   SleepChance: 0.75
   MimicChance: 0.1
   ShopChance: 0.1
   MonsterHouseChance: 0.2
   RestRoomChance: 0.2
-  ItemCount: 1.5
+  ItemCount: 1
   MoneyCount: 1
   MoneyAverage: 100
   CharacterCount: 1
   ChestChance: 0.1
+  WeaponChanceInChest: 0
   StatueChance: 0.1
   BonfireWeight: 1
   MagicPotWeight: 1

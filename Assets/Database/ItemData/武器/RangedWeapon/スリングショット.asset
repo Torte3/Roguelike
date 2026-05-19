@@ -15,14 +15,16 @@ MonoBehaviour:
   Icon: {fileID: 1457851161, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
   IsShiny: 0
   _rarity: 1
+  UseCustomBasePrice: 0
+  CustomBasePrice: 0
   Power: 4
   ProjectileIcon:
     _name: icons_full_16_858
   _features:
   - stringValue: ArcingShot
   FeatureLimit: 3
-  UsageLimit: 30
-  UpgradeLimit: 30
+  UsageLimit: 35
+  UpgradeLimit: 15
   PassiveConditions: []
   references:
     version: 2

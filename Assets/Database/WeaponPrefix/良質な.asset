@@ -17,4 +17,5 @@ MonoBehaviour:
   PowerMagnification: 1
   FeatureLimitAdditional: 0
   UsageLimitMagnification: 1
-  AdditionalUpgradeLimit: 1
+  AdditionalUpgradeLimit: 6
+  IsCursed: 0

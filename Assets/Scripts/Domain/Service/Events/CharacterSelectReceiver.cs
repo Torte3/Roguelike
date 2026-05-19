@@ -10,9 +10,9 @@ namespace Domain.Service.Events
     {
         private readonly Subject<List<(string name, string textureName, string info, bool usable)>> _onShownChoice = new();
         public Observable<List<(string name, string textureName, string info, bool usable)>> OnShownChoice => _onShownChoice;
-        private readonly AsyncReactiveProperty<int> _onReceivedChoicedIndex = new(-1);
+        private readonly AsyncReactiveProperty<int?> _onReceivedChoicedIndex = new(null);
 
-        public async UniTask<int> GetCharacter(List<(string name, string textureName, string info, bool usable)> characters)
+        public async UniTask<int?> GetCharacter(List<(string name, string textureName, string info, bool usable)> characters)
         {
             Log.Debug($"[Menu]GetCharacter");
             ShowCharacter(characters);
@@ -26,7 +26,7 @@ namespace Domain.Service.Events
             _onShownChoice.OnNext(characters);
         }
 
-        public void SetChoicedIndex(int index)
+        public void SetChoicedIndex(int? index)
         {
             _onReceivedChoicedIndex.Value = index;
         }

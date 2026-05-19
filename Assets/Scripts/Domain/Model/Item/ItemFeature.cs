@@ -30,6 +30,7 @@ namespace Domain.Model.Item
         SpinAttack,
         
         Lunge,
+        BackStep,
         ChargeAttack,
 
         //RangedWeapon AttackPosition
@@ -69,7 +70,7 @@ namespace Domain.Model.Item
         EnhanceDurability,
         Artistic,
     }
-    public static class DirectWeaponFeatureExtensions
+    public static class WeaponFeatureExtensions
     {
         /// <summary> 順序なし。各グループ内のどれか1つしか付けられない。 </summary>
         private static readonly IReadOnlyList<IReadOnlyList<ItemFeature>> ExclusionGroups = new[]
@@ -110,6 +111,7 @@ namespace Domain.Model.Item
                 ItemFeature.SpinAttack => "回転攻撃",
                 
                 ItemFeature.Lunge => "突進",
+                ItemFeature.BackStep => "バックステップ",
                 ItemFeature.ChargeAttack => "溜め攻撃",
 
                 ItemFeature.ArcingShot => "曲射",
@@ -155,6 +157,7 @@ namespace Domain.Model.Item
                 ItemFeature.SpinAttack => ApplicabilityTag.DirectWeapons,
 
                 ItemFeature.Lunge => ApplicabilityTag.DirectWeapons,
+                ItemFeature.BackStep => ApplicabilityTag.Weapons,
                 ItemFeature.ChargeAttack => ApplicabilityTag.Weapons,
 
                 ItemFeature.ArcingShot => ApplicabilityTag.RangedWeapons,
@@ -166,9 +169,9 @@ namespace Domain.Model.Item
                 ItemFeature.TripleAttack => ApplicabilityTag.Weapons,
                 ItemFeature.Knockback => ApplicabilityTag.Weapons,
                 ItemFeature.Critical => ApplicabilityTag.Weapons,
-                ItemFeature.Dig => ApplicabilityTag.Weapons,
-                ItemFeature.BreakTrap => ApplicabilityTag.Weapons,
-                ItemFeature.Absorbing => ApplicabilityTag.Weapons,
+                ItemFeature.Dig => ApplicabilityTag.DirectWeapons,
+                ItemFeature.BreakTrap => ApplicabilityTag.DirectWeapons,
+                ItemFeature.Absorbing => ApplicabilityTag.DirectWeapons,
                 ItemFeature.GuaranteedHit => ApplicabilityTag.Weapons,
                 ItemFeature.EnhanceThrow => ApplicabilityTag.Weapons,
                 ItemFeature.Paralysis => ApplicabilityTag.Weapons,
@@ -194,7 +197,7 @@ namespace Domain.Model.Item
         public static bool CanAdd(this IEnumerable<ItemFeature> features, ItemFeature feature, ApplicabilityTag targetApplicability)
         {
             var featureApplicability = feature.GetApplicability();
-            if (!featureApplicability.HasFlag(targetApplicability))
+            if ((featureApplicability & targetApplicability) == 0)
             {
                 return false;
             }
@@ -216,6 +219,7 @@ namespace Domain.Model.Item
             var maxOverlap = feature switch
             {
                 ItemFeature.Lunge => CANNOT_OVERLAP,
+                ItemFeature.BackStep => CANNOT_OVERLAP,
                 ItemFeature.ChargeAttack => CANNOT_OVERLAP,
                 ItemFeature.Knockback => CANNOT_OVERLAP,
                 ItemFeature.Critical => 4,

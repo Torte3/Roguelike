@@ -21,8 +21,8 @@ MonoBehaviour:
   _features:
   - stringValue: SpinAttack
   FeatureLimit: 3
-  UsageLimit: 30
-  UpgradeLimit: 30
+  UsageLimit: 25
+  UpgradeLimit: 25
   PassiveConditions: []
   references:
     version: 2

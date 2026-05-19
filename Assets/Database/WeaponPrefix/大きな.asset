@@ -15,6 +15,7 @@ MonoBehaviour:
   Name: "\u5927\u304D\u306A"
   _rarity: 0
   PowerMagnification: 1
-  FeatureLimitAdditional: 1
+  FeatureLimitAdditional: 2
   UsageLimitMagnification: 1
   AdditionalUpgradeLimit: 0
+  IsCursed: 0

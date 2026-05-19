@@ -50,7 +50,7 @@ MonoBehaviour:
     rid: -2
   InventoryEffect:
     rid: -2
-  UsageLimit: 10
+  UsageLimit: 6
   UpgradeLimit: 3
   PassiveConditions: []
   _featuresToMergeWeapon: []

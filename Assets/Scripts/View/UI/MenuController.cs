@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using Domain.Model;
 using ObservableCollections;
 using R3;
 using Unity.Logging;
@@ -76,7 +77,9 @@ namespace View.UI
             return _menuStack.Peek() == _dungeonMenu ? MenuType.Field : MenuType.Menu;
         }
 
-        public async UniTask<int> GetChoiceWithInfo(string? text, params (string choice, string infoTitle, string info)[] choices)
+        public async UniTask<int> GetChoiceWithInfo(
+            string? text,
+            params (string choice, string infoTitle, string info)[] choices)
         {
             AddMenu(_infoMenu);
             var disposable = _choiceMenu.SelectedIndex.Subscribe(index =>
@@ -89,32 +92,96 @@ namespace View.UI
             return choiceIndex;
         }
 
-        public async UniTask<int> GetChoice(string? text, params string[] choices)
+        public async UniTask<int> GetChoiceWithInfo(
+            string? text,
+            int cancelChoiceIndex,
+            params (string choice, string infoTitle, string info)[] choices)
         {
-            _choiceMenu.SetChoices(text, choices);
-            await UniTask.NextFrame();
-            AddMenu(_choiceMenu);
-            var choicedIndex = await _choiceMenu.ChoicedIndex.WaitAsync();
-            PopMenu();
-            return choicedIndex;
-        }
-
-        public async UniTask<int> GetCharacter(List<(string name, string textureName, string info, bool usable)> characters)
-        {
-            _characterSelectMenu.SetChoices(characters);
-            await UniTask.NextFrame();
-            AddMenu(_characterSelectMenu);
-            var choiceIndex = await _characterSelectMenu.ChoicedIndex.WaitAsync();
+            AddMenu(_infoMenu);
+            var disposable = _choiceMenu.SelectedIndex.Subscribe(index =>
+            {
+                _infoMenu.SetInfo(choices[index].infoTitle, choices[index].info);
+            });
+            var choiceIndex = await GetChoice(text, cancelChoiceIndex, choices.Select(x => x.choice).ToArray());
+            disposable.Dispose();
             PopMenu();
             return choiceIndex;
         }
 
-        public async UniTask<string> GetTextInput()
+        public UniTask<int> GetChoice(string? text, params string[] choices) =>
+            GetChoiceInternal(text, null, choices);
+
+        public UniTask<int> GetChoice(string? text, int cancelChoiceIndex, params string[] choices) =>
+            GetChoiceInternal(text, cancelChoiceIndex, choices);
+
+        private async UniTask<int> GetChoiceInternal(string? text, int? cancelChoiceIndex, string[] choices)
         {
+            _choiceMenu.SetCanCancel(cancelChoiceIndex.HasValue);
+            _choiceMenu.SetChoices(text, choices);
+            await UniTask.NextFrame();
+            AddMenu(_choiceMenu);
+            var choiceIndex = await WaitForChoice(
+                _choiceMenu.ChoicedIndex,
+                _choiceMenu,
+                waitForClose: cancelChoiceIndex.HasValue,
+                choiceIndexWhenClosed: cancelChoiceIndex);
+            if (IsMenuOpen(_choiceMenu))
+                PopMenu();
+            return choiceIndex!.Value;
+        }
+
+        public async UniTask<int?> GetCharacter(List<(string name, string textureName, string info, bool usable)> characters)
+        {
+            _characterSelectMenu.SetChoices(characters);
+            await UniTask.NextFrame();
+            AddMenu(_characterSelectMenu);
+            var choiceIndex = await WaitForChoice(
+                _characterSelectMenu.ChoicedIndex,
+                _characterSelectMenu,
+                waitForClose: true);
+            if (IsMenuOpen(_characterSelectMenu))
+                PopMenu();
+            return choiceIndex;
+        }
+
+        private async UniTask<int?> WaitForChoice(
+            IReadOnlyAsyncReactiveProperty<int> choice,
+            IMenu menu,
+            bool waitForClose,
+            int? choiceIndexWhenClosed = null)
+        {
+            if (!waitForClose)
+                return await choice.WaitAsync();
+
+            var (hasChoice, index) = await UniTask.WhenAny(
+                choice.WaitAsync(),
+                UniTask.WaitUntil(() => !IsMenuOpen(menu))
+            );
+            return hasChoice ? index : choiceIndexWhenClosed;
+        }
+
+        private bool IsMenuOpen(IMenu menu) =>
+            _menuStack.Count > 0 && _menuStack.Peek() == menu;
+
+        public async UniTask<string?> GetTextInput(bool canCancel = false)
+        {
+            _textInputMenu.SetCanCancel(canCancel);
             AddMenu(_textInputMenu);
-            var text = await _textInputMenu.Text.WaitAsync();
-            PopMenu();
+            var text = canCancel
+                ? await WaitTextOrClose(_textInputMenu)
+                : await _textInputMenu.Text.WaitAsync();
+            if (IsMenuOpen(_textInputMenu))
+                PopMenu();
             return text;
+        }
+
+        private async UniTask<string?> WaitTextOrClose(TextInputMenu menu)
+        {
+            var (hasText, text) = await UniTask.WhenAny(
+                menu.Text.WaitAsync(),
+                UniTask.WaitUntil(() => !IsMenuOpen(menu))
+            );
+            return hasText ? text : null;
         }
 
         public void SwitchMenu(IMenu menu)

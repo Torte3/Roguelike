@@ -23,7 +23,8 @@ MonoBehaviour:
   MoneyCount: 1
   MoneyAverage: 100
   CharacterCount: 1
-  ChestChance: 0.1
+  ChestChance: 0
+  WeaponChanceInChest: 1
   StatueChance: 0
   BonfireWeight: 0
   MagicPotWeight: 0

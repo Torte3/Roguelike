@@ -107,116 +107,16 @@ namespace Domain.Service.Items
             }
 
             var effectsOnUse = new List<IEffect>();
-            var elementPowers = new List<ElementPower>();
-            var powerMagnification = 1f;
-            if (prefix != null)
-            {
-                powerMagnification *= prefix.PowerMagnification;
-            }
-            if (features.Contains(ItemFeature.ChargeAttack))
-            {
-                powerMagnification *= 1.5f;
-            }
-            power = Mathf.RoundToInt(power * powerMagnification);
-            power += upgradeCount;
+            var attackPower = WeaponFeatureSkillBuilder.CalculateAttackPower(
+                power, upgradeCount, features, prefix, applyChargeAttackMagnification: true);
+            var elementPowers = WeaponFeatureSkillBuilder.CreateElementPowers(attackPower, features);
+            var criticalRate = WeaponFeatureSkillBuilder.GetCriticalRate(features);
+            WeaponFeatureSkillBuilder.AddCombatEffects(effectsOnUse, features, elementPowers, criticalRate);
 
-            var elementFeatureMapping = new Dictionary<ItemFeature, Element>
-            {
-                { ItemFeature.Fire, Element.Fire },
-                { ItemFeature.Ice, Element.Ice },
-                { ItemFeature.Thunder, Element.Thunder },
-                { ItemFeature.Light, Element.Light },
-                { ItemFeature.Dark, Element.Dark }
-            };
-
-            var elementFeature = elementFeatureMapping.Keys.FirstOrDefault(feature => features.Contains(feature));
-
-            List<ElementPower> CreateElementPowers(int powerValue)
-            {
-                var elementPowers = new List<ElementPower>();
-                if (elementFeature != default)
-                {
-                    var element = elementFeatureMapping[elementFeature];
-                    var elementPower = Mathf.CeilToInt(powerValue / 2f);
-                    elementPowers.Add(new ElementPower(element, elementPower));
-                    elementPowers.Add(new ElementPower(Element.Physical, powerValue - elementPower));
-                }
-                else
-                {
-                    elementPowers.Add(new ElementPower(Element.Physical, powerValue));
-                }
-                return elementPowers;
-            }
-
-            elementPowers = CreateElementPowers(power);
-
-            var criticalRate = features.Count(f => f == ItemFeature.Critical) * 0.25f;
-            if (features.Contains(ItemFeature.Absorbing))
-            {
-                var absorbRate = features.Count(f => f == ItemFeature.Absorbing) * 0.25f;
-                effectsOnUse.Add(new AbsorbsEffect(
-                    elementPowers,
-                    absorbRate,
-                    criticalRate,
-                    isWeaponAttack: true
-                ));
-            }
-            else
-            {
-                effectsOnUse.Add(new AttackEffect(
-                    elementPowers,
-                    criticalRate,
-                    isWeaponAttack: true
-                ));
-            }
-            if (features.Contains(ItemFeature.Knockback))
-            {
-                effectsOnUse.Add(new BlowAwayEffect(1));
-            }
-            if (features.Contains(ItemFeature.Dig))
-            {
-                effectsOnUse.Add(new DigEffect());
-            }
-            if (features.Contains(ItemFeature.BreakTrap))
-            {
-                effectsOnUse.Add(new BreakEffect(false, false, false, true, false, false));
-            }
-            var abnormalConditionMultiplier = features.Count(f => f == ItemFeature.EnhanceAbnormalCondition) + 1;
-
-            // 状態異常フィーチャーから対応するデータを取得
-            var conditionFeatureMapping = new Dictionary<ItemFeature, (string templateName, float baseProbability)>
-            {
-                { ItemFeature.Paralysis, ("麻痺", 0.05f) },
-                { ItemFeature.Blind, ("盲目", 0.1f) },
-                { ItemFeature.Confusion, ("混乱", 0.1f) },
-                { ItemFeature.Sleep, ("睡眠", 0.05f) },
-                { ItemFeature.Poison, ("毒", 0.2f) },
-                { ItemFeature.Slowness, ("鈍足", 0.1f) },
-                { ItemFeature.Restraint, ("拘束", 0.1f) }
-            };
-
-            foreach (var (feature, (templateName, baseProbability)) in conditionFeatureMapping)
-            {
-                if (features.Contains(feature))
-                {
-                    var probability = baseProbability * abnormalConditionMultiplier;
-                    var conditionData = new AdditionalConditionData(
-                        ObjectLoader.Load<ConditionTemplate>(templateName), probability);
-                    effectsOnUse.Add(new AddConditionEffect(conditionData));
-                }
-            }
-
-            int repeat;
-            if (features.Contains(ItemFeature.TripleAttack))
-                repeat = 3;
-            else if (features.Contains(ItemFeature.DoubleAttack))
-                repeat = 2;
-            else
-                repeat = 1;
-
-            var skillOnUseProbabilityOfSuccess = features.Contains(ItemFeature.GuaranteedHit) ? 1f : features.Contains(ItemFeature.Critical) ? 0.75f : CommonSenseParameters.SkillOnUseProbabilityOfSuccess;
-
-            var chargeTurn = features.Contains(ItemFeature.ChargeAttack) ? 1 : 0;
+            var repeat = WeaponFeatureSkillBuilder.GetAttackRepeatCount(features);
+            var skillOnUseProbabilityOfSuccess = WeaponFeatureSkillBuilder.GetSkillOnUseProbabilityOfSuccess(features);
+            var chargeTurn = WeaponFeatureSkillBuilder.GetChargeTurn(features);
+            var backStepDistance = features.Contains(ItemFeature.BackStep) ? 1 : 0;
 
             return SkillWithCost.Build(
                 new SkillData(
@@ -227,7 +127,7 @@ namespace Domain.Service.Items
                     skillOnUseProbabilityOfSuccess,
                     0,
                     0,
-                    0,
+                    backStepDistance,
                     chargeTurn,
                     0,
                     ""
@@ -238,10 +138,11 @@ namespace Domain.Service.Items
         public static RangedWeaponMemento Build(RangedWeaponData data, int upgradeCount = 0, WeaponPrefix? prefix = null, bool isCursed = false, ItemState state = ItemState.None, EnemyData? mimic = null)
         {
             var skillOnUse = BuildSkills(data.Power, 0, data.ProjectileIcon, data.Features, prefix);
-            var multiplyPrice = data.Features.Contains(ItemFeature.Artistic) ? 2f : 1f;
-            var usageLossChance = 1 - data.Features.Count(f => f == ItemFeature.EnhanceDurability) * 0.2f;
+            var multiplyPrice = WeaponFeatureSkillBuilder.GetMultiplyPrice(data.Features);
+            var usageLossChance = WeaponFeatureSkillBuilder.GetUsageLossChance(data.Features);
             var featureLimit = data.FeatureLimit + prefix?.FeatureLimitAdditional ?? 0;
             var maxUsages = Mathf.RoundToInt(data.UsageLimit * (prefix?.UsageLimitMagnification ?? 1f));
+            var isCursedByPrefix = prefix != null && prefix.IsCursed;
 
             var json = JsonUtility.ToJson(new RangedWeaponMemento
             (
@@ -257,7 +158,7 @@ namespace Domain.Service.Items
                     upgradeCount: upgradeCount,
                     maxUsages: maxUsages,
                     usageLossChance: usageLossChance,
-                    isCursed: isCursed,
+                    isCursed: isCursed || isCursedByPrefix,
                     upgradeLimit: data.UpgradeLimit + prefix.ToOption().MapOr(0, prefix => prefix.AdditionalUpgradeLimit),
                     conditions: data.PassiveConditions,
                     mimic: mimic.ToOption()
@@ -285,8 +186,8 @@ namespace Domain.Service.Items
                 features,
                 memento.Prefix.Value
             );
-            var multiplyPrice = features.Contains(ItemFeature.Artistic) ? 2f : 1f;
-            var usageLossChance = 1 - features.Count(f => f == ItemFeature.EnhanceDurability) * 0.2f;
+            var multiplyPrice = WeaponFeatureSkillBuilder.GetMultiplyPrice(features);
+            var usageLossChance = WeaponFeatureSkillBuilder.GetUsageLossChance(features);
             var item = new RangedWeapon(memento.CopyWith(
                 baseItem: memento.BaseItem.CopyWith(
                     multiplyPrice: multiplyPrice,

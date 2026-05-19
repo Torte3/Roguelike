@@ -20,7 +20,7 @@ MonoBehaviour:
   - stringValue: Knockback
   FeatureLimit: 3
   UsageLimit: 30
-  UpgradeLimit: 30
+  UpgradeLimit: 20
   PassiveConditions: []
   references:
     version: 2

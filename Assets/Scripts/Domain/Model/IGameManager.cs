@@ -18,7 +18,10 @@ namespace Domain.Model
         public Guid StartEvent();
         public void EndEvent(Guid eventId);
         public UniTask<int> GetChoice(string? text, params string[] choices);
-        public UniTask<string> GetTextInput();
+        public UniTask<int> GetChoice(string? text, int cancelChoiceIndex, params string[] choices);
+        public UniTask<int> GetChoiceWithInfo(string? text, params (string choice, string infoTitle, string info)[] choices);
+        public UniTask<int> GetChoiceWithInfo(string? text, int cancelChoiceIndex, params (string choice, string infoTitle, string info)[] choices);
+        public UniTask<string?> GetTextInput(bool canCancel = false);
         public void MoveMap(Id<IMap> destination, Id<IEntity> from);
         public void PlayBGM(BGM bgm);
         public void PlaySE(SE se);

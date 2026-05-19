@@ -94,12 +94,12 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
             ""actions"": [
                 {
                     ""name"": ""Move"",
-                    ""type"": ""Value"",
+                    ""type"": ""PassThrough"",
                     ""id"": ""d010d7ca-dc09-4388-893b-34d631db1407"",
                     ""expectedControlType"": ""Vector2"",
                     ""processors"": ""StickDeadzone"",
                     ""interactions"": """",
-                    ""initialStateCheck"": true
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""OpenMainMenu"",
@@ -647,9 +647,9 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
             ""actions"": [
                 {
                     ""name"": ""Navigate"",
-                    ""type"": ""Button"",
+                    ""type"": ""PassThrough"",
                     ""id"": ""eae6f94d-9276-43ad-84fd-d1ac2e44e647"",
-                    ""expectedControlType"": """",
+                    ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false

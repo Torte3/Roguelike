@@ -13,7 +13,7 @@ namespace View.UI
 {
     public class CharacterSelectMenu : MonoBehaviour, IMenu
     {
-        public bool CanClose => false;
+        public bool CanClose => true;
         [SerializeField] private CharacterDemoDisplay _characterDemoDisplay;
         private readonly ReactiveProperty<int> _selectedIndex = new(-1);
         public ReadOnlyReactiveProperty<int> SelectedIndex => _selectedIndex;

@@ -16,7 +16,7 @@ MonoBehaviour:
   Group: 1
   CharacterType:
     rid: 6064254728247705600
-  _sprite: {fileID: 21300000, guid: 596c4e7389db33c4ca8a947cfc88665f, type: 3}
+  _sprite: {fileID: 21300000, guid: 91ae14fd7b760c746964dd1709103b0f, type: 3}
   IsBoss: 0
   Hp: 3
   Aggression: 1
@@ -116,4 +116,4 @@ MonoBehaviour:
     - rid: 6064254728247705600
       type: {class: Bat, ns: Domain.Model.Character.Type, asm: Domain.Model}
       data:
-        Type: 0
+        Type: 4

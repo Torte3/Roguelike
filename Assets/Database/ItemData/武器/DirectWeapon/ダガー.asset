@@ -19,8 +19,8 @@ MonoBehaviour:
   _features:
   - stringValue: EnhanceAbnormalCondition
   FeatureLimit: 3
-  UsageLimit: 50
-  UpgradeLimit: 30
+  UsageLimit: 55
+  UpgradeLimit: 10
   PassiveConditions: []
   references:
     version: 2

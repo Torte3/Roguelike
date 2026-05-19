@@ -19,6 +19,7 @@ namespace Domain.Model.Item
         [MinValue(0)] public int FeatureLimitAdditional = 0;
         [MinValue(0)] public float UsageLimitMagnification = 1;
         public int AdditionalUpgradeLimit;
+        public bool IsCursed;
 #if UNITY_EDITOR
         private void OnValidate()
         {

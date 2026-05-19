@@ -39,6 +39,10 @@ namespace Provider.Input
         public ReadOnlyReactiveProperty<bool> IsNoMove => _actions.Field.TurnOnly.AsEnabledPressedReactiveProperty();
         public ReadOnlyReactiveProperty<bool> IsDiagonalOnly => _actions.Field.DiagonalOnly.AsEnabledPressedReactiveProperty();
 
+        public bool IsDashPressed => IsPressed(_actions.Field.Dash);
+        public bool IsNoMovePressed => IsPressed(_actions.Field.TurnOnly);
+        public bool IsDiagonalOnlyPressed => IsPressed(_actions.Field.DiagonalOnly);
+
         public Observable<Unit> OnAttackPerformed =>
             _actions.Field.Attack.AsObservable().Select(context => Unit.Default);
 
@@ -102,6 +106,8 @@ namespace Provider.Input
             if (uiAsset != null && !ReferenceEquals(uiAsset, _actions.asset))
                 ApplyFaceButtonSwapToAsset(uiAsset, enabled);
         }
+
+        private static bool IsPressed(InputAction action) => action.enabled && action.IsPressed();
 
         private InputActionAsset? GetUIModuleActionsAssetOrNull()
         {

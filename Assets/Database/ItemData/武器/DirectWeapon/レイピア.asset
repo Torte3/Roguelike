@@ -10,17 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 840a56d02e5d5f6418762374474908e9, type: 3}
-  m_Name: "\u5FC5\u4E2D\u306E\u5263"
+  m_Name: "\u30EC\u30A4\u30D4\u30A2"
   m_EditorClassIdentifier: Domain.Model::Domain.Model.Item.DirectWeaponData
-  Icon: {fileID: 878648006, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
+  Icon: {fileID: 1532299246, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
   IsShiny: 0
-  _rarity: 2
-  Power: 6
+  _rarity: 1
+  UseCustomBasePrice: 0
+  CustomBasePrice: 0
+  Power: 5
   _features:
-  - stringValue: GuaranteedHit
+  - stringValue: BackStep
   FeatureLimit: 3
-  UsageLimit: 50
-  UpgradeLimit: 30
+  UsageLimit: 40
+  UpgradeLimit: 15
   PassiveConditions: []
   references:
     version: 2

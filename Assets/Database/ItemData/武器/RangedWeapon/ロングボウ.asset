@@ -15,13 +15,15 @@ MonoBehaviour:
   Icon: {fileID: -1271251965, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
   IsShiny: 0
   _rarity: 0
+  UseCustomBasePrice: 0
+  CustomBasePrice: 0
   Power: 5
   ProjectileIcon:
     _name: icons_full_16_539
   _features: []
-  FeatureLimit: 3
-  UsageLimit: 30
-  UpgradeLimit: 30
+  FeatureLimit: 4
+  UsageLimit: 40
+  UpgradeLimit: 10
   PassiveConditions: []
   references:
     version: 2

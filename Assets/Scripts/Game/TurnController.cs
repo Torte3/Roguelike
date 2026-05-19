@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -81,6 +81,8 @@ namespace Game
                                 throw new InvalidOperationException(
                                     $"[Turn] {character.GetName(map.Player)} is unexpectedly in thinking state before their turn to action decision");
                         }
+
+                        await UniTask.WaitWhile(() => gameManager.IsEventExecuting);
                     }
 
                     if (_cancellationTokenSource.Token.IsCancellationRequested)
@@ -164,12 +166,8 @@ namespace Game
                 catch (OperationCanceledException e)
                 {
                     Log.Debug($"OperationCanceledException: {e}");
+                    return;
                 }
-            }
-
-            if (gameManager.IsEventExecuting)
-            {
-                await UniTask.WaitWhile(() => gameManager.IsEventExecuting);
             }
         }
 

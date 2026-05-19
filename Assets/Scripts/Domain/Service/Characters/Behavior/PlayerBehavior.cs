@@ -203,21 +203,31 @@ namespace Domain.Service.Characters.Behavior
                         {
                             choices.Add("このアイテム単体に名前をつける");
                         }
+                        var cancelChoiceIndex = choices.Count;
                         choices.Add("やめる");
 
-                        var choice = await gameManager.GetChoice(null, choices.ToArray());
-                        switch (choices[choice])
+                        var choiceIndex = await gameManager.GetChoice(null, cancelChoiceIndex, choices.ToArray());
+                        if (choiceIndex == cancelChoiceIndex)
+                            break;
+
+                        switch (choices[choiceIndex])
                         {
                             case "このアイテムの種類に名前をつける":
-                                map.ItemPlaceholders.Rename(focusItem.BaseName, await gameManager.GetTextInput());
+                            {
+                                var typeName = await gameManager.GetTextInput(canCancel: true);
+                                if (typeName != null)
+                                    map.ItemPlaceholders.Rename(focusItem.BaseName, typeName);
                                 break;
+                            }
                             case "このアイテム単体に名前をつける":
-                                focusItem.Rename(await gameManager.GetTextInput());
+                            {
+                                var itemName = await gameManager.GetTextInput(canCancel: true);
+                                if (itemName != null)
+                                    focusItem.Rename(itemName);
                                 break;
+                            }
                             case "このアイテム単体の名前をデフォルトに戻す":
                                 focusItem.RevertToDefaultName();
-                                break;
-                            case "やめる":
                                 break;
                         }
                         break;

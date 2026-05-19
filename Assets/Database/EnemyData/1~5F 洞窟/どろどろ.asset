@@ -155,4 +155,4 @@ MonoBehaviour:
       data:
         _condition:
           _name: "\u920D\u8DB3"
-        _probabilityOfSuccess: 0.5
+        _probabilityOfSuccess: 0.1

@@ -20,7 +20,7 @@ MonoBehaviour:
   - stringValue: BreakTrap
   FeatureLimit: 3
   UsageLimit: 50
-  UpgradeLimit: 30
+  UpgradeLimit: 15
   PassiveConditions: []
   references:
     version: 2

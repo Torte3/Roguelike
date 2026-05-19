@@ -35,22 +35,20 @@ namespace Domain.Service.Events
                 choices.Add(eventData.ChoiceText);
             }
 
+            var cancelChoiceIndex = choices.Count;
             choices.Add("やめる");
 
             var choiceIndex = 0;
             if (choices.Count > 1)
             {
-                choiceIndex = await gameManager.GetChoice(ChoiceMessage, choices.ToArray());
+                choiceIndex = await gameManager.GetChoice(ChoiceMessage, cancelChoiceIndex, choices.ToArray());
             }
 
-            switch (choices[choiceIndex])
-            {
-                case "やめる":
-                    return false;
-                default:
-                    await executableEvents[choiceIndex].DoEvent(player, gameManager, map);
-                    return true;
-            }
+            if (choiceIndex == cancelChoiceIndex)
+                return false;
+
+            await executableEvents[choiceIndex].DoEvent(player, gameManager, map);
+            return true;
         }
 
         public async UniTask<IAction?> DoAction(IPlayer player, IGameManager gameManager, IMap map, IAction swap)
@@ -62,9 +60,11 @@ namespace Domain.Service.Events
             }
 
             var choices = new List<string>();
+            int? swapChoiceIndex = null;
             var firstChoiceIndex = 0;
             if (swap.Doable(player.Character, map))
             {
+                swapChoiceIndex = choices.Count;
                 choices.Add("入れ替わる");
                 firstChoiceIndex += 1;
             }
@@ -74,26 +74,25 @@ namespace Domain.Service.Events
                 choices.Add(eventData.ChoiceText);
             }
 
+            var cancelChoiceIndex = choices.Count;
             choices.Add("やめる");
 
             var choiceIndex = 0;
             if (choices.Count > 1)
             {
                 choiceIndex =
-                    await gameManager.GetChoice(ChoiceMessage, choices.ToArray());
+                    await gameManager.GetChoice(ChoiceMessage, cancelChoiceIndex, choices.ToArray());
             }
 
-            switch (choices[choiceIndex])
-            {
-                case "入れ替わる":
-                    return swap;
-                case "やめる":
-                    return null;
-                default:
-                    await executableEvents[choiceIndex - firstChoiceIndex]
-                        .DoEvent(player, gameManager, map);
-                    return new DoNothing();
-            }
+            if (choiceIndex == cancelChoiceIndex)
+                return null;
+
+            if (choiceIndex == swapChoiceIndex)
+                return swap;
+
+            await executableEvents[choiceIndex - firstChoiceIndex]
+                .DoEvent(player, gameManager, map);
+            return new DoNothing();
         }
     }
 }

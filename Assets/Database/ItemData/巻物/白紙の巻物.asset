@@ -15,7 +15,7 @@ MonoBehaviour:
   Category: 1
   Icon: {fileID: 1522504690, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
   IsShiny: 0
-  _rarity: 3
+  _rarity: 4
   _useCustomBasePrice: 0
   CustomBasePrice: 0
   AdditionalPrice: 0
@@ -75,6 +75,7 @@ MonoBehaviour:
         - _element: 0
           _power: 20
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 8829846088258420836
       type: {class: DuplicateItem, ns: Domain.Service.ItemEffect, asm: Domain.Service}
       data: 
