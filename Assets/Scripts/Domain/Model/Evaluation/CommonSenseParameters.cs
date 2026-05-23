@@ -17,6 +17,8 @@ namespace Domain.Model.Evaluation
         public const float RandomTeleportProbability = 0.1f;
         public const float RandomExplosionProbability = 0.05f;
         public const int PlayerVisionRange = 8;
+        public const float BlindVisionRadius = 1.5f;
+        public const float NarrowVisionRadius = 3f;
         public const float EvaluateCoefficient = 0.05f;
         public const int ThrowDistance = 10;
         public const float SkillOnUseProbabilityOfSuccess = 0.95f;
@@ -31,6 +33,9 @@ namespace Domain.Model.Evaluation
         public const float AdjacentDamageMultiplier = 0.5f;
         public const float StealAttackBonusPerCount = 0.2f;
         public const int StealAttackBonusMaxCount = 5;
+        public const int KillHealPerEnemyDefeated = 5;
+        public const int SacrificeAttackHpCost = 5;
+        public const float SacrificeAttackPowerMultiplier = 1.5f;
 
         public const int BlowAwayWallDamagePerRemainingTile = 1;
 

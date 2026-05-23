@@ -33,10 +33,9 @@ namespace Game
         {
             if (data.Id != null && data.DestinationId != null)
                 _stairs.Add(Stairs.Build(data.Type, GetRandomStairPosition(), data.Id,
-                    data.Destination, data.DestinationId, new()));
+                    data.Destination, data.DestinationId));
             else
-                _stairs.Add(Stairs.Build(data.Type, GetRandomStairPosition(),
-                    data.Destination, new()));
+                _stairs.Add(Stairs.Build(data.Type, GetRandomStairPosition(), data.Destination));
         }
         public MapMemento Build()
         {

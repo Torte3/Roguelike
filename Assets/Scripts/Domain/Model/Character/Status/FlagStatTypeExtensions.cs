@@ -14,6 +14,7 @@ namespace Domain.Model.Character.Status
             FlagStatType.Confused => "混乱",
             FlagStatType.Clairvoyant => "透視",
             FlagStatType.Blind => "盲目",
+            FlagStatType.NarrowVision => "視力低下",
             FlagStatType.OverDrive => "オーバードライブ",
             FlagStatType.AllConditionProof => "全状態異常耐性",
             FlagStatType.Hard => "硬質",
@@ -33,6 +34,7 @@ namespace Domain.Model.Character.Status
             FlagStatType.AdjacentAttackGuard => "隣接ダメージ半減",
             FlagStatType.FullHpCritical => "満タンクリティカル",
             FlagStatType.StealEmpower => "盗むたび攻撃強化",
+            FlagStatType.KillHeal => "撃破回復",
             _ => throw new ArgumentException($"Invalid flag stat type: {type}")
         };
 
@@ -43,6 +45,7 @@ namespace Domain.Model.Character.Status
             FlagStatType.Confused => ParticleType.Confusion,
             FlagStatType.Clairvoyant => ParticleType.None,
             FlagStatType.Blind => ParticleType.Blind,
+            FlagStatType.NarrowVision => ParticleType.Blind,
             FlagStatType.OverDrive => ParticleType.None,
             FlagStatType.AllConditionProof => ParticleType.None,
             FlagStatType.Hard => ParticleType.None,
@@ -72,6 +75,7 @@ namespace Domain.Model.Character.Status
             FlagStatType.Confused => Impact.Harmful,
             FlagStatType.Clairvoyant => Impact.Beneficial,
             FlagStatType.Blind => Impact.Harmful,
+            FlagStatType.NarrowVision => Impact.Harmful,
             FlagStatType.OverDrive => Impact.Beneficial,
             FlagStatType.AllConditionProof => Impact.Beneficial,
             FlagStatType.Hard => Impact.Beneficial,
@@ -91,6 +95,7 @@ namespace Domain.Model.Character.Status
             FlagStatType.AdjacentAttackGuard => Impact.Beneficial,
             FlagStatType.FullHpCritical => Impact.Beneficial,
             FlagStatType.StealEmpower => Impact.Beneficial,
+            FlagStatType.KillHeal => Impact.Beneficial,
             _ => throw new ArgumentException($"Invalid flag stat type: {type}")
         };
 
@@ -105,6 +110,7 @@ namespace Domain.Model.Character.Status
                 FlagStatType.Confused => CommonSenseParameters.OneTurnStunEquivalentHpReduction / 2,
                 FlagStatType.Clairvoyant => 0.05f,
                 FlagStatType.Blind => CommonSenseParameters.OneTurnStunEquivalentHpReduction / 2,
+                FlagStatType.NarrowVision => CommonSenseParameters.OneTurnStunEquivalentHpReduction / 4,
                 FlagStatType.OverDrive => 0.1f,
                 FlagStatType.AllConditionProof => 0.5f,
                 FlagStatType.Hard => CommonSenseParameters.DamagePerAttack / CommonSenseParameters.MonsterMaxHealth,
@@ -114,7 +120,7 @@ namespace Domain.Model.Character.Status
                 FlagStatType.CurseProof => 0.1f,
                 FlagStatType.Negotiator => 0.1f,
                 FlagStatType.IsAffectedByTrap => 0.1f,
-                FlagStatType.AutoIdentify => 1f,
+                FlagStatType.AutoIdentify => 0.1f,
                 FlagStatType.RandomTeleport => 0.1f,
                 FlagStatType.RandomExplosion => 0.1f,
                 FlagStatType.BookMaster => 0.2f,
@@ -124,6 +130,8 @@ namespace Domain.Model.Character.Status
                 FlagStatType.AdjacentAttackGuard => 0.2f,
                 FlagStatType.FullHpCritical => 0.2f,
                 FlagStatType.StealEmpower => 0.2f,
+                FlagStatType.KillHeal => (float)CommonSenseParameters.KillHealPerEnemyDefeated /
+                                         CommonSenseParameters.PlayerMaxHealth,
                 _ => throw new ArgumentException($"Invalid flag stat type: {type}")
             };
         }
@@ -135,6 +143,7 @@ namespace Domain.Model.Character.Status
             FlagStatType.Confused => CommonSenseParameters.OneTurnStunEquivalentDamage / 2,
             FlagStatType.Clairvoyant => 2f,
             FlagStatType.Blind => CommonSenseParameters.OneTurnStunEquivalentDamage / 2,
+            FlagStatType.NarrowVision => CommonSenseParameters.OneTurnStunEquivalentDamage / 4,
             FlagStatType.OverDrive => 5f,
             FlagStatType.AllConditionProof => 3f,
             FlagStatType.Hard => 2f,
@@ -154,6 +163,7 @@ namespace Domain.Model.Character.Status
             FlagStatType.AdjacentAttackGuard => 0.5f,
             FlagStatType.FullHpCritical => 0.5f,
             FlagStatType.StealEmpower => 0.5f,
+            FlagStatType.KillHeal => 0.5f,
             _ => 0f
         };
     }

@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16097a5b2ad98e243a375f972355931f, type: 3}
+  m_Name: "\u6697\u95C7"
+  m_EditorClassIdentifier: 
+  Condition:
+    rid: 8023009326398177477
+  RemovalCondition:
+    RemoveByElapsedTurn: 1
+    Duration: 50
+    RemoveByDamage: 0
+    Probability: 0
+    RemoveByCharacterNearby: 0
+    CharacterNearbyProbability: 0
+  InflictLog: "\u306F\u95C7\u306B\u5305\u307E\u308C\u305F"
+  DeleteLog: "\u306F\u3088\u304F\u898B\u3048\u308B\u3088\u3046\u306B\u306A\u3063\u305F"
+  references:
+    version: 2
+    RefIds:
+    - rid: 8023009326398177477
+      type: {class: FlagCondition, ns: Domain.Service.Characters.Conditions, asm: Domain.Service}
+      data:
+        _flagStatType:
+          stringValue: NarrowVision

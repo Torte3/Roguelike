@@ -126,6 +126,7 @@ namespace Domain.Service.Items
             var rushDistance = features.Contains(ItemFeature.Lunge) ? 1 : 0;
             var backStepDistance = features.Contains(ItemFeature.BackStep) ? 1 : 0;
             var chargeTurn = WeaponFeatureSkillBuilder.GetChargeTurn(features);
+            var skillHpCost = WeaponFeatureSkillBuilder.GetSkillHpCost(features);
 
             var skillOnUse = SkillWithCost.Build(
                 new SkillDataOnUse(
@@ -134,7 +135,7 @@ namespace Domain.Service.Items
                     effectsOnUse,
                     repeat,
                     skillOnUseProbabilityOfSuccess,
-                    0,
+                    skillHpCost,
                     rushDistance,
                     backStepDistance,
                     chargeTurn,

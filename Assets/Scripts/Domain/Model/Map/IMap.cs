@@ -80,6 +80,8 @@ namespace Domain.Model.Map
 
         public void SpawnFire(IEnumerable<Vector2Int> positions);
 
+        public void SpawnTrap(TrapData trap, Vector2Int position);
+
         public UniTask<Vector2Int> ShowThrowAnimation(Sprite icon, Vector2Int position, Direction8 direction,
             int distance, bool isPiercing, params EntityLayer[] canHitLayer);
 

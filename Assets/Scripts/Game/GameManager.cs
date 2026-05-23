@@ -8,6 +8,7 @@ using Domain.Model.Character.Message;
 using Domain.Model.Character;
 using Domain.Model.Dungeon;
 using Domain.Model.Entity;
+using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Setting;
 using Domain.Service.Characters.Behavior;
@@ -101,6 +102,16 @@ namespace Game
             int cancelChoiceIndex,
             params (string choice, string infoTitle, string info)[] choices) =>
             _choiceReceiver.GetChoiceWithInfo(text, cancelChoiceIndex, choices);
+
+        public UniTask<int> GetChoiceWithItemPreview(string? text, IMap map, params (string choice, IItem item)[] choices) =>
+            _choiceReceiver.GetChoiceWithItemPreview(text, map, choices);
+
+        public UniTask<int> GetChoiceWithItemPreview(
+            string? text,
+            IMap map,
+            int cancelChoiceIndex,
+            params (string choice, IItem item)[] choices) =>
+            _choiceReceiver.GetChoiceWithItemPreview(text, map, cancelChoiceIndex, choices);
 
         public UniTask<int> GetChoice(string? text, params string[] choices) =>
             _choiceReceiver.GetChoice(text, choices);

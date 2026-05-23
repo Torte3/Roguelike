@@ -1,8 +1,4 @@
 #nullable enable
-
-#if UNITY_EDITOR
-#endif
-
 using System;
 using UnityEngine;
 using Utilities;
@@ -19,28 +15,24 @@ namespace Domain.Model.Item
         /// <returns></returns>
         public static float GetWeight(this Rarity rarity, float progress)
         {
+            progress = Mathf.Clamp01(progress);
+
+            float uncommon = 27f + 3f * progress;
+            float rare = 1f + 24f * Mathf.Pow(progress, 1.7f);
+            float epic = 9.5f * Mathf.Pow(progress, 2.5f);
+            float legendary = 0.5f * Mathf.Pow(progress, 5f);
+
+            float common = 100f - uncommon - rare - epic - legendary;
+
             return Mathf.Max(rarity switch
             {
-                Rarity.Common => 60,
-                Rarity.Uncommon => 30,
-                Rarity.Rare => 7,
-                Rarity.Epic => 2.5f,
-                Rarity.Legendary => 0.5f,
-                _ => 0
-            } + GetCorrection(rarity, progress), 0);
-        }
-
-        private static float GetCorrection(Rarity rarity, float progress)
-        {
-            return progress * rarity switch
-            {
-                Rarity.Common => -30,
-                Rarity.Uncommon => 0,
-                Rarity.Rare => 21,
-                Rarity.Epic => 6.5f,
-                Rarity.Legendary => 2.5f,
-                _ => 0
-            };
+                Rarity.Common => common,
+                Rarity.Uncommon => uncommon,
+                Rarity.Rare => rare,
+                Rarity.Epic => epic,
+                Rarity.Legendary => legendary,
+                _ => 0f
+            }, 0f);
         }
 
         public static Color GetColor(this Rarity rarity)

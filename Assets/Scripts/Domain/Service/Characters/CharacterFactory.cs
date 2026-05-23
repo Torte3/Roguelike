@@ -91,7 +91,8 @@ namespace Domain.Service.Characters
                 isFlying: data.IsFlying,
                 canThroughWalls: data.CanThroughWalls,
                 canPickUp: true,
-                canUseItem: true
+                canUseItem: true,
+                canReceivePlayerGift: false
             );
             return new PlayerMemento(character, 0);
         }
@@ -126,7 +127,7 @@ namespace Domain.Service.Characters
                     homeLocation.ToOption()
                 ),
                 status: CharacterStatusManager.Build(
-                    maxHp: isShiny ? data.Hp * 10 : data.Hp,
+                    maxHp: isShiny ? data.Hp * 5 : data.Hp,
                     hpNaturalRecoveryAmount: 0.1f,
                     attackMultiplier: attackMultiplier,
                     elementAttackMultiplier: data.ElementAttackMultiplier,
@@ -146,13 +147,14 @@ namespace Domain.Service.Characters
                 knownItemNames: new List<string>(),
                 affiliation: CharacterAffiliationManager.Build(data.Group, affiliation),
                 aggression: data.Aggression,
-                isLeader: false,
+                isLeader: data.IsBoss,
                 isShiny: isShiny,
                 isBoss: data.IsBoss,
                 isFlying: data.IsFlying,
                 canThroughWalls: data.CanThroughWalls,
                 canPickUp: data.CanPickUp,
-                canUseItem: data.CanUseItem
+                canUseItem: data.CanUseItem,
+                canReceivePlayerGift: data.CanReceivePlayerGift
             );
         }
 

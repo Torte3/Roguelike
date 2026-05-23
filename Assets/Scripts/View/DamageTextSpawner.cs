@@ -1,12 +1,18 @@
 using TMPro;
 using UnityEngine;
+using VContainer;
 
 namespace View
 {
-    public class DamageTextSpawner : MonoBehaviour
+    public class DamageTextSpawner
     {
-        [SerializeField] private TextMeshProUGUI damageText;
-        [SerializeField] private Canvas canvas;
+        private readonly TextSpawner _textSpawner;
+
+        [Inject]
+        public DamageTextSpawner(TextSpawner textSpawner)
+        {
+            _textSpawner = textSpawner;
+        }
 
         public void ShowDamage(Vector2Int position, int value, int percentageFromMaxHP, int textDisplayMilliseconds)
         {
@@ -18,13 +24,18 @@ namespace View
             SpawnText(position, value, percentageFromMaxHP, textDisplayMilliseconds, Color.green);
         }
 
-        public void SpawnText(Vector2Int position, int value, int percentageFromMaxHP, int textDisplayMilliseconds,
+        private void SpawnText(Vector2Int position, int value, int percentageFromMaxHP, int textDisplayMilliseconds,
             Color color)
         {
-            damageText.GetComponent<LifeTimer>().LifeTimeMilliseconds = textDisplayMilliseconds;
-            var text = Instantiate(damageText, canvas.transform);
-            text.text = value.ToString();
-            text.transform.position = position + new Vector2(0, 0.5f);
+            var text = _textSpawner.SpawnNumber(position + new Vector2(0, 0.5f), value.ToString());
+            ApplyFontSize(text, percentageFromMaxHP);
+            text.color = color;
+            text.gameObject.AddComponent<DamageText>();
+            text.gameObject.AddComponent<LifeTimer>().LifeTimeMilliseconds = textDisplayMilliseconds;
+        }
+
+        private static void ApplyFontSize(TextMeshProUGUI text, int percentageFromMaxHP)
+        {
             if (percentageFromMaxHP > 100)
             {
                 text.fontSize = 1f;
@@ -41,16 +52,11 @@ namespace View
             {
                 text.fontSize = 0.5f;
             }
-
-            text.color = color;
         }
 
         public void DeleteAllText()
         {
-            foreach (var text in canvas.GetComponentsInChildren<DamageText>())
-            {
-                Destroy(text.gameObject);
-            }
+            _textSpawner.DeleteAll<DamageText>();
         }
     }
 }

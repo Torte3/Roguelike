@@ -105,9 +105,9 @@ namespace Domain.Service.Effect
             if (onlyVisible)
             {
                 return spawnPositions
-                    .Where(actor.VisibleArea.Contains)
+                    .Where(map.Player.Character.VisibleArea.Contains)
                     .SelectMany(spawnPosition => _area.Get(spawnPosition, direction, map))
-                    .Where(actor.VisibleArea.Contains);
+                    .Where(map.Player.Character.VisibleArea.Contains);
             }
 
             return spawnPositions
@@ -226,12 +226,10 @@ namespace Domain.Service.Effect
 
             var area = GetArea(actor, position, direction, map, true);
             var characters = map.Characters.In(area);
-            var totalEvaluation = 0f;
-
-            if (characters.Count() <= 0)
-            {
+            if (_effects.Any(ContainsEntityTargetEffect) && !characters.Any())
                 return -1;
-            }
+
+            var totalEvaluation = 0f;
 
             foreach (var effect in _effects)
             {
@@ -267,6 +265,15 @@ namespace Domain.Service.Effect
 
             return totalEvaluation * GetEffectiveRepeats(actor, sourceItem) * ProbabilityOfSuccess;
         }
+
+        private static bool ContainsEntityTargetEffect(IEffect effect) =>
+            effect switch
+            {
+                EntityTargetEffect => true,
+                ActorlessEntityTargetEffect => true,
+                RandomEffect random => random.Effects.Any(ContainsEntityTargetEffect),
+                _ => false
+            };
 
         private int GetEffectiveRepeats(IActorOfEffect actor, IItem? sourceItem)
         {

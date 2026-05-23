@@ -32,6 +32,7 @@ namespace Domain.Model.Item
         Lunge,
         BackStep,
         ChargeAttack,
+        SacrificeAttack,
 
         //RangedWeapon AttackPosition
         ArcingShot,
@@ -113,6 +114,7 @@ namespace Domain.Model.Item
                 ItemFeature.Lunge => "突進",
                 ItemFeature.BackStep => "バックステップ",
                 ItemFeature.ChargeAttack => "溜め攻撃",
+                ItemFeature.SacrificeAttack => "捨て身",
 
                 ItemFeature.ArcingShot => "曲射",
                 ItemFeature.Piercing => "貫通",
@@ -159,6 +161,7 @@ namespace Domain.Model.Item
                 ItemFeature.Lunge => ApplicabilityTag.DirectWeapons,
                 ItemFeature.BackStep => ApplicabilityTag.Weapons,
                 ItemFeature.ChargeAttack => ApplicabilityTag.Weapons,
+                ItemFeature.SacrificeAttack => ApplicabilityTag.Weapons,
 
                 ItemFeature.ArcingShot => ApplicabilityTag.RangedWeapons,
                 ItemFeature.Piercing => ApplicabilityTag.RangedWeapons,
@@ -221,6 +224,7 @@ namespace Domain.Model.Item
                 ItemFeature.Lunge => CANNOT_OVERLAP,
                 ItemFeature.BackStep => CANNOT_OVERLAP,
                 ItemFeature.ChargeAttack => CANNOT_OVERLAP,
+                ItemFeature.SacrificeAttack => CANNOT_OVERLAP,
                 ItemFeature.Knockback => CANNOT_OVERLAP,
                 ItemFeature.Critical => 4,
                 ItemFeature.Dig => CANNOT_OVERLAP,

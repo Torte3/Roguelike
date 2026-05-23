@@ -1,26 +1,21 @@
 #nullable enable
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Domain.Model;
+using R3;
 using Domain.Model.Dungeon;
 using Domain.Model.Map;
 using Domain.Model.Memento;
-using UnityEngine;
 using Utilities;
 
 namespace Game
 {
     public class Dungeon : ISerializable<DungeonMemento>
     {
+        private readonly DungeonTopology _topology;
         private readonly IDungeonBlueprintData _blueprint;
         private readonly int _maxFiniteDepth;
-
         private readonly Dictionary<Id<MapNode>, FloorSpec> _floorSpecByMapNode;
-        private readonly Dictionary<Id<IMap>, Id<MapNode>> _mapNodeByInstance;
-        private readonly Dictionary<Id<IMap>, int> _depthByInstance;
-        private readonly Dictionary<Id<MapNode>, List<Id<MapNode>>> _sectionsByInfiniteNode;
-        private readonly Dictionary<Id<MapNode>, Id<MapNode>> _predecessorBySection = new();
 
         private Id<IMap>? _startMapId;
 
@@ -29,9 +24,7 @@ namespace Game
             get
             {
                 if (_startMapId == null)
-                {
                     InitializeNewGame();
-                }
                 return _startMapId!;
             }
         }
@@ -40,61 +33,19 @@ namespace Game
         {
             _blueprint = ObjectLoader.Load<DungeonBluePrintData>("Dungeon");
             _maxFiniteDepth = _blueprint.GetMaxFiniteDepth();
-            _mapNodeByInstance = new Dictionary<Id<IMap>, Id<MapNode>>(memento.MapNodeByInstance);
-            _depthByInstance = new Dictionary<Id<IMap>, int>(memento.DepthByInstance);
-            _sectionsByInfiniteNode = memento.SectionsByInfiniteNode.ToDictionary(
-                entry => entry.InfiniteGraphNodeId,
-                entry => entry.SectionIds.ToList());
             _floorSpecByMapNode = new Dictionary<Id<MapNode>, FloorSpec>();
-            var blueprint = (DungeonBluePrintData)_blueprint;
-            foreach (var entry in memento.FloorSpecByMapNode)
-            {
-                var mapNodeId = entry.MapNodeId;
-                if (!TryGetInfiniteGraphId(mapNodeId, out var infGraphId)) continue;
+            _topology = new DungeonTopology(
+                _blueprint,
+                new Dictionary<Id<IMap>, Id<MapNode>>(memento.MapNodeByInstance),
+                new Dictionary<Id<IMap>, int>(memento.DepthByInstance),
+                memento.SectionsByInfiniteNode,
+                memento.BossSectionsByInfiniteNode);
+            SubscribeTopologyEvents();
 
-                var floorData = _blueprint.GetInfiniteFloorData(infGraphId);
-                _floorSpecByMapNode[mapNodeId] = FloorSpec.Build(entry.FloorSpec, floorData, blueprint);
-            }
+            RestoreFloorSpecsFromMemento(memento);
+            _topology.RestorePredecessorsBySection();
 
-            var mapNodeIds = new HashSet<Id<MapNode>>(_mapNodeByInstance.Values);
-            foreach (var mapNodeId in mapNodeIds)
-            {
-                if (_floorSpecByMapNode.ContainsKey(mapNodeId)) continue;
-
-                if (_blueprint.IsGraphMapNode(mapNodeId))
-                    _floorSpecByMapNode[mapNodeId] = _blueprint.CreateFloorSpec(mapNodeId);
-            }
-
-            _predecessorBySection.Clear();
-            var depthByGraph = _blueprint.GetDepthByGraphNode();
-            foreach (var (infiniteGraphNodeId, sectionIds) in _sectionsByInfiniteNode)
-            {
-                for (var i = 0; i < sectionIds.Count; i++)
-                {
-                    var sectionId = sectionIds[i];
-                    if (i > 0)
-                    {
-                        _predecessorBySection[sectionId] = sectionIds[i - 1];
-                        continue;
-                    }
-
-                    var instances = GetInstanceIds(sectionId);
-                    if (instances.Count == 0) continue;
-
-                    var expectedPredLast = _depthByInstance[instances[0]] - 1;
-                    var predecessor = depthByGraph.Keys
-                        .Where(graphId => CanReachInfiniteTemplate(graphId, infiniteGraphNodeId))
-                        .Where(graphId => GetDepthLast(graphId) == expectedPredLast)
-                        .OrderByDescending(graphId => GetInstanceIds(graphId).Count > 0)
-                        .ThenBy(graphId => depthByGraph[graphId])
-                        .FirstOrDefault();
-                    if (predecessor != null)
-                        _predecessorBySection[sectionId] = predecessor;
-                }
-            }
-
-            var startNodeId = _blueprint.GetStartMapNodeId();
-            var startIds = GetInstanceIds(startNodeId);
+            var startIds = _topology.GetMapIds(_blueprint.GetStartMapNodeId());
             _startMapId = startIds.Count > 0 ? startIds[0] : null;
         }
 
@@ -102,160 +53,47 @@ namespace Game
         {
             _blueprint = blueprint;
             _maxFiniteDepth = _blueprint.GetMaxFiniteDepth();
-            _mapNodeByInstance = new Dictionary<Id<IMap>, Id<MapNode>>();
-            _depthByInstance = new Dictionary<Id<IMap>, int>();
-            _sectionsByInfiniteNode = new Dictionary<Id<MapNode>, List<Id<MapNode>>>();
             _floorSpecByMapNode = new Dictionary<Id<MapNode>, FloorSpec>();
+            _topology = new DungeonTopology(_blueprint);
+            SubscribeTopologyEvents();
         }
-
-        public static DungeonMemento Build() => DungeonMemento.Empty();
 
         public void InitializeNewGame()
         {
-            var startNodeId = _blueprint.GetStartMapNodeId();
-            EnsureGraphNodeRegistered(startNodeId);
-            _startMapId = GetInstanceIds(startNodeId)[0];
+            _startMapId = _topology.GetMapIds(_blueprint.GetStartMapNodeId())[0];
         }
 
-        public int GetDepth(Id<IMap> instanceId) => _depthByInstance[instanceId];
+        public int GetDepth(Id<IMap> mapId) => _topology.GetDepth(mapId);
 
-        public float GetProgress(Id<IMap> instanceId)
+        public float GetProgress(Id<IMap> mapId)
         {
             if (_maxFiniteDepth <= 0) return 1f;
 
-            var depth = GetDepth(instanceId);
+            var depth = GetDepth(mapId);
             return depth <= _maxFiniteDepth ? depth / (float)_maxFiniteDepth : 1f;
         }
 
-        public FloorSpec GetFloorSpec(Id<IMap> instanceId)
+        public FloorSpec GetFloorSpec(Id<IMap> mapId) =>
+            _floorSpecByMapNode[_topology.GetMapNodeId(mapId)];
+
+        public List<MapConnection> GetDestinations(Id<IMap> mapId) =>
+            _topology.GetDestinations(mapId);
+
+        public bool ShouldBatchCreateSection(Id<IMap> mapId)
         {
-            var nodeId = _mapNodeByInstance[instanceId];
-            var spec = _floorSpecByMapNode[nodeId];
-            if (!TryGetInfiniteGraphId(nodeId, out var infiniteGraphId))
-                return spec;
-
-            var ids = GetInstanceIds(nodeId);
-            if (ids[^1] != instanceId)
-                return spec;
-
-            return _blueprint.ApplyInfiniteSectionBossFloor(spec, infiniteGraphId);
+            if (!_topology.TryGetMapNodeId(mapId, out var ownerId)) return false;
+            if (!_topology.IsInfiniteSection(ownerId)) return false;
+            var ids = _topology.GetMapIds(ownerId);
+            return ids[0] == mapId;
         }
 
-        public List<MapConnection> GetDestinations(Id<IMap> instanceId)
+        public IReadOnlyList<Id<IMap>> GetSectionMapIds(Id<IMap> sectionHeadMapId)
         {
-            var ownerId = _mapNodeByInstance[instanceId];
-            var ids = GetInstanceIds(ownerId);
-            var index = ids.IndexOf(instanceId);
-            var connections = new List<MapConnection>();
-
-            if (index > 0)
-            {
-                connections.Add(new MapConnection(MovementEntityType.UpStairs, ids[index - 1]));
-            }
-
-            if (index == 0)
-            {
-                var addedPrevUpStairs = false;
-                if (IsInfiniteSection(ownerId)
-                    && _predecessorBySection.TryGetValue(ownerId, out var predecessorId))
-                {
-                    var predecessorIds = GetInstanceIds(predecessorId);
-                    if (predecessorIds.Count > 0)
-                    {
-                        connections.Add(new MapConnection(
-                            MovementEntityType.UpStairs, predecessorIds[^1]));
-                        addedPrevUpStairs = true;
-                    }
-                }
-
-                if (!addedPrevUpStairs)
-                {
-                    var graphNodeId = ResolveGraphNodeId(ownerId);
-                    foreach (var prevGraphId in _blueprint.GetPrevMapNodeIds(graphNodeId))
-                    {
-                        EnsureGraphNodeRegistered(prevGraphId);
-                        var prevIds = GetInstanceIds(prevGraphId);
-                        connections.Add(new MapConnection(MovementEntityType.UpStairs, prevIds[^1]));
-                    }
-                }
-            }
-
-            if (index < ids.Count - 1)
-            {
-                connections.Add(new MapConnection(MovementEntityType.DownStairs, ids[index + 1]));
-                AddTeleportConnections(connections, ownerId, instanceId);
-                return connections;
-            }
-
-            if (IsInfiniteSection(ownerId))
-            {
-                var infGraphId = GetInfiniteGraphId(ownerId);
-                connections.Add(new MapConnection(MovementEntityType.DownStairs,
-                    ReserveNextSection(ownerId, infGraphId)));
-            }
-            else
-            {
-                foreach (var nextGraphId in _blueprint.GetNextMapNodeIds(ownerId))
-                {
-                    if (_blueprint.IsInfiniteTemplate(nextGraphId))
-                    {
-                        connections.Add(new MapConnection(MovementEntityType.DownStairs,
-                            ReserveNextSection(ownerId, nextGraphId)));
-                    }
-                    else
-                    {
-                        EnsureGraphNodeRegistered(nextGraphId);
-                        connections.Add(new MapConnection(MovementEntityType.DownStairs,
-                            GetInstanceIds(nextGraphId)[0]));
-                    }
-                }
-            }
-
-            AddTeleportConnections(connections, ownerId, instanceId);
-            return connections;
-        }
-
-        private void AddTeleportConnections(List<MapConnection> connections, Id<MapNode> ownerId, Id<IMap> instanceId)
-        {
-            var ids = GetInstanceIds(ownerId);
-            var graphNodeId = ResolveGraphNodeId(ownerId);
-
-            if (ids[0] == instanceId)
-            {
-                foreach (var teleportIn in _blueprint.GetTeleportInMapNodeIds(graphNodeId))
-                {
-                    EnsureGraphNodeRegistered(teleportIn);
-                    var targetIds = GetInstanceIds(teleportIn);
-                    connections.Add(new MapConnection(MovementEntityType.MagicCircle, targetIds[^1]));
-                }
-            }
-
-            if (ids[^1] == instanceId)
-            {
-                foreach (var teleportOut in _blueprint.GetTeleportOutMapNodeIds(graphNodeId))
-                {
-                    EnsureGraphNodeRegistered(teleportOut);
-                    connections.Add(new MapConnection(MovementEntityType.MagicCircle,
-                        GetInstanceIds(teleportOut)[0]));
-                }
-            }
-        }
-
-        private Id<MapNode> ResolveGraphNodeId(Id<MapNode> ownerId) =>
-            TryGetInfiniteGraphId(ownerId, out var infiniteGraphId) ? infiniteGraphId : ownerId;
-
-        public bool ShouldBatchCreateSection(Id<IMap> instanceId)
-        {
-            if (!_mapNodeByInstance.TryGetValue(instanceId, out var ownerId)) return false;
-            if (!IsInfiniteSection(ownerId)) return false;
-            var ids = GetInstanceIds(ownerId);
-            return ids[0] == instanceId;
-        }
-
-        public IReadOnlyList<Id<IMap>> GetSectionInstanceIds(Id<IMap> sectionHeadInstanceId)
-        {
-            var sectionId = _mapNodeByInstance[sectionHeadInstanceId];
-            return GetInstanceIds(sectionId);
+            var normalSectionId = _topology.GetMapNodeId(sectionHeadMapId);
+            var bossSectionId = _topology.GetBossSectionId(normalSectionId);
+            var mapIds = new List<Id<IMap>>(_topology.GetMapIds(normalSectionId));
+            mapIds.AddRange(_topology.GetMapIds(bossSectionId));
+            return mapIds;
         }
 
         public MapMemento CreateMapManager(Id<IMap> id, IEnumerable<MovementData> movementData)
@@ -278,145 +116,50 @@ namespace Game
 
         public DungeonMemento Serialize() =>
             DungeonMemento.Create(
-                _mapNodeByInstance,
-                _depthByInstance,
-                _sectionsByInfiniteNode,
-                _floorSpecByMapNode.Where(p => IsInfiniteSection(p.Key)));
+                _topology.MapNodeByMapId,
+                _topology.DepthByMapId,
+                _topology.SectionsByInfiniteNode,
+                _topology.BossSectionsByInfiniteNode,
+                _floorSpecByMapNode.Where(p =>
+                    _topology.IsInfiniteSection(p.Key) || _topology.IsInfiniteBossSection(p.Key)));
 
-        private int RequireBlueprintGraphDepth(Id<MapNode> graphMapNodeId)
+        private void SubscribeTopologyEvents()
         {
-            if (!_blueprint.GetDepthByGraphNode().TryGetValue(graphMapNodeId, out var depth))
+            _topology.OnInfiniteSectionCreated.Subscribe(OnInfiniteSectionCreated);
+            _topology.OnBlueprintGraphNodeInitialized.Subscribe(OnBlueprintGraphNodeInitialized);
+        }
+
+        private void OnBlueprintGraphNodeInitialized(BlueprintGraphNodeInitializedMessage message) =>
+            _floorSpecByMapNode.TryAdd(message.MapNodeId, _blueprint.CreateFloorSpec(message.MapNodeId));
+
+        private void OnInfiniteSectionCreated(InfiniteSectionCreatedMessage message)
+        {
+            _floorSpecByMapNode[message.NormalSectionId] = message.NormalFloorSpec;
+            _floorSpecByMapNode[message.BossSectionId] = message.BossFloorSpec;
+        }
+
+        private void RestoreFloorSpecsFromMemento(DungeonMemento memento)
+        {
+            var blueprint = (DungeonBluePrintData)_blueprint;
+
+            foreach (var entry in memento.FloorSpecByMapNode)
             {
-                throw new InvalidOperationException(
-                    $"{_blueprint.Name}: MapNode {graphMapNodeId} is not reachable from start (no depth assigned).");
+                var mapNodeId = entry.MapNodeId;
+                if (!_topology.TryGetInfiniteGraphId(mapNodeId, out var infGraphId)) continue;
+
+                var floorData = _topology.IsInfiniteBossSection(mapNodeId)
+                    ? _blueprint.GetInfiniteBossFloorData(infGraphId)
+                    : _blueprint.GetInfiniteFloorData(infGraphId);
+                _floorSpecByMapNode[mapNodeId] = FloorSpec.Build(entry.FloorSpec, floorData, blueprint);
             }
 
-            return depth;
-        }
-
-        private void EnsureGraphNodeRegistered(Id<MapNode> graphMapNodeId)
-        {
-            if (GetInstanceIds(graphMapNodeId).Count > 0) return;
-
-            if (!_floorSpecByMapNode.ContainsKey(graphMapNodeId))
+            foreach (var mapNodeId in _topology.AllMapNodeIds)
             {
-                _floorSpecByMapNode[graphMapNodeId] = _blueprint.CreateFloorSpec(graphMapNodeId);
-            }
+                if (_floorSpecByMapNode.ContainsKey(mapNodeId)) continue;
 
-            RegisterInstances(graphMapNodeId, RequireBlueprintGraphDepth(graphMapNodeId));
-        }
-
-        private Id<MapNode> CreateInfiniteSection(Id<MapNode> infiniteGraphNodeId, Id<MapNode> predecessorId)
-        {
-            var sectionId = Id<MapNode>.Generate();
-            _floorSpecByMapNode[sectionId] = _blueprint.CreateInfiniteSectionSpec(infiniteGraphNodeId);
-
-            GetSections(infiniteGraphNodeId).Add(sectionId);
-            _predecessorBySection[sectionId] = predecessorId;
-
-            var depthFirst = GetDepthLast(predecessorId) + 1;
-            RegisterInstances(sectionId, depthFirst);
-
-            return sectionId;
-        }
-
-        private void RegisterInstances(Id<MapNode> ownerId, int depthFirst)
-        {
-            var repeat = _blueprint.GetRepeat(ResolveGraphNodeId(ownerId));
-            for (int i = 0; i < repeat; i++)
-            {
-                var id = Id<IMap>.Generate();
-                _mapNodeByInstance[id] = ownerId;
-                _depthByInstance[id] = depthFirst + i;
+                if (_blueprint.IsGraphMapNode(mapNodeId))
+                    _floorSpecByMapNode[mapNodeId] = _blueprint.CreateFloorSpec(mapNodeId);
             }
         }
-
-        private int GetDepthLast(Id<MapNode> ownerId)
-        {
-            var depthFirst = IsInfiniteSection(ownerId)
-                ? _depthByInstance[GetInstanceIds(ownerId)[0]]
-                : RequireBlueprintGraphDepth(ownerId);
-            return depthFirst + _blueprint.GetRepeat(ResolveGraphNodeId(ownerId)) - 1;
-        }
-
-        private Id<IMap> ReserveNextSection(Id<MapNode> fromId, Id<MapNode> infiniteGraphNodeId)
-        {
-            if (!CanReachInfiniteTemplate(fromId, infiniteGraphNodeId))
-            {
-                throw new InvalidOperationException(
-                    $"MapNode {fromId} cannot reach infinite template {infiniteGraphNodeId}.");
-            }
-
-            var sections = GetSections(infiniteGraphNodeId);
-
-            if (IsInfiniteSection(fromId))
-            {
-                var index = sections.IndexOf(fromId);
-                if (index + 1 < sections.Count)
-                    return GetInstanceIds(sections[index + 1])[0];
-
-                var nextSectionId = CreateInfiniteSection(infiniteGraphNodeId, fromId);
-                return GetInstanceIds(nextSectionId)[0];
-            }
-
-            foreach (var sectionId in sections)
-            {
-                if (_predecessorBySection.TryGetValue(sectionId, out var predecessor)
-                    && predecessor.Equals(fromId))
-                {
-                    return GetInstanceIds(sectionId)[0];
-                }
-            }
-
-            var createdSectionId = CreateInfiniteSection(infiniteGraphNodeId, fromId);
-            return GetInstanceIds(createdSectionId)[0];
-        }
-
-        private bool CanReachInfiniteTemplate(Id<MapNode> fromId, Id<MapNode> infiniteGraphNodeId)
-        {
-            if (IsInfiniteSection(fromId) && GetInfiniteGraphId(fromId).Equals(infiniteGraphNodeId))
-                return true;
-
-            var graphNodeId = ResolveGraphNodeId(fromId);
-            return _blueprint.GetNextMapNodeIds(graphNodeId).Any(id => id == infiniteGraphNodeId);
-        }
-
-        private List<Id<MapNode>> GetSections(Id<MapNode> infiniteGraphNodeId)
-        {
-            if (!_sectionsByInfiniteNode.TryGetValue(infiniteGraphNodeId, out var sections))
-            {
-                sections = new List<Id<MapNode>>();
-                _sectionsByInfiniteNode[infiniteGraphNodeId] = sections;
-            }
-
-            return sections;
-        }
-
-        private IReadOnlyList<Id<IMap>> GetInstanceIds(Id<MapNode> mapNodeId) =>
-            _mapNodeByInstance
-                .Where(p => p.Value.Equals(mapNodeId))
-                .OrderBy(p => _depthByInstance[p.Key])
-                .Select(p => p.Key)
-                .ToList();
-
-        private bool TryGetInfiniteGraphId(Id<MapNode> sectionId, out Id<MapNode> infiniteGraphId)
-        {
-            foreach (var (infGraphId, sectionIds) in _sectionsByInfiniteNode)
-            {
-                if (!sectionIds.Contains(sectionId)) continue;
-                infiniteGraphId = infGraphId;
-                return true;
-            }
-
-            infiniteGraphId = default!;
-            return false;
-        }
-
-        private bool IsInfiniteSection(Id<MapNode> mapNodeId) => TryGetInfiniteGraphId(mapNodeId, out _);
-
-        private Id<MapNode> GetInfiniteGraphId(Id<MapNode> sectionId) =>
-            TryGetInfiniteGraphId(sectionId, out var infiniteGraphId)
-                ? infiniteGraphId
-                : throw new InvalidOperationException($"Section {sectionId} is not registered.");
     }
 }

@@ -33,6 +33,7 @@ namespace Provider
             builder.Register<InputReceiver>(Lifetime.Singleton);
             builder.Register<GameInput>(Lifetime.Singleton);
             builder.Register<EffectViewSpawner>(Lifetime.Singleton);
+            builder.Register<DamageTextSpawner>(Lifetime.Singleton);
             builder.Register<ChoiceReceiver>(Lifetime.Singleton);
             builder.Register<CharacterSelectReceiver>(Lifetime.Singleton);
             builder.Register<TextInputReceiver>(Lifetime.Singleton);
@@ -57,9 +58,9 @@ namespace Provider
             builder.RegisterComponentInHierarchy<CharacterSelectMenu>();
             builder.RegisterComponentInHierarchy<LogView>();
             builder.RegisterComponentInHierarchy<ShopInfoView>();
-            builder.RegisterComponentInHierarchy<ItemPreviewWindow>();
+            builder.RegisterComponentInHierarchy<ItemPreviewView>();
             builder.RegisterComponentInHierarchy<ItemSelectText>();
-            builder.RegisterComponentInHierarchy<DamageTextSpawner>();
+            builder.RegisterComponentInHierarchy<TextSpawner>();
             builder.RegisterComponentInHierarchy<FlushController>();
             builder.RegisterComponentInHierarchy<BGMManager>();
             builder.RegisterComponentInHierarchy<SEManager>();
@@ -82,6 +83,7 @@ namespace Provider
             builder.RegisterPlainEntryPoint<SettingPresenter>();
             builder.RegisterPlainEntryPoint<LogPresenter>();
             builder.RegisterPlainEntryPoint<ShopInfoPresenter>();
+            builder.RegisterPlainEntryPoint<ItemPreviewPresenter>();
             builder.RegisterPlainEntryPoint<StatisticsPresenter>();
             builder.RegisterPlainEntryPoint<ItemSelectPresenter>();
             builder.RegisterPlainEntryPoint<Presenter>();

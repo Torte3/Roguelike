@@ -98,6 +98,9 @@ namespace Domain.Service.Items
 
         private void InitializeRemovedItem(IItem item)
         {
+            if (item is IEquipmentToggleTarget equipment)
+                equipment.ForceUnequip();
+
             _itemDisposables[item].Clear();
             _itemDisposables.Remove(item);
             if (item.IsPassiveActive.CurrentValue)

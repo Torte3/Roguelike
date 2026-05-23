@@ -247,6 +247,11 @@ namespace Game
         {
             EventEntityManager.Spawn(new MimicStairs(mimicStairs));
         }
+
+        public void SpawnTrap(TrapData trapData, Vector2Int position)
+        {
+            EventEntityManager.AddTrap(new Trap(Trap.Build(trapData, position)));
+        }
         public void SpawnFire(Vector2Int position)
         {
             FireEntityManager.Add(new Fire(Fire.Build(position)));

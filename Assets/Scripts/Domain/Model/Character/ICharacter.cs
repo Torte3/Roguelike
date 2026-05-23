@@ -45,6 +45,7 @@ namespace Domain.Model.Character
         public UniTask UseItemOnDeath();
         public UniTask UseLastSkill();
         public void Die(string causeOfDeathLog);
+        public void ApplyKillHealToAttacker(ICharacter? attacker);
         public void OnAttackedBy(IActorOfEffect actor, float impact);
         public void OnHealedBy(IActorOfEffect actor, float impact);
         public UniTask DoNextAction(IGameManager gameManager, IMap map, IInput input);

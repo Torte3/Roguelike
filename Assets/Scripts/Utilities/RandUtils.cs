@@ -154,6 +154,51 @@ namespace Utilities
             return WeightedIndex(source, Random.value, weightSelector);
         }
 
+        public static List<int> WeightedIndices(this IEnumerable<float> source, int count)
+        {
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            if (count == 0)
+                return new List<int>();
+
+            var weights = source.ToList();
+            if (count > weights.Count)
+            {
+                throw new ArgumentException(
+                    $"Cannot pick {count} unique indices from a collection with {weights.Count} elements.",
+                    nameof(count));
+            }
+
+            var remainingIndices = Enumerable.Range(0, weights.Count).ToList();
+            var result = new List<int>(count);
+
+            for (var i = 0; i < count; i++)
+            {
+                var localIndex = weights.WeightedIndex();
+                if (localIndex < 0)
+                {
+                    throw new InvalidOperationException(
+                        "Cannot pick a weighted index: all remaining weights are zero or negative.");
+                }
+
+                result.Add(remainingIndices[localIndex]);
+                remainingIndices.RemoveAt(localIndex);
+                weights.RemoveAt(localIndex);
+            }
+
+            return result;
+        }
+
+        public static List<T> GetWeightedAtRandom<T>(
+            this IEnumerable<T> source,
+            int count,
+            Func<T, float> weightSelector)
+        {
+            var list = source.ToList();
+            var indices = list.Select(weightSelector).WeightedIndices(count);
+            return indices.Select(i => list[i]).ToList();
+        }
+
         public static int RangeWithoutExcludes(int n, params int[] excludeList)
         {
             Array.Sort(excludeList);

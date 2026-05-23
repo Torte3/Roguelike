@@ -105,6 +105,15 @@ namespace Domain.Service.Items
             return true;
         }
 
+        public void ForceUnequip()
+        {
+            if (!_equippedState.CurrentValue)
+                return;
+
+            _equippedState.Value = false;
+            _onItemUpdated.OnNext(Unit.Default);
+        }
+
         public override void Repair(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
         {
         }

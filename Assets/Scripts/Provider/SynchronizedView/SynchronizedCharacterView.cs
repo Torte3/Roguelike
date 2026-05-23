@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Domain.Model.Character;
@@ -92,7 +92,8 @@ namespace Provider
                     var area = chargeAction.Data.Area;
                     var color = chargeAction.Data.Color;
                     color.a = 0.25f;
-                    previews = _effectViewSpawner.SpawnPreview(area, color);
+                    previews = _effectViewSpawner.SpawnChargePreview(
+                        area, color, chargeAction.Turn, character.Entity.CurrentPosition);
                 }
             }).AddTo(characterView);
             character.Entity.OnDestroyed.Subscribe(_ =>

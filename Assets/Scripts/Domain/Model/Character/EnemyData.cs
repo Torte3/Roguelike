@@ -38,6 +38,7 @@ namespace Domain.Model.Character
         [ShowIf("@" + nameof(CanMimic))] public MimicWeights MimicWeights = new();
         public bool CanPickUp;
         public bool CanUseItem;
+        public bool CanReceivePlayerGift;
         public List<CharacterSkillWithRuleData> Skills;
         public bool HasLastSkill;
         [ShowIf("@" + nameof(HasLastSkill))] public SkillData LastSkill;
@@ -64,6 +65,8 @@ namespace Domain.Model.Character
             {
                 LastSkill.OnValidate(1);
             }
+
+            CanReceivePlayerGift = Name != "店員" && CanUseItem;
 
             EditorUtility.SetDirty(this);
         }

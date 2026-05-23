@@ -21,6 +21,7 @@ namespace Domain.Model.Dungeon
         [MinValue(0)] public float MoneyAverage = 100;
         [MinValue(0)] public float CharacterCount = 1;
         [Range(0, 1)] public float ChestChance = 0.1f;
+        [Range(0, 1)] public float CursedItemChance;
         [Range(0, 1)] public float WeaponChanceInChest;
         [Range(0, 1)] public float StatueChance = 0.1f;
         [Range(0, 1)] public float BonfireWeight = 1f;
@@ -42,6 +43,7 @@ namespace Domain.Model.Dungeon
             MoneyAverage = 100;
             CharacterCount = 1;
             ChestChance = 0.1f;
+            CursedItemChance = 0f;
             WeaponChanceInChest = 0f;
             StatueChance = 0.1f;
             BonfireWeight = 1f;

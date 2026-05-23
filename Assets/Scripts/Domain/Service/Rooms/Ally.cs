@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Item;
+using Domain.Model.Map;
 using Domain.Service.Characters.Behavior;
 using Domain.Service.Events;
 using Domain.Service.Logs;
@@ -12,16 +13,15 @@ namespace Domain.Service.Rooms
 {
     public class Ally : PlayerEvent
     {
+        private const float GiftAffectionPerPrice = 1f / 1000f;
+
         public Ally(ICharacter character, EnemyBehavior behavior) : base(
             null,
             new List<PlayerChoiceEvent>
             {
                 new(
                     "渡す",
-                    (player, map) =>
-                        character.CanUseItem
-                        && character.IsAlly(player.Character)
-                        && character.Inventory.HasEmptySpace(),
+                    (player, map) => CanGiveItem(character, player.Character),
                     async (gameManager, map) =>
                     {
                         var player = map.Player;
@@ -42,6 +42,9 @@ namespace Domain.Service.Rooms
                             {
                                 player.Character.Inventory.Remove(item);
                                 character.Inventory.AddToEmpty(item);
+                                TryEquipGiftedItem(character, item, map);
+                                var affectionGain = item.GetPrice(map.MarketPriceTable) * GiftAffectionPerPrice;
+                                character.Affiliation.ModifyAffection(player.Character.Entity.Id, affectionGain);
                                 GameLog.Add(character.Entity.IsVisible,
                                     $"{character.GetName(player)}に{item.GetName(player, map.ItemPlaceholders)}を渡した。");
                             }
@@ -82,5 +85,28 @@ namespace Domain.Service.Rooms
             }
         )
         { }
+
+        private static bool CanGiveItem(ICharacter character, ICharacter player)
+        {
+            if (!character.CanReceivePlayerGift || !character.CanUseItem || !character.Inventory.HasEmptySpace())
+                return false;
+            if (character.IsEnemy(player))
+                return false;
+            return character.IsAlly(player) || character.IsNeutral(player);
+        }
+
+        private static void TryEquipGiftedItem(ICharacter character, IItem item, IMap map)
+        {
+            if (item is not IEquipmentToggleTarget toggleTarget)
+                return;
+            if (item.IsEquipped.UnwrapOr(false))
+                return;
+
+            if (toggleTarget.TryToggleEquipped(character, map))
+            {
+                GameLog.Add(character.Entity.IsVisible,
+                    $"{character.GetName(map.Player)}は{item.GetName(map.Player, map.ItemPlaceholders)}を装備した。");
+            }
+        }
     }
 }

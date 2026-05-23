@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.FloorData
   Field: {fileID: 11400000, guid: d2747c844f2584034b1c502479fc5a43, type: 2}
   ShinyChance: 0
-  SleepChance: 0.75
+  SleepChance: 0.5
   MimicChance: 0
   ShopChance: 0
   MonsterHouseChance: 1

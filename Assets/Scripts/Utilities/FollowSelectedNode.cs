@@ -52,13 +52,12 @@ namespace Utilities
 
         void Scroll(int nodeIndex)
         {
-            var spacing = _verticalLayoutGroup.spacing;
             var p = 1.0f - _scrollRect.verticalNormalizedPosition;
             var nodeCount = _contentTransform.childCount;
             var viewportSize = _viewportRectransform.rect.height;
             var harlViewport = viewportSize * 0.5f;
 
-            var nodeSize = _nodePrefab.rect.height + spacing;
+            var nodeSize = _nodePrefab.rect.height + _verticalLayoutGroup.spacing;
 
             var scrollableHeight = nodeSize * nodeCount - viewportSize;
             if (scrollableHeight <= 0f) return;
@@ -67,18 +66,19 @@ namespace Utilities
             var topPosition = centerPosition - harlViewport;
             var bottomPosition = centerPosition + harlViewport;
 
-            var nodeCenterPosition = nodeSize * nodeIndex + nodeSize / 2.0f;
+            var nodeTop = nodeSize * nodeIndex;
+            var nodeBottom = nodeSize * (nodeIndex + 1);
 
             float? target = null;
 
-            if (topPosition > nodeCenterPosition)
+            if (topPosition > nodeTop)
             {
-                var newP = (nodeSize * nodeIndex) / scrollableHeight;
+                var newP = nodeTop / scrollableHeight;
                 target = 1.0f - newP;
             }
-            else if (nodeCenterPosition > bottomPosition)
+            else if (nodeBottom > bottomPosition)
             {
-                var newP = (nodeSize * (nodeIndex + 1) + spacing - viewportSize) / scrollableHeight;
+                var newP = (nodeBottom - viewportSize) / scrollableHeight;
                 target = 1.0f - newP;
             }
 

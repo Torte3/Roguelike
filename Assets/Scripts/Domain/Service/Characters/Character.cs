@@ -52,7 +52,9 @@ namespace Domain.Service.Characters
         private readonly Subject<string> _onItemUsed = new();
         private Option<IAction> _chargeAction = Option.None<IAction>();
         private Option<ISkillWithCost> _chargeSkill = Option.None<ISkillWithCost>();
+        private Option<Vector2Int> _chargeStartPosition = Option.None<Vector2Int>();
         private ReactiveProperty<int> _chargeTurn = new(0);
+        private IDisposable? _chargePositionCancelSubscription;
         private readonly IGameManager _gameManager;
 
         internal Character(CharacterMemento data, ICharacterBehavior behavior, IGameManager gameManager, IMap map, bool isPlayer)
@@ -78,6 +80,7 @@ namespace Domain.Service.Characters
             IsFlying = data.IsFlying;
             CanPickUp = data.CanPickUp;
             CanUseItem = data.CanUseItem;
+            CanReceivePlayerGift = data.CanReceivePlayerGift;
 
             _map = map;
 
@@ -98,6 +101,17 @@ namespace Domain.Service.Characters
                     KnowCurse(item, false);
                 }
             });
+
+            _chargePositionCancelSubscription = Observable.Merge(
+                    Entity.OnMove.Select(_ => Unit.Default),
+                    Entity.OnTeleport.Select(_ => Unit.Default))
+                .Subscribe(_ =>
+                {
+                    if (_chargeAction.HasValue
+                        && _chargeStartPosition.IsSome(out var start)
+                        && start != Entity.CurrentPosition)
+                        ResetChargeAction();
+                });
         }
 
         public Location CurrentLocation => new(_map.Id, Entity.CurrentPosition);
@@ -114,6 +128,7 @@ namespace Domain.Service.Characters
         public bool CanThroughWalls => _canThroughWalls ? true : IsPlayer && Settings.WorldSettings.IgnoreWall.CurrentValue;
         public bool CanPickUp { get; init; }
         public bool CanUseItem { get; init; }
+        public bool CanReceivePlayerGift { get; init; }
         public bool CanReadItem => !Status.IsFlagStat(FlagStatType.Blind);
         public ReadOnlyReactiveProperty<bool> AutoIdentify => Observable
             .CombineLatest(
@@ -280,9 +295,10 @@ namespace Domain.Service.Characters
         {
             _chargeAction = Option.None<IAction>();
             _chargeSkill = Option.None<ISkillWithCost>();
+            _chargeStartPosition = Option.None<Vector2Int>();
             _chargeTurn.Value = 0;
         }
-        
+
         public async UniTask DoNextAction(IGameManager gameManager, IMap map, IInput input)
         {
             State = CharacterState.Think;
@@ -324,6 +340,7 @@ namespace Domain.Service.Characters
                     {
                         _chargeAction = Option.Some((IAction)useSkill);
                         _chargeSkill = Option.Some(useSkill.Skill);
+                        _chargeStartPosition = Option.Some(Entity.CurrentPosition);
                         _chargeTurn.Value = useSkill.Skill.ChargeTurn;
                         Turn(useSkill.Direction);
                         DoNothing();
@@ -346,6 +363,7 @@ namespace Domain.Service.Characters
                     {
                         _chargeAction = Option.Some((IAction)useItem);
                         _chargeSkill = Option.Some(skillOnUse);
+                        _chargeStartPosition = Option.Some(Entity.CurrentPosition);
                         _chargeTurn.Value = skillOnUse.ChargeTurn;
                         Turn(useItem.Direction);
                         DoNothing();
@@ -566,7 +584,8 @@ namespace Domain.Service.Characters
 
         public async UniTask UseItemOnDeath()
         {
-            foreach (var item in Inventory.AllItems.Where(x => x.UseOnDeath))
+            var items = Inventory.AllItems.Where(x => x.UseOnDeath).ToList();
+            foreach (var item in items)
             {
                 await UseItem(item, CurrentDirection, _map);
                 if (!IsDead)
@@ -707,6 +726,7 @@ namespace Domain.Service.Characters
 
         public void Dispose()
         {
+            _chargePositionCancelSubscription?.Dispose();
             Entity.Dispose();
             _inventory.Dispose();
             _direction.Dispose();
@@ -734,7 +754,8 @@ namespace Domain.Service.Characters
                 IsFlying,
                 _canThroughWalls,
                 CanPickUp,
-                CanUseItem
+                CanUseItem,
+                CanReceivePlayerGift
             );
         }
 
@@ -776,6 +797,24 @@ namespace Domain.Service.Characters
         {
             _onDead.OnNext(Unit.Default);
             Entity.Destroy(causeOfDamageLog);
+        }
+
+        public void ApplyKillHealToAttacker(ICharacter? attacker)
+        {
+            if (attacker == null || attacker == this)
+                return;
+            var killer = attacker;
+            if (!killer.Status.IsFlagStat(FlagStatType.KillHeal))
+                return;
+            if (!killer.Affiliation.IsEnemy(Affiliation))
+                return;
+
+            var healed = killer.GainHp(CommonSenseParameters.KillHealPerEnemyDefeated);
+            if (healed <= 0)
+                return;
+
+            GameLog.Add(killer.Entity.IsVisible,
+                $"{killer.GetName(_map.Player)}は{healed}回復");
         }
 
         #region Status

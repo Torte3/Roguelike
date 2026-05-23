@@ -1,0 +1,158 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8ad2ba14d6a7844c9e89791070d4735, type: 3}
+  m_Name: "\u30DB\u30ED\u30A6"
+  m_EditorClassIdentifier: 
+  Name: "\u30DB\u30ED\u30A6"
+  Group: 1
+  CharacterType:
+    rid: 2541219246146060288
+  _sprite: {fileID: 21300000, guid: d112c495259ab114281a7e70d6d7ebb1, type: 3}
+  IsBoss: 0
+  Hp: 6
+  Aggression: 4
+  Behavior:
+    wanderAround: 1
+    Default: 2
+    PrioritizeMovement: 0
+    UseTopBound: 0
+    greaterThanTopBound: 1
+    distanceTopBound: 5
+    PrioritizeMovementWhenDistanceGreaterThanTopBound: 0
+    UseBottomBound: 1
+    distanceBottomBound: 3
+    lessThanBottomBound: 3
+    PrioritizeMovementWhenDistanceLessThanBottomBound: 0
+    PrioritizeEnemiesOverLeaders: 1
+    ChaseLeader: 1
+  MoveSpeed: 2
+  Flags: 
+  IsFlying: 1
+  CanThroughWalls: 0
+  CanMimic: 1
+  MimicWeights:
+    ItemRevealOnPickUp: 0
+    ItemRevealOnUse: 1
+    Money: 1
+    Stairs: 1
+  CanPickUp: 0
+  CanUseItem: 0
+  CanReceivePlayerGift: 0
+  Skills:
+  - Skill:
+      <Position>k__BackingField:
+        rid: 2790137640983199850
+      <Area>k__BackingField:
+        rid: 2790137640983199851
+      <Effects>k__BackingField:
+      - rid: 2790137640983199852
+      <Repeats>k__BackingField: 1
+      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
+      <RushDistance>k__BackingField: 0
+      <BackStepDistance>k__BackingField: 0
+      <ChargeTurn>k__BackingField: 0
+      <CoolTime>k__BackingField: 30
+      <Log>k__BackingField: "\u306F\u9ED2\u3044\u9727\u3092\u653E\u3063\u305F"
+    Priority: 1
+  - Skill:
+      <Position>k__BackingField:
+        rid: 3794997675126423552
+      <Area>k__BackingField:
+        rid: 3794997675126423553
+      <Effects>k__BackingField:
+      - rid: 3794997675126423554
+      - rid: 3794997675126423555
+      <Repeats>k__BackingField: 1
+      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
+      <RushDistance>k__BackingField: 0
+      <BackStepDistance>k__BackingField: 0
+      <ChargeTurn>k__BackingField: 0
+      <CoolTime>k__BackingField: 3
+      <Log>k__BackingField: "\u306F\u95C7\u306E\u529B\u3092\u653E\u3063\u305F"
+    Priority: 0
+  HasLastSkill: 0
+  LastSkill:
+    <Position>k__BackingField:
+      rid: -2
+    <Area>k__BackingField:
+      rid: -2
+    <Effects>k__BackingField:
+    - rid: -2
+    <Repeats>k__BackingField: 1
+    <ProbabilityOfSuccess>k__BackingField: 1
+    <Cost>k__BackingField: 0
+    <RushDistance>k__BackingField: 0
+    <BackStepDistance>k__BackingField: 0
+    <ChargeTurn>k__BackingField: 0
+    <CoolTime>k__BackingField: 0
+    <Log>k__BackingField: 
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
+  ElementDamageRateMultiplier:
+    data: []
+  ConditionResistance:
+    data: []
+  DropItemRate: 0
+  DropItemTable:
+    items: []
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 2541219246146060288
+      type: {class: Cloud, ns: Domain.Model.Character.Type, asm: Domain.Model}
+      data:
+        Type: 0
+    - rid: 2790137640983199850
+      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data: 
+    - rid: 2790137640983199851
+      type: {class: LineArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data:
+        ContainsSelf: 0
+        CanIgnoreWalls: 0
+        Length: 1
+    - rid: 2790137640983199852
+      type: {class: AddConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _condition:
+          _name: "\u9EBB\u75FA"
+        _probabilityOfSuccess: 1
+    - rid: 3794997675126423552
+      type: {class: NearByCharacter, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data:
+        NumberOfTarget: 1
+        TargetAlly: 0
+        TargetEnemy: 1
+        TargetNeutral: 0
+        TargetSelf: 0
+    - rid: 3794997675126423553
+      type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data: 
+    - rid: 3794997675126423554
+      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _elementPowers:
+        - _element: 5
+          _power: 3
+        _criticalRate: 0
+        _isWeaponAttack: 0
+    - rid: 3794997675126423555
+      type: {class: AddConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _condition:
+          _name: "\u76F2\u76EE"
+        _probabilityOfSuccess: 1

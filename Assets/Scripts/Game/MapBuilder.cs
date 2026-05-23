@@ -247,7 +247,7 @@ namespace Game
             foreach (var position in itemPositions)
             {
                 var item = data.ItemDatabase.GetRandomItem(_progress);
-                _items.Add(ItemEntity.Build(position, item.Build()));
+                _items.Add(ItemEntity.Build(position, BuildFloorItem(data, item)));
             }
 
             var itemCount = data.ItemCount();
@@ -414,8 +414,14 @@ namespace Game
             foreach (var position in GetRandomBlankPositionsInRoom(roomId, count))
             {
                 var item = data.ItemDatabase.GetRandomItem(_progress);
-                _items.Add(ItemEntity.Build(position, item.Build()));
+                _items.Add(ItemEntity.Build(position, BuildFloorItem(data, item)));
             }
+        }
+
+        private static IItemMemento BuildFloorItem(FloorSpec data, IItemData itemData)
+        {
+            var isCursed = RandUtils.IsLessThanProbability(data.CursedItemChance);
+            return itemData.Build(isCursed: isCursed);
         }
 
         public void AddMoneyToRoom(FloorSpec data, Id<Room> roomId, int count)
@@ -514,10 +520,9 @@ namespace Game
         {
             if (data.Id != null && data.DestinationId != null)
                 _stairs.Add(Stairs.Build(data.Type, GetRandomStairPosition(), data.Id,
-                    data.Destination, data.DestinationId, _keyCharacters));
+                    data.Destination, data.DestinationId));
             else
-                _stairs.Add(Stairs.Build(data.Type, GetRandomStairPosition(),
-                    data.Destination, _keyCharacters));
+                _stairs.Add(Stairs.Build(data.Type, GetRandomStairPosition(), data.Destination));
         }
 
         public MapMemento Build()

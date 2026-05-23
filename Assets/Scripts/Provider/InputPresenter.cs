@@ -1,4 +1,5 @@
 #nullable enable
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using Domain.Model.Setting;
 using Domain.Service.Characters.Behavior;
@@ -8,6 +9,8 @@ using IngameDebugConsole;
 using Provider.Input;
 using R3;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using Utilities;
 using VContainer;
 using View;
@@ -24,13 +27,22 @@ namespace Provider
         {
             var logWindowVisible = Observable.EveryValueChanged(DebugLogManager.Instance, x => x.IsLogWindowVisible).ToReadOnlyReactiveProperty();
             var textInputShown = new ReactiveProperty<bool>(false);
-            Observable.CombineLatest(logWindowVisible, actionReceiver.IsEnabled, textInputShown)
-                .Subscribe(x =>
+            Observable.CombineLatest(logWindowVisible, actionReceiver.IsEnabled.SkipLatestValueOnSubscribe(), textInputShown)
+                .Subscribe(states =>
                 {
-                    if (x[0] || !x[1] || x[2])
+                    var isInputBlocked = states[0] || states[2];
+                    var isActionEnabled = states[1];
+
+                    if (isInputBlocked || !isActionEnabled)
                         receiver.Disable();
                     else
                         receiver.Enable();
+
+                    var asset = EventSystem.current?.GetComponent<InputSystemUIInputModule>()?.actionsAsset;
+                    if (isInputBlocked)
+                        asset?.Disable();
+                    else
+                        asset?.Enable();
                 });
 
             receiver.OnMovePerformed

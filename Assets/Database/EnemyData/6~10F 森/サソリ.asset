@@ -32,7 +32,7 @@ MonoBehaviour:
     distanceBottomBound: 3
     lessThanBottomBound: 1
     PrioritizeMovementWhenDistanceLessThanBottomBound: 0
-    PrioritizeEnemiesOverLeaders: 0
+    PrioritizeEnemiesOverLeaders: 1
     ChaseLeader: 1
   MoveSpeed: 2
   Flags: 
@@ -46,6 +46,7 @@ MonoBehaviour:
     Stairs: 1
   CanPickUp: 0
   CanUseItem: 0
+  CanReceivePlayerGift: 0
   Skills:
   - Skill:
       <Position>k__BackingField:

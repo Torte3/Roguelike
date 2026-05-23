@@ -38,11 +38,6 @@ namespace Game
         {
             get
             {
-                foreach (var stairs in Stairs)
-                {
-                    if (stairs.KeyCharacters.Count > 0)
-                        yield return stairs;
-                }
                 foreach (var chest in _chests)
                 {
                     if (chest.KeyCharacters.Count > 0)
@@ -205,6 +200,12 @@ namespace Game
         public void Spawn(IEntityEventEntity eventEntity)
         {
             _standaloneEntityEventEntities.Add(eventEntity);
+        }
+
+        public void AddTrap(Trap trap)
+        {
+            _traps.Add(trap);
+            Spawn(trap);
         }
 
         public void Spawn(ICharacterEventEntity eventEntity)

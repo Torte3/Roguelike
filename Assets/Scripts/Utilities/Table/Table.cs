@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using Utilities;
 
 namespace Utilities.Table
 
@@ -27,10 +28,10 @@ namespace Utilities.Table
             items = source.Select(item => new WeightedItem { Item = item, Weight = 1f }).ToList();
         }
 
-        public T GetRandomItem()
-        {
-            return items[items.Select(items => items.Weight).WeightedIndex()].Item;
-        }
+        public T GetRandomItem() => GetRandomItems(1)[0];
+
+        public List<T> GetRandomItems(int count) =>
+            items.GetWeightedAtRandom(count, w => w.Weight).Select(w => w.Item).ToList();
 
         [Serializable]
         public class WeightedItem

@@ -93,7 +93,7 @@ namespace Game
         {
             if (_dungeon.ShouldBatchCreateSection(mapId))
             {
-                var sectionMapIds = _dungeon.GetSectionInstanceIds(mapId);
+                var sectionMapIds = _dungeon.GetSectionMapIds(mapId);
                 foreach (var sectionMapId in sectionMapIds)
                 {
                     if (!_maps.ContainsKey(sectionMapId))

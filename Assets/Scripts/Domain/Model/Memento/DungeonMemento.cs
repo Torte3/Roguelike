@@ -25,19 +25,32 @@ namespace Domain.Model.Memento
                 pair => new Id<IMap>(pair.Key),
                 pair => pair.Value);
 
-        [field: SerializeField] public List<SectionsEntry> SectionsByInfiniteNode { get; private set; }
+        [field: SerializeField] public List<SectionsEntry> SectionEntries { get; private set; }
         [field: SerializeField] public List<FloorSpecByMapNodeEntry> FloorSpecByMapNode { get; private set; }
+
+        public Dictionary<Id<MapNode>, List<Id<MapNode>>> SectionsByInfiniteNode =>
+            SectionEntries.ToDictionary(
+                entry => entry.InfiniteGraphNodeId,
+                entry => entry.SectionIds.ToList());
+
+        public Dictionary<Id<MapNode>, List<Id<MapNode>>> BossSectionsByInfiniteNode =>
+            SectionEntries.ToDictionary(
+                entry => entry.InfiniteGraphNodeId,
+                entry => entry.BossSectionIds.ToList());
 
         public static DungeonMemento Create(
             IReadOnlyDictionary<Id<IMap>, Id<MapNode>> mapNodeByInstance,
             IReadOnlyDictionary<Id<IMap>, int> depthByInstance,
             IReadOnlyDictionary<Id<MapNode>, List<Id<MapNode>>> sectionsByInfiniteNode,
+            IReadOnlyDictionary<Id<MapNode>, List<Id<MapNode>>> bossSectionsByInfiniteNode,
             IEnumerable<KeyValuePair<Id<MapNode>, FloorSpec>> infiniteFloorSpecs)
         {
             return new DungeonMemento(
                 mapNodeByInstance,
                 depthByInstance,
-                sectionsByInfiniteNode.Select(p => new SectionsEntry(p.Key, p.Value)).ToList(),
+                sectionsByInfiniteNode
+                    .Select(p => new SectionsEntry(p.Key, p.Value, bossSectionsByInfiniteNode[p.Key]))
+                    .ToList(),
                 infiniteFloorSpecs
                     .Select(p => new FloorSpecByMapNodeEntry(p.Key, p.Value.Serialize()))
                     .ToList());
@@ -55,13 +68,14 @@ namespace Domain.Model.Memento
             _depthByInstance = depthByInstance
                 .ToDictionary(pair => pair.Key.ToString(), pair => pair.Value)
                 .ToSerializable();
-            SectionsByInfiniteNode = sectionsByInfiniteNode;
+            SectionEntries = sectionsByInfiniteNode;
             FloorSpecByMapNode = floorSpecByMapNode;
         }
 
         public static DungeonMemento Empty() => Create(
             new Dictionary<Id<IMap>, Id<MapNode>>(),
             new Dictionary<Id<IMap>, int>(),
+            new Dictionary<Id<MapNode>, List<Id<MapNode>>>(),
             new Dictionary<Id<MapNode>, List<Id<MapNode>>>(),
             Array.Empty<KeyValuePair<Id<MapNode>, FloorSpec>>());
 
@@ -75,10 +89,18 @@ namespace Domain.Model.Memento
             public List<Id<MapNode>> SectionIds =>
                 _sectionIds.Select(id => new Id<MapNode>(id)).ToList();
 
-            public SectionsEntry(Id<MapNode> infiniteGraphNodeId, List<Id<MapNode>> sectionIds)
+            [SerializeField] private List<string> _bossSectionIds;
+            public List<Id<MapNode>> BossSectionIds =>
+                _bossSectionIds.Select(id => new Id<MapNode>(id)).ToList();
+
+            public SectionsEntry(
+                Id<MapNode> infiniteGraphNodeId,
+                List<Id<MapNode>> sectionIds,
+                List<Id<MapNode>> bossSectionIds)
             {
                 _infiniteGraphNodeId = infiniteGraphNodeId.ToString();
                 _sectionIds = sectionIds.Select(id => id.ToString()).ToList();
+                _bossSectionIds = bossSectionIds.Select(id => id.ToString()).ToList();
             }
         }
 

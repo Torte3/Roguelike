@@ -10,6 +10,7 @@ namespace Domain.Model.Character.Status
         Confused,
         Clairvoyant,
         Blind,
+        NarrowVision,
         OverDrive,
         AllConditionProof,
         Hard,
@@ -29,5 +30,6 @@ namespace Domain.Model.Character.Status
         AdjacentAttackGuard,
         FullHpCritical,
         StealEmpower,
+        KillHeal,
     }
 }

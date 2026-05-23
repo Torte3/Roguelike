@@ -18,11 +18,11 @@ MonoBehaviour:
     rid: 5486256507571666950
   _sprite: {fileID: 21300000, guid: 3ebebd4c29d78e142b597ab9f01190b2, type: 3}
   IsBoss: 1
-  Hp: 30
+  Hp: 110
   Aggression: 1
   Behavior:
     wanderAround: 1
-    Default: 2
+    Default: 0
     PrioritizeMovement: 0
     UseTopBound: 0
     greaterThanTopBound: 1
@@ -35,7 +35,7 @@ MonoBehaviour:
     PrioritizeEnemiesOverLeaders: 0
     ChaseLeader: 1
   MoveSpeed: 2
-  Flags: 
+  Flags: 0800000009000000
   IsFlying: 0
   CanThroughWalls: 0
   CanMimic: 0
@@ -46,23 +46,92 @@ MonoBehaviour:
     Stairs: 1
   CanPickUp: 0
   CanUseItem: 0
+  CanReceivePlayerGift: 0
   Skills:
   - Skill:
       <Position>k__BackingField:
         rid: 5486256464210165773
       <Area>k__BackingField:
-        rid: 5486256464210165774
+        rid: 7100000000000000001
       <Effects>k__BackingField:
-      - rid: 5486256464210165775
+      - rid: 7100000000000000002
+      - rid: 8023009326398177438
       <Repeats>k__BackingField: 1
       <ProbabilityOfSuccess>k__BackingField: 0.95
       <Cost>k__BackingField: 0
       <RushDistance>k__BackingField: 0
       <BackStepDistance>k__BackingField: 0
       <ChargeTurn>k__BackingField: 0
-      <CoolTime>k__BackingField: 0
-      <Log>k__BackingField: "\u306F\u6BB4\u308A\u304B\u304B\u3063\u305F"
+      <CoolTime>k__BackingField: 4
+      <Log>k__BackingField: "\u306F\u7802\u5D50\u3092\u8D77\u3053\u3057\u305F\u3002"
     Priority: 0
+  - Skill:
+      <Position>k__BackingField:
+        rid: 5486256464210165773
+      <Area>k__BackingField:
+        rid: 7100000000000000004
+      <Effects>k__BackingField:
+      - rid: 7100000000000000005
+      <Repeats>k__BackingField: 1
+      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
+      <RushDistance>k__BackingField: 0
+      <BackStepDistance>k__BackingField: 0
+      <ChargeTurn>k__BackingField: 2
+      <CoolTime>k__BackingField: 5
+      <Log>k__BackingField: "\u306F\u592A\u967D\u306E\u5149\u7DDA\u3092\u653E\u3063\u305F\u3002"
+    Priority: 1
+  - Skill:
+      <Position>k__BackingField:
+        rid: 7100000000000000006
+      <Area>k__BackingField:
+        rid: 7100000000000000007
+      <Effects>k__BackingField:
+      - rid: 7100000000000000009
+      - rid: 7100000000000000010
+      <Repeats>k__BackingField: 1
+      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
+      <RushDistance>k__BackingField: 0
+      <BackStepDistance>k__BackingField: 0
+      <ChargeTurn>k__BackingField: 3
+      <CoolTime>k__BackingField: 20
+      <Log>k__BackingField: "\u306F\u546A\u3044\u3092\u653E\u3063\u305F\u3002"
+    Priority: 0
+  - Skill:
+      <Position>k__BackingField:
+        rid: 5486256464210165773
+      <Area>k__BackingField:
+        rid: 7100000000000000011
+      <Effects>k__BackingField:
+      - rid: 7100000000000000012
+      <Repeats>k__BackingField: 1
+      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
+      <RushDistance>k__BackingField: 0
+      <BackStepDistance>k__BackingField: 0
+      <ChargeTurn>k__BackingField: 0
+      <CoolTime>k__BackingField: 30
+      <Log>k__BackingField: "\u306F\u5175\u3092\u547C\u3073\u51FA\u3057\u305F\u3002"
+    Priority: 0
+  - Skill:
+      <Position>k__BackingField:
+        rid: 5486256464210165773
+      <Area>k__BackingField:
+        rid: 7100000000000000013
+      <Effects>k__BackingField:
+      - rid: 7100000000000000014
+      - rid: 7100000000000000015
+      - rid: 7100000000000000016
+      <Repeats>k__BackingField: 1
+      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
+      <RushDistance>k__BackingField: 0
+      <BackStepDistance>k__BackingField: 0
+      <ChargeTurn>k__BackingField: 0
+      <CoolTime>k__BackingField: 10
+      <Log>k__BackingField: "\u306F\u738B\u5893\u306E\u7F60\u3092\u547C\u3073\u8D77\u3053\u3057\u305F\u3002"
+    Priority: 2
   HasLastSkill: 0
   LastSkill:
     <Position>k__BackingField:
@@ -99,21 +168,120 @@ MonoBehaviour:
     - rid: 5486256464210165773
       type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data: 
-    - rid: 5486256464210165774
-      type: {class: LineArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
-      data:
-        ContainsSelf: 0
-        CanIgnoreWalls: 0
-        Length: 1
-    - rid: 5486256464210165775
-      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
-      data:
-        _elementPowers:
-        - _element: 0
-          _power: 5
-        _criticalRate: 0
-        _isWeaponAttack: 0
     - rid: 5486256507571666950
       type: {class: Pyramid, ns: Domain.Model.Character.Type, asm: Domain.Model}
       data:
         Type: 0
+    - rid: 7100000000000000001
+      type: {class: CircleArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data:
+        ContainsSelf: 0
+        CanIgnoreWalls: 0
+        Radius: 2
+    - rid: 7100000000000000002
+      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _elementPowers:
+        - _element: 0
+          _power: 3
+        _criticalRate: 0
+        _isWeaponAttack: 0
+    - rid: 7100000000000000004
+      type: {class: LineArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data:
+        ContainsSelf: 0
+        CanIgnoreWalls: 0
+        Length: 7
+    - rid: 7100000000000000005
+      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _elementPowers:
+        - _element: 4
+          _power: 22
+        _criticalRate: 0
+        _isWeaponAttack: 0
+    - rid: 7100000000000000006
+      type: {class: ProjectileImpact, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data:
+        Icon:
+          _name: icons_full_16_170
+        CanHitLayer: 01000000
+        IsPiercing: 0
+    - rid: 7100000000000000007
+      type: {class: CircleArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data:
+        ContainsSelf: 0
+        CanIgnoreWalls: 0
+        Radius: 3
+    - rid: 7100000000000000009
+      type: {class: CurseItemEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _probabilityOfSuccess: 0.5
+    - rid: 7100000000000000010
+      type: {class: RemoveUpgradeEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _probabilityOfSuccess: 0.5
+    - rid: 7100000000000000011
+      type: {class: CircleArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data:
+        ContainsSelf: 0
+        CanIgnoreWalls: 0
+        Radius: 2
+    - rid: 7100000000000000012
+      type: {class: RandomEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        Effects:
+        - rid: 7100000000000000019
+        - rid: 7100000000000000020
+        - rid: 7100000000000000021
+    - rid: 7100000000000000013
+      type: {class: CircleArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data:
+        ContainsSelf: 0
+        CanIgnoreWalls: 1
+        Radius: 10
+    - rid: 7100000000000000014
+      type: {class: SpawnTrapEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _trap:
+          _name: "\u6BD2\u306E\u7F60"
+        _count: 1
+    - rid: 7100000000000000015
+      type: {class: SpawnTrapEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _trap:
+          _name: "\u546A\u3044\u306E\u7F60"
+        _count: 1
+    - rid: 7100000000000000016
+      type: {class: SpawnTrapEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _trap:
+          _name: "\u7206\u767A\u306E\u7F60"
+        _count: 1
+    - rid: 7100000000000000019
+      type: {class: SpawnCharacterEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _character:
+          _name: "\u30DE\u30DF\u30FC"
+        _count: 1
+        _inheritsShiny: 0
+    - rid: 7100000000000000020
+      type: {class: SpawnCharacterEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _character:
+          _name: "\u30B9\u30B1\u30EB\u30C8\u30F3"
+        _count: 1
+        _inheritsShiny: 0
+    - rid: 7100000000000000021
+      type: {class: SpawnCharacterEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _character:
+          _name: "\u7802\u6F20\u30B5\u30BD\u30EA"
+        _count: 1
+        _inheritsShiny: 0
+    - rid: 8023009326398177438
+      type: {class: AddConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _condition:
+          _name: "\u76F2\u76EE"
+        _probabilityOfSuccess: 0.5

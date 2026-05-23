@@ -66,17 +66,18 @@ MonoBehaviour:
   FloorData: {fileID: 11400000, guid: 19f7e11c54a2e08499d59577a26f7f57, type: 2}
   EnemyTable: {fileID: 0}
   Boss:
+  - {fileID: 11400000, guid: efaf890b40f7fc240b3ef37971f6f983, type: 2}
   - {fileID: 11400000, guid: 94c194319c4806244af0cddd6be62281, type: 2}
   _bossReward:
   - _item: {fileID: 0}
-    _directWeapon: {fileID: 11400000, guid: 77a4253d09355b54399a665a28be330f, type: 2}
+    _directWeapon: {fileID: 11400000, guid: a521a7f0b6e112e43aa5abd15f33e2ce, type: 2}
     _rangedWeapon: {fileID: 0}
     _artifact: {fileID: 0}
   - _item: {fileID: 0}
     _directWeapon: {fileID: 0}
     _rangedWeapon: {fileID: 0}
-    _artifact: {fileID: 11400000, guid: 2b045713cb7d6e54ea5ffe25d92d2c2e, type: 2}
-  - _item: {fileID: 11400000, guid: 6d1c3aefd2797974983b12f0273cf0fa, type: 2}
+    _artifact: {fileID: 11400000, guid: 7a1c61845cdb9404ba6fc20401984e08, type: 2}
+  - _item: {fileID: 11400000, guid: f3a8c2e1d4b5678901234abcdef56789, type: 2}
     _directWeapon: {fileID: 0}
     _rangedWeapon: {fileID: 0}
     _artifact: {fileID: 0}
@@ -539,16 +540,16 @@ MonoBehaviour:
   FloorData: {fileID: 11400000, guid: 19f7e11c54a2e08499d59577a26f7f57, type: 2}
   EnemyTable: {fileID: 0}
   Boss:
-  - {fileID: 11400000, guid: efaf890b40f7fc240b3ef37971f6f983, type: 2}
+  - {fileID: 11400000, guid: 00fd52b595d9cd943acf3906b9ec9a25, type: 2}
   _bossReward:
   - _item: {fileID: 0}
-    _directWeapon: {fileID: 0}
-    _rangedWeapon: {fileID: 11400000, guid: 4f2a1d8d1c8d71943b890fede999c865, type: 2}
+    _directWeapon: {fileID: 11400000, guid: 77a4253d09355b54399a665a28be330f, type: 2}
+    _rangedWeapon: {fileID: 0}
     _artifact: {fileID: 0}
   - _item: {fileID: 0}
     _directWeapon: {fileID: 0}
     _rangedWeapon: {fileID: 0}
-    _artifact: {fileID: 11400000, guid: 801b4c821fb899e4d9d6914d8c8720dd, type: 2}
+    _artifact: {fileID: 11400000, guid: 6bdd8deef83823d4a95ba6ceb902163e, type: 2}
   - _item: {fileID: 11400000, guid: 6d1c3aefd2797974983b12f0273cf0fa, type: 2}
     _directWeapon: {fileID: 0}
     _rangedWeapon: {fileID: 0}
@@ -695,7 +696,7 @@ MonoBehaviour:
   _mapNodeId: e5fe1b86-1cb3-4bc7-9b05-4cd3b3442cce
   Repeat: 1
   SectionData: {fileID: 11400000, guid: 62622deee896c004bb471c5ad7d63a4d, type: 2}
-  FloorData: {fileID: 11400000, guid: df584d47a8004d54a88052bf6b1eb526, type: 2}
+  FloorData: {fileID: 11400000, guid: dd7f664da10828b4ebead443b6cf0751, type: 2}
   EnemyTable: {fileID: 11400000, guid: 3f69d3af42b570b4ab250380333df352, type: 2}
   Boss: []
   _bossReward: []
@@ -765,17 +766,17 @@ MonoBehaviour:
   FloorData: {fileID: 11400000, guid: 19f7e11c54a2e08499d59577a26f7f57, type: 2}
   EnemyTable: {fileID: 0}
   Boss:
-  - {fileID: 11400000, guid: 6fd32df8dbcc9314a8be35ea233b0f3d, type: 2}
+  - {fileID: 11400000, guid: 76297e18f7731694eb0641d6cefad9f7, type: 2}
   _bossReward:
   - _item: {fileID: 0}
-    _directWeapon: {fileID: 0}
-    _rangedWeapon: {fileID: 11400000, guid: 4f2a1d8d1c8d71943b890fede999c865, type: 2}
+    _directWeapon: {fileID: 11400000, guid: b9f904d06d12b5341b2c06dd70f44911, type: 2}
+    _rangedWeapon: {fileID: 0}
     _artifact: {fileID: 0}
   - _item: {fileID: 0}
     _directWeapon: {fileID: 0}
     _rangedWeapon: {fileID: 0}
-    _artifact: {fileID: 11400000, guid: 801b4c821fb899e4d9d6914d8c8720dd, type: 2}
-  - _item: {fileID: 11400000, guid: 6d1c3aefd2797974983b12f0273cf0fa, type: 2}
+    _artifact: {fileID: 11400000, guid: 2b045713cb7d6e54ea5ffe25d92d2c2e, type: 2}
+  - _item: {fileID: 11400000, guid: 80233bee09b458c40ba9dbda318a1206, type: 2}
     _directWeapon: {fileID: 0}
     _rangedWeapon: {fileID: 0}
     _artifact: {fileID: 0}
@@ -1080,14 +1081,14 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 9d685bfd79326a549be4c3ac21d101f7, type: 2}
   _bossReward:
   - _item: {fileID: 0}
-    _directWeapon: {fileID: 11400000, guid: e554e921d09e12641b64a9d7d94e8da5, type: 2}
-    _rangedWeapon: {fileID: 11400000, guid: 55fb5f31afd8c4b41a5c9ed86918e895, type: 2}
+    _directWeapon: {fileID: 11400000, guid: c155e31990bc3c340a1c8749a7e009d7, type: 2}
+    _rangedWeapon: {fileID: 0}
     _artifact: {fileID: 0}
   - _item: {fileID: 0}
     _directWeapon: {fileID: 0}
     _rangedWeapon: {fileID: 0}
-    _artifact: {fileID: 11400000, guid: 7f801f48e2ffbe34498eed3a79b02832, type: 2}
-  - _item: {fileID: 11400000, guid: b1e2f102e80ab044e9cd44e032bb9151, type: 2}
+    _artifact: {fileID: 11400000, guid: 639d9cf7bd33a554394c232e98d5ae62, type: 2}
+  - _item: {fileID: 11400000, guid: e4f6f32ac39072e48b9873628a8fe660, type: 2}
     _directWeapon: {fileID: 0}
     _rangedWeapon: {fileID: 0}
     _artifact: {fileID: 0}
@@ -1160,7 +1161,7 @@ MonoBehaviour:
   _mapNodeId: d472fe0a-ce40-4a1d-99e8-b498e3a8d83d
   Repeat: 1
   SectionData: {fileID: 11400000, guid: 47f5aeee028230d43bbd1523835cb19d, type: 2}
-  FloorData: {fileID: 11400000, guid: 16bf4d4ad52157647b9f55bbca3b2fc4, type: 2}
+  FloorData: {fileID: 11400000, guid: dfe948ea4ee86fc4fadfcab1dfe1625b, type: 2}
   EnemyTable: {fileID: 11400000, guid: 07b37f42efbebe14495494beab3551a9, type: 2}
   Boss: []
   _bossReward: []
@@ -1277,7 +1278,7 @@ MonoBehaviour:
   _mapNodeId: 0ea8d8e3-41ce-47f4-a903-05d58991c05a
   Repeat: 1
   SectionData: {fileID: 11400000, guid: 596e268e688e69b45a1c4d2bcf7c9ea7, type: 2}
-  FloorData: {fileID: 11400000, guid: 9507077d624753445aaf76570a995bb7, type: 2}
+  FloorData: {fileID: 11400000, guid: d8117d64b61e433488caa0e0b8e33454, type: 2}
   EnemyTable: {fileID: 11400000, guid: 4091984c1d965eb4b92b7343a1c81345, type: 2}
   Boss: []
   _bossReward: []
@@ -1398,6 +1399,7 @@ MonoBehaviour:
   - {fileID: -5074951448736568055}
   - {fileID: 3614882459956434054}
   - {fileID: 5015381014945603743}
+  - {fileID: 3208329525148588595}
 --- !u!114 &132433583354238991
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1568,6 +1570,83 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 2
       _dynamic: 0
+--- !u!114 &3208329525148588595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fa5fd60aa0d2c24bba053555fad3ebb, type: 3}
+  m_Name: Map
+  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.MapNode
+  graph: {fileID: 11400000}
+  position: {x: 685.31305, y: -300.726}
+  ports:
+    keys:
+    - _teleportOut
+    - _teleportIn
+    - _nextMap
+    - _prevMap
+    values:
+    - _fieldName: _teleportOut
+      _node: {fileID: 3208329525148588595}
+      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 2
+      _dynamic: 0
+    - _fieldName: _teleportIn
+      _node: {fileID: 3208329525148588595}
+      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 2
+      _dynamic: 0
+    - _fieldName: _nextMap
+      _node: {fileID: 3208329525148588595}
+      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 2
+      _dynamic: 0
+    - _fieldName: _prevMap
+      _node: {fileID: 3208329525148588595}
+      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 2
+      _dynamic: 0
+  _mapNodeId: 719c7110-0a2f-4d65-820b-e9e5c64a3b93
+  Repeat: 1
+  SectionData: {fileID: 11400000, guid: 19dcd01b9352e254e8c3ea896940d91f, type: 2}
+  FloorData: {fileID: 11400000, guid: 19f7e11c54a2e08499d59577a26f7f57, type: 2}
+  EnemyTable: {fileID: 0}
+  Boss:
+  - {fileID: 11400000, guid: 6fd32df8dbcc9314a8be35ea233b0f3d, type: 2}
+  _bossReward:
+  - _item: {fileID: 0}
+    _directWeapon: {fileID: 11400000, guid: e554e921d09e12641b64a9d7d94e8da5, type: 2}
+    _rangedWeapon: {fileID: 11400000, guid: 55fb5f31afd8c4b41a5c9ed86918e895, type: 2}
+    _artifact: {fileID: 0}
+  - _item: {fileID: 0}
+    _directWeapon: {fileID: 0}
+    _rangedWeapon: {fileID: 0}
+    _artifact: {fileID: 11400000, guid: 7f801f48e2ffbe34498eed3a79b02832, type: 2}
+  - _item: {fileID: 11400000, guid: b1e2f102e80ab044e9cd44e032bb9151, type: 2}
+    _directWeapon: {fileID: 0}
+    _rangedWeapon: {fileID: 0}
+    _artifact: {fileID: 0}
 --- !u!114 &3398057440443913114
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1634,17 +1713,17 @@ MonoBehaviour:
   FloorData: {fileID: 11400000, guid: 19f7e11c54a2e08499d59577a26f7f57, type: 2}
   EnemyTable: {fileID: 0}
   Boss:
-  - {fileID: 11400000, guid: efaf890b40f7fc240b3ef37971f6f983, type: 2}
+  - {fileID: 11400000, guid: 56abbdb432c31624aa52456a2c1a7d16, type: 2}
   _bossReward:
   - _item: {fileID: 0}
     _directWeapon: {fileID: 0}
-    _rangedWeapon: {fileID: 11400000, guid: 4f2a1d8d1c8d71943b890fede999c865, type: 2}
+    _rangedWeapon: {fileID: 11400000, guid: 44e4990e6ec3ff041a03aed607a191ca, type: 2}
     _artifact: {fileID: 0}
   - _item: {fileID: 0}
     _directWeapon: {fileID: 0}
     _rangedWeapon: {fileID: 0}
-    _artifact: {fileID: 11400000, guid: 801b4c821fb899e4d9d6914d8c8720dd, type: 2}
-  - _item: {fileID: 11400000, guid: 6d1c3aefd2797974983b12f0273cf0fa, type: 2}
+    _artifact: {fileID: 11400000, guid: a493fdfa772ac674db886e8e0e10aec4, type: 2}
+  - _item: {fileID: 11400000, guid: 3686947615f6f3a4092e428ed051b93f, type: 2}
     _directWeapon: {fileID: 0}
     _rangedWeapon: {fileID: 0}
     _artifact: {fileID: 0}
@@ -1782,29 +1861,131 @@ MonoBehaviour:
       _node: {fileID: 4272659106180525192}
       _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      connections:
-      - fieldName: _nextMap
-        node: {fileID: 5015381014945603743}
-        reroutePoints: []
+      connections: []
       _direction: 0
       _connectionType: 0
       _typeConstraint: 2
       _dynamic: 0
   _mapNodeId: 8a112b71-e806-4524-9e9f-01475b11e015
-  Repeat: 1
+  Repeat: 5
   FloorData: {fileID: 11400000, guid: 7992a5f1d074e614ab46de6dfbc1d849, type: 2}
-  _sectionCandidates:
-  - {fileID: 11400000, guid: 19dcd01b9352e254e8c3ea896940d91f, type: 2}
-  - {fileID: 11400000, guid: 47f5aeee028230d43bbd1523835cb19d, type: 2}
-  - {fileID: 11400000, guid: 72ee3f4af2aa206408507cdf7683bf55, type: 2}
-  - {fileID: 11400000, guid: 596e268e688e69b45a1c4d2bcf7c9ea7, type: 2}
-  - {fileID: 11400000, guid: 62622deee896c004bb471c5ad7d63a4d, type: 2}
-  - {fileID: 11400000, guid: 68e945a611810f64692a354c8313e2d4, type: 2}
-  - {fileID: 11400000, guid: 4cca41f113a35f2459c0171d1e82136f, type: 2}
+  BossFloorData: {fileID: 11400000, guid: 19f7e11c54a2e08499d59577a26f7f57, type: 2}
+  _sections:
+  - Section: {fileID: 11400000, guid: 19dcd01b9352e254e8c3ea896940d91f, type: 2}
+    Boss:
+    - {fileID: 11400000, guid: 9d685bfd79326a549be4c3ac21d101f7, type: 2}
+    _bossReward:
+    - _item: {fileID: 0}
+      _directWeapon: {fileID: 11400000, guid: c155e31990bc3c340a1c8749a7e009d7, type: 2}
+      _rangedWeapon: {fileID: 0}
+      _artifact: {fileID: 0}
+    - _item: {fileID: 0}
+      _directWeapon: {fileID: 0}
+      _rangedWeapon: {fileID: 0}
+      _artifact: {fileID: 11400000, guid: 639d9cf7bd33a554394c232e98d5ae62, type: 2}
+    - _item: {fileID: 11400000, guid: e4f6f32ac39072e48b9873628a8fe660, type: 2}
+      _directWeapon: {fileID: 0}
+      _rangedWeapon: {fileID: 0}
+      _artifact: {fileID: 0}
+  - Section: {fileID: 11400000, guid: 47f5aeee028230d43bbd1523835cb19d, type: 2}
+    Boss:
+    - {fileID: 11400000, guid: efaf890b40f7fc240b3ef37971f6f983, type: 2}
+    - {fileID: 11400000, guid: 94c194319c4806244af0cddd6be62281, type: 2}
+    _bossReward:
+    - _item: {fileID: 0}
+      _directWeapon: {fileID: 11400000, guid: a521a7f0b6e112e43aa5abd15f33e2ce, type: 2}
+      _rangedWeapon: {fileID: 0}
+      _artifact: {fileID: 0}
+    - _item: {fileID: 0}
+      _directWeapon: {fileID: 0}
+      _rangedWeapon: {fileID: 0}
+      _artifact: {fileID: 11400000, guid: 7a1c61845cdb9404ba6fc20401984e08, type: 2}
+    - _item: {fileID: 11400000, guid: f3a8c2e1d4b5678901234abcdef56789, type: 2}
+      _directWeapon: {fileID: 0}
+      _rangedWeapon: {fileID: 0}
+      _artifact: {fileID: 0}
+  - Section: {fileID: 11400000, guid: 72ee3f4af2aa206408507cdf7683bf55, type: 2}
+    Boss:
+    - {fileID: 11400000, guid: 00fd52b595d9cd943acf3906b9ec9a25, type: 2}
+    _bossReward:
+    - _item: {fileID: 0}
+      _directWeapon: {fileID: 11400000, guid: 77a4253d09355b54399a665a28be330f, type: 2}
+      _rangedWeapon: {fileID: 0}
+      _artifact: {fileID: 0}
+    - _item: {fileID: 0}
+      _directWeapon: {fileID: 0}
+      _rangedWeapon: {fileID: 0}
+      _artifact: {fileID: 11400000, guid: 6bdd8deef83823d4a95ba6ceb902163e, type: 2}
+    - _item: {fileID: 11400000, guid: 6d1c3aefd2797974983b12f0273cf0fa, type: 2}
+      _directWeapon: {fileID: 0}
+      _rangedWeapon: {fileID: 0}
+      _artifact: {fileID: 0}
+  - Section: {fileID: 11400000, guid: 596e268e688e69b45a1c4d2bcf7c9ea7, type: 2}
+    Boss:
+    - {fileID: 11400000, guid: 76297e18f7731694eb0641d6cefad9f7, type: 2}
+    _bossReward:
+    - _item: {fileID: 0}
+      _directWeapon: {fileID: 11400000, guid: b9f904d06d12b5341b2c06dd70f44911, type: 2}
+      _rangedWeapon: {fileID: 0}
+      _artifact: {fileID: 0}
+    - _item: {fileID: 0}
+      _directWeapon: {fileID: 0}
+      _rangedWeapon: {fileID: 0}
+      _artifact: {fileID: 11400000, guid: 2b045713cb7d6e54ea5ffe25d92d2c2e, type: 2}
+    - _item: {fileID: 11400000, guid: 80233bee09b458c40ba9dbda318a1206, type: 2}
+      _directWeapon: {fileID: 0}
+      _rangedWeapon: {fileID: 0}
+      _artifact: {fileID: 0}
+  - Section: {fileID: 11400000, guid: 62622deee896c004bb471c5ad7d63a4d, type: 2}
+    Boss:
+    - {fileID: 11400000, guid: 7b8d9caf8a0f37a4f83b24e4620e807e, type: 2}
+    _bossReward:
+    - _item: {fileID: 0}
+      _directWeapon: {fileID: 0}
+      _rangedWeapon: {fileID: 11400000, guid: 55fb5f31afd8c4b41a5c9ed86918e895, type: 2}
+      _artifact: {fileID: 0}
+    - _item: {fileID: 0}
+      _directWeapon: {fileID: 0}
+      _rangedWeapon: {fileID: 0}
+      _artifact: {fileID: 11400000, guid: 39e2655359ee23849a08986deb7d4d67, type: 2}
+    - _item: {fileID: 11400000, guid: dc2e4bf948103ff4a91bc99c2bef4daf, type: 2}
+      _directWeapon: {fileID: 0}
+      _rangedWeapon: {fileID: 0}
+      _artifact: {fileID: 0}
+  - Section: {fileID: 11400000, guid: 68e945a611810f64692a354c8313e2d4, type: 2}
+    Boss:
+    - {fileID: 11400000, guid: 56abbdb432c31624aa52456a2c1a7d16, type: 2}
+    _bossReward:
+    - _item: {fileID: 0}
+      _directWeapon: {fileID: 0}
+      _rangedWeapon: {fileID: 11400000, guid: 44e4990e6ec3ff041a03aed607a191ca, type: 2}
+      _artifact: {fileID: 0}
+    - _item: {fileID: 0}
+      _directWeapon: {fileID: 0}
+      _rangedWeapon: {fileID: 0}
+      _artifact: {fileID: 11400000, guid: a493fdfa772ac674db886e8e0e10aec4, type: 2}
+    - _item: {fileID: 11400000, guid: 3686947615f6f3a4092e428ed051b93f, type: 2}
+      _directWeapon: {fileID: 0}
+      _rangedWeapon: {fileID: 0}
+      _artifact: {fileID: 0}
+  - Section: {fileID: 11400000, guid: 4cca41f113a35f2459c0171d1e82136f, type: 2}
+    Boss:
+    - {fileID: 11400000, guid: 6fd32df8dbcc9314a8be35ea233b0f3d, type: 2}
+    _bossReward:
+    - _item: {fileID: 0}
+      _directWeapon: {fileID: 11400000, guid: 196ccd508d2e94945a757c0ea62925fa, type: 2}
+      _rangedWeapon: {fileID: 0}
+      _artifact: {fileID: 0}
+    - _item: {fileID: 0}
+      _directWeapon: {fileID: 0}
+      _rangedWeapon: {fileID: 0}
+      _artifact: {fileID: 11400000, guid: c36be504364c65540928e92c54433cde, type: 2}
+    - _item: {fileID: 11400000, guid: 2d327c82725ef014f96eeac6c385b8d4, type: 2}
+      _directWeapon: {fileID: 0}
+      _rangedWeapon: {fileID: 0}
+      _artifact: {fileID: 0}
   EnemyTable: {fileID: 11400000, guid: 255e5bb911c363b4fb2d9b7fe0ecd7bd, type: 2}
   EnemyPickCount: 1
-  Boss: []
-  _bossReward: []
 --- !u!114 &5015381014945603743
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1851,10 +2032,7 @@ MonoBehaviour:
       _node: {fileID: 5015381014945603743}
       _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      connections:
-      - fieldName: _prevMap
-        node: {fileID: 4272659106180525192}
-        reroutePoints: []
+      connections: []
       _direction: 1
       _connectionType: 0
       _typeConstraint: 2
@@ -1874,7 +2052,7 @@ MonoBehaviour:
   _mapNodeId: 8b2eb583-c243-497a-905a-622e5ac0c89a
   Repeat: 1
   SectionData: {fileID: 11400000, guid: 68e945a611810f64692a354c8313e2d4, type: 2}
-  FloorData: {fileID: 11400000, guid: df584d47a8004d54a88052bf6b1eb526, type: 2}
+  FloorData: {fileID: 11400000, guid: 2f86b2c99e663274a840227b37b5b292, type: 2}
   EnemyTable: {fileID: 11400000, guid: 5e4789a59a56e414f8998a8b3c9a7d0d, type: 2}
   Boss: []
   _bossReward: []
@@ -2325,17 +2503,17 @@ MonoBehaviour:
   FloorData: {fileID: 11400000, guid: 19f7e11c54a2e08499d59577a26f7f57, type: 2}
   EnemyTable: {fileID: 0}
   Boss:
-  - {fileID: 11400000, guid: efaf890b40f7fc240b3ef37971f6f983, type: 2}
+  - {fileID: 11400000, guid: 7b8d9caf8a0f37a4f83b24e4620e807e, type: 2}
   _bossReward:
   - _item: {fileID: 0}
     _directWeapon: {fileID: 0}
-    _rangedWeapon: {fileID: 11400000, guid: 4f2a1d8d1c8d71943b890fede999c865, type: 2}
+    _rangedWeapon: {fileID: 11400000, guid: 55fb5f31afd8c4b41a5c9ed86918e895, type: 2}
     _artifact: {fileID: 0}
   - _item: {fileID: 0}
     _directWeapon: {fileID: 0}
     _rangedWeapon: {fileID: 0}
-    _artifact: {fileID: 11400000, guid: 801b4c821fb899e4d9d6914d8c8720dd, type: 2}
-  - _item: {fileID: 11400000, guid: 6d1c3aefd2797974983b12f0273cf0fa, type: 2}
+    _artifact: {fileID: 11400000, guid: 39e2655359ee23849a08986deb7d4d67, type: 2}
+  - _item: {fileID: 11400000, guid: dc2e4bf948103ff4a91bc99c2bef4daf, type: 2}
     _directWeapon: {fileID: 0}
     _rangedWeapon: {fileID: 0}
     _artifact: {fileID: 0}

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Domain.Model.Character;
-using Domain.Model.Item;
+using RandomDungeonWithBluePrint;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Utilities;
@@ -52,11 +52,11 @@ namespace Domain.Model.Dungeon
         Node IMapNodeBlueprint.Node => this;
 
         [Required] public FloorData FloorData = null!;
+        [Required] public FloorData BossFloorData = null!;
 
         [SerializeField]
-        [InfoBox("SectionData を1つ以上指定してください。", InfoMessageType.Error,
-            VisibleIf = nameof(_hasNoSectionCandidates))]
-        private List<SectionData> _sectionCandidates = new();
+        [RequiredListLength(1, null)]
+        private List<InfiniteSectionDefinition> _sections = new();
 
         [Required] public EnemyTableData EnemyTable = null!;
 
@@ -64,22 +64,12 @@ namespace Domain.Model.Dungeon
 
         [MinValue(1)] public int EnemyPickCount = 3;
 
-        public List<EnemyData> Boss = new();
-        private bool HasBoss => Boss is { Count: > 0 };
-        [ShowIf(nameof(HasBoss))]
-        [SerializeField] private List<ItemDataSerializable> _bossReward = new();
-        public List<IItemData> BossReward =>
-            _bossReward == null ? new List<IItemData>() : _bossReward.Select(r => r.Value).ToList();
+        internal IReadOnlyList<InfiniteSectionDefinition> SectionDefinitions => _sections;
 
         [Input(ShowBackingValue.Never, typeConstraint: TypeConstraint.Strict), SerializeField]
         private StairsLink _prevMap;
         [Input(ShowBackingValue.Never, typeConstraint: TypeConstraint.Strict), SerializeField]
         private TeleportLink _teleportIn;
-
-        private bool _hasNoSectionCandidates => _sectionCandidates.All(s => s == null);
-
-        public IReadOnlyList<SectionData> SectionCandidates =>
-            _sectionCandidates.Where(section => section != null).ToList();
 
 #if UNITY_EDITOR
         private void OnValidate() => EnsureMapNodeIdEditor();

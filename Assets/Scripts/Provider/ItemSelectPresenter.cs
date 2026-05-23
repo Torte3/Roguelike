@@ -20,7 +20,7 @@ namespace Provider
             World world,
             ItemSelectText itemSelectText,
             InventoryView inventoryView,
-            ItemPreviewWindow itemPreviewWindow,
+            ItemPreviewView itemPreviewView,
             InputReceiver receiver,
             IGameManager gameManager)
         {
@@ -35,12 +35,10 @@ namespace Provider
                 var previews = new Dictionary<InventoryViewIndex, ItemSelectPreview>();
                 ItemSelectPreview? defaultPreview = null;
                 var previewTitle = string.Empty;
-                itemPreviewWindow.SetVisibility(false);
-                var isItemSelecting = false;
+                var isItemPreviewVisible = false;
 
                 player.OnStartItemSelect.Subscribe(message =>
                 {
-                    isItemSelecting = true;
                     itemSelectText.Show(message.Text);
                     inventoryView.LockItems(message.DisabledItemIndexes.Select(index => index.ToInventoryViewIndex()).ToList());
                     inventoryView.SetCanSkip(true);
@@ -51,19 +49,19 @@ namespace Provider
                         previews.Clear();
                         defaultPreview = null;
                         previewTitle = string.Empty;
-                        itemPreviewWindow.SetVisibility(false);
                         return;
                     }
 
                     previews = message.Previews.ToDictionary(preview => preview.Focus.ToInventoryViewIndex(), preview => preview);
                     defaultPreview = message.DefaultPreview;
                     previewTitle = message.PreviewTitle;
-                    UpdatePreview(itemPreviewWindow, inventoryView.Focus.CurrentValue, previews, defaultPreview, map, previewTitle);
+                    isItemPreviewVisible = true;
+                    itemPreviewView.SetVisibility(true);
+                    UpdatePreview(itemPreviewView, inventoryView.Focus.CurrentValue, previews, defaultPreview, map, previewTitle, isItemPreviewVisible);
                 }).AddTo(disposables);
 
                 player.OnSelectedItemSelect.Subscribe(_ =>
                 {
-                    isItemSelecting = false;
                     itemSelectText.Hide();
                     inventoryView.UnlockAllItems();
                     inventoryView.SetCanSkip(false);
@@ -71,7 +69,11 @@ namespace Provider
                     previews.Clear();
                     defaultPreview = null;
                     previewTitle = string.Empty;
-                    itemPreviewWindow.SetVisibility(false);
+                    if (isItemPreviewVisible)
+                    {
+                        itemPreviewView.SetVisibility(false);
+                        isItemPreviewVisible = false;
+                    }
                 }).AddTo(disposables);
 
                 inventoryView.Focus.Subscribe(focus =>
@@ -79,57 +81,40 @@ namespace Provider
                     gameManager.PlaySE(SE.ItemSelectCursor);
 
                     if (previews.Count == 0)
-                    {
                         return;
-                    }
 
-                    UpdatePreview(itemPreviewWindow, focus, previews, defaultPreview, map, previewTitle);
+                    UpdatePreview(itemPreviewView, focus, previews, defaultPreview, map, previewTitle, isItemPreviewVisible);
                 }).AddTo(disposables);
             });
         }
 
         private static void UpdatePreview(
-            ItemPreviewWindow itemPreviewWindow,
+            ItemPreviewView itemPreviewView,
             InventoryViewIndex focus,
             IReadOnlyDictionary<InventoryViewIndex, ItemSelectPreview> previews,
             ItemSelectPreview? defaultPreview,
             IMap map,
-            string previewTitle)
+            string previewTitle,
+            bool isItemPreviewVisible)
         {
+            if (!isItemPreviewVisible)
+                return;
+
             if (!previews.TryGetValue(focus, out var preview))
             {
                 if (defaultPreview == null)
                 {
-                    itemPreviewWindow.SetVisibility(false);
+                    itemPreviewView.SetVisibility(false);
                     return;
                 }
                 preview = defaultPreview;
             }
 
-            itemPreviewWindow.SetVisibility(true);
-            itemPreviewWindow.SetPreview(previewTitle, BuildItemViewData(map, preview.Item), preview.Note);
-        }
-
-        private static ItemViewData BuildItemViewData(IMap map, IItem item)
-        {
-            var baseName = item.GetName(map.Player, map.ItemPlaceholders);
-            var showEquippedBadge = item.IsEquipped.UnwrapOr(false);
-            int? count = item.IsEquipped.IsNone && item.HasActivatableSkill
-                ? item.RemainingUses.CurrentValue
-                : null;
-            return new ItemViewData(
-                baseName,
-                item.CanAttemptUseOrThrow,
-                item.Icon,
-                canSelect: true,
-                count,
-                showEquippedBadge,
-                item.IsCursed,
-                item.IsShiny,
-                map.Player.Character.IsKnownItem(item),
-                item.IsCurseIdentified,
-                item.Info(map.Player, map.ItemPlaceholders)
-            );
+            itemPreviewView.SetVisibility(true);
+            itemPreviewView.SetPreview(
+                previewTitle,
+                ItemPreviewViewDataBuilder.Build(map, preview.Item),
+                preview.Note);
         }
     }
 }

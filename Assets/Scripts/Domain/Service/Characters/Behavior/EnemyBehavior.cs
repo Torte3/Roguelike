@@ -127,31 +127,33 @@ namespace Domain.Service.Characters.Behavior
             }
 
             var actions = new List<(IAction action, float evaluate)>();
-            if (!result.IsDiscoveringEnemy())
+            if (result.IsDiscoveringCharacter())
             {
-                actions.AddRange(GenerateValidMoves(character, result, map));
-            }
-            else if (PrioritizeMovement(character, result.TargetLocation, map.Id))
-            {
-                Log.Debug("[Think]Prioritize Movement.");
-                actions.AddRange(GenerateValidMoves(character, result, map));
-                if (!actions.Any())
+                if (PrioritizeMovement(character, result.TargetLocation, map.Id))
+                {
+                    Log.Debug("[Think]Prioritize Movement.");
+                    actions.AddRange(GenerateValidMoves(character, result, map));
+                    if (!actions.Any())
+                    {
+                        actions.AddRange(GenerateValidUseSkills(character, map));
+                        actions.AddRange(GenerateValidUseItems(character, map));
+                        actions.AddRange(GenerateValidThrowItems(character, map));
+                    }
+                }
+                else
                 {
                     actions.AddRange(GenerateValidUseSkills(character, map));
                     actions.AddRange(GenerateValidUseItems(character, map));
                     actions.AddRange(GenerateValidThrowItems(character, map));
+                    if (!actions.Any())
+                    {
+                        actions.AddRange(GenerateValidMoves(character, result, map));
+                    }
                 }
             }
             else
             {
-                Log.Debug("[Think]Not Prioritize Movement.");
-                actions.AddRange(GenerateValidUseSkills(character, map));
-                actions.AddRange(GenerateValidUseItems(character, map));
-                actions.AddRange(GenerateValidThrowItems(character, map));
-                if (!actions.Any())
-                {
-                    actions.AddRange(GenerateValidMoves(character, result, map));
-                }
+                actions.AddRange(GenerateValidMoves(character, result, map));
             }
 
             foreach (var actionTemp in actions)
@@ -171,7 +173,9 @@ namespace Domain.Service.Characters.Behavior
         {
             var visibleEnemies = map.Characters.ByAffiliation(character, AffiliationType.Enemy)
                 .IsVisible(character.Entity.CurrentPosition);
-            var visibleLeaders = map.Characters.Where(c => c.IsLeader).ByAffiliation(character, AffiliationType.Ally)
+            var visibleLeaders = map.Characters
+                .Where(c => c.IsLeader && c.Entity.Id != character.Entity.Id)
+                .ByAffiliation(character, AffiliationType.Ally)
                 .IsVisible(character.Entity.CurrentPosition);
             if (character.IsAlly(map.Player.Character))
             {

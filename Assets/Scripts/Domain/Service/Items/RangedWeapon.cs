@@ -117,6 +117,7 @@ namespace Domain.Service.Items
             var skillOnUseProbabilityOfSuccess = WeaponFeatureSkillBuilder.GetSkillOnUseProbabilityOfSuccess(features);
             var chargeTurn = WeaponFeatureSkillBuilder.GetChargeTurn(features);
             var backStepDistance = features.Contains(ItemFeature.BackStep) ? 1 : 0;
+            var skillHpCost = WeaponFeatureSkillBuilder.GetSkillHpCost(features);
 
             return SkillWithCost.Build(
                 new SkillData(
@@ -125,7 +126,7 @@ namespace Domain.Service.Items
                     effectsOnUse,
                     repeat,
                     skillOnUseProbabilityOfSuccess,
-                    0,
+                    skillHpCost,
                     0,
                     backStepDistance,
                     chargeTurn,

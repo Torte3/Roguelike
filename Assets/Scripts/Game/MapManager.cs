@@ -147,6 +147,11 @@ namespace Game
 
         private void ApplyInitialMapState(MapMemento map, IGameManager gameManager)
         {
+            if (map.MonsterHouse.HasValue && !map.MonsterHouse.Value.HasEverEntered)
+            {
+                GameLog.AddIgnoreVisibility("<color=yellow>不穏な気配を感じる……</color>");
+            }
+
             SetRules(gameManager);
 
             var visibleArea = EntityManager.Player.Character.VisionRange.VisibleArea;
@@ -154,11 +159,6 @@ namespace Game
             _tilemap.SetTilesKnown(visibleArea, true);
 
             UpdateVisibility(EntityManager.Entities);
-
-            if (map.MonsterHouse.HasValue && !map.MonsterHouse.Value.HasEverEntered)
-            {
-                GameLog.AddIgnoreVisibility("<color=yellow>不穏な気配を感じる……</color>");
-            }
         }
 
         public Observable<OnEffectSpawnedMessage> OnEffectSpawned => _onEffectSpawned;
@@ -765,6 +765,8 @@ namespace Game
                     EntityManager.SpawnFire(position);
             }
         }
+
+        public void SpawnTrap(TrapData trap, Vector2Int position) => EntityManager.SpawnTrap(trap, position);
         public IItemEntity? TryPickUpAt(Vector2Int position, bool canPickUpShopItem)
         {
             _gameManager.PlaySE(SE.Pickup);

@@ -26,21 +26,5 @@ namespace Domain.Service.Characters.Behavior
                 _ => throw new ArgumentOutOfRangeException(nameof(State), State, null)
             };
         }
-
-        public bool IsDiscoveringEnemy()
-        {
-            return State switch
-            {
-                BehaviorState.None => false,
-                BehaviorState.DiscoveringEnemy => true,
-                BehaviorState.DiscoveringLeader => false,
-                BehaviorState.ApproachingToObserve => false,
-                BehaviorState.ReturningHome => false,
-                BehaviorState.MovingToLastKnownEnemyPosition => false,
-                BehaviorState.MovingToLastKnownLeaderPosition => false,
-                BehaviorState.Wandering => false,
-                _ => throw new ArgumentOutOfRangeException(nameof(State), State, null)
-            };
-        }
     }
 }

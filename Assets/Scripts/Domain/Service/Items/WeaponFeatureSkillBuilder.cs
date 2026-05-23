@@ -44,8 +44,13 @@ namespace Domain.Service.Items
             var powerMagnification = prefix?.PowerMagnification ?? 1f;
             if (applyChargeAttackMagnification && features.Contains(ItemFeature.ChargeAttack))
                 powerMagnification *= 1.5f;
+            if (applyChargeAttackMagnification && features.Contains(ItemFeature.SacrificeAttack))
+                powerMagnification *= CommonSenseParameters.SacrificeAttackPowerMultiplier;
             return Mathf.RoundToInt(power * powerMagnification) + upgradeCount;
         }
+
+        public static int GetSkillHpCost(List<ItemFeature> features) =>
+            features.Contains(ItemFeature.SacrificeAttack) ? CommonSenseParameters.SacrificeAttackHpCost : 0;
 
         public static List<ElementPower> CreateElementPowers(int powerValue, List<ItemFeature> features)
         {

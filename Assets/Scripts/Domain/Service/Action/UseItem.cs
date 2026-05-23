@@ -19,6 +19,11 @@ namespace Domain.Service.Action
                 return false;
             }
 
+            if (Item.IsEquipped.IsSome() && !actor.Inventory.Contains(Item))
+            {
+                return false;
+            }
+
             if (!actor.Inventory.CanRemove(Item)
                 && map.Items.At(actor.Entity.CurrentPosition).FirstOrDefault()?.Item != Item)
             {

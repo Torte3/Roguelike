@@ -54,8 +54,15 @@ namespace Domain.Service.Characters
                 data.Stats.ConditionResistance.ToDictionary(pair => pair.Key, pair => new Stat(pair.Value));
             _conditions = new CharacterConditions(character, data.Conditions, map);
             _flagStats = data.FlagStats.ToDictionary(x => x.Key, x => new FlagStat(x.Value));
-            _visionRange = new VisionRange(position, ViewRange.Value, GetFlagStat(FlagStatType.Clairvoyant),
-                GetFlagStat(FlagStatType.Blind), () => character.CanThroughWalls, map);
+            _visionRange = new VisionRange(
+                position,
+                ViewRange.Value,
+                GetFlagStat(FlagStatType.Clairvoyant),
+                GetFlagStat(FlagStatType.Blind),
+                GetFlagStat(FlagStatType.NarrowVision),
+                () => character.CanThroughWalls,
+                map
+            );
             _character = character;
         }
 
@@ -256,6 +263,7 @@ namespace Domain.Service.Characters
             if (IsDead)
             {
                 await _character.UseLastSkill();
+                _character.ApplyKillHealToAttacker(attacker);
                 _character.Die(causeOfDeathLog);
             }
 

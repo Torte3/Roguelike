@@ -170,6 +170,14 @@ namespace Provider
                     .Subscribe(canUse => spriteView.GetComponent<SpriteRenderer>().sprite = workbench.Icon)
                     .AddTo(entityView);
             }
+            else if (eventEntity is Stairs { Type: MovementEntityType.MagicCircle } magicCircle)
+            {
+                magicCircle.CanUse
+                    .Subscribe(canUse => spriteView.GetComponent<SpriteRenderer>().sprite = canUse
+                        ? ObjectLoader.LoadMapChip(Stairs.ActiveMagicCircleMapChipName)
+                        : ObjectLoader.LoadMapChip(Stairs.UsedMagicCircleMapChipName))
+                    .AddTo(entityView);
+            }
             else if (eventEntity is Statue statue)
             {
                 statue.OnAttacked

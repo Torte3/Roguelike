@@ -140,42 +140,40 @@ namespace Domain.Model.Dungeon
                 mapNode.BossReward);
         }
 
-        public FloorSpec CreateInfiniteSectionSpec(Id<MapNode> infiniteGraphNodeId)
+        public (FloorSpec Normal, FloorSpec Boss) PickRandomInfiniteSectionFloorSpecs(Id<MapNode> infiniteGraphNodeId)
         {
             var infiniteNode = _mapGraph.GetInfiniteMapNode(infiniteGraphNodeId);
-            var candidates = infiniteNode.SectionCandidates;
-            var sectionData = candidates.Count > 0
-                ? candidates[Random.Range(0, candidates.Count)]
-                : throw new System.InvalidOperationException("InfiniteMapNode has no Section candidates");
-
+            var sectionDefinition = infiniteNode.SectionDefinitions.GetAtRandom();
             var field = infiniteNode.FloorData.Field ?? Fields.GetRandomItem();
             var pickedEnemies = PickEnemiesFromPool(infiniteNode.Enemies, infiniteNode.EnemyPickCount);
             var enemies = new Table<EnemyData>(pickedEnemies);
-            return FloorSpec.Build(
+
+            var normal = FloorSpec.Build(
                 this,
-                sectionData,
+                sectionDefinition.Section,
                 infiniteNode.FloorData,
                 field,
                 enemies,
                 new List<EnemyData>(),
                 new List<IItemData>());
+            var bossFloorData = infiniteNode.BossFloorData;
+            var bossField = bossFloorData.Field ?? Fields.GetRandomItem();
+            var boss = FloorSpec.Build(
+                this,
+                sectionDefinition.Section,
+                bossFloorData,
+                bossField,
+                new Table<EnemyData>(),
+                sectionDefinition.Boss,
+                sectionDefinition.BossReward);
+            return (normal, boss);
         }
 
         public FloorData GetInfiniteFloorData(Id<MapNode> infiniteGraphNodeId) =>
             _mapGraph.GetInfiniteMapNode(infiniteGraphNodeId).FloorData;
 
-        public FloorSpec ApplyInfiniteSectionBossFloor(FloorSpec sectionSpec, Id<MapNode> infiniteGraphNodeId)
-        {
-            var infiniteNode = _mapGraph.GetInfiniteMapNode(infiniteGraphNodeId);
-            if (infiniteNode.Boss is not { Count: > 0 })
-                return sectionSpec;
-
-            return sectionSpec with
-            {
-                Boss = infiniteNode.Boss,
-                BossReward = infiniteNode.BossReward
-            };
-        }
+        public FloorData GetInfiniteBossFloorData(Id<MapNode> infiniteGraphNodeId) =>
+            _mapGraph.GetInfiniteMapNode(infiniteGraphNodeId).BossFloorData;
 
         private int MaxFiniteDepthFrom(
             Id<MapNode> id,
@@ -215,27 +213,8 @@ namespace Domain.Model.Dungeon
             return total;
         }
 
-        private static List<EnemyData> PickEnemiesFromPool(Table<EnemyData> pool, int pickCount)
-        {
-            var count = Mathf.Min(pickCount, pool.Count);
-            var used = new HashSet<EnemyData>();
-            var picked = new List<EnemyData>();
-            for (int i = 0; i < count; i++)
-            {
-                EnemyData enemy;
-                var attempts = 0;
-                do
-                {
-                    enemy = pool.GetRandomItem();
-                    attempts++;
-                } while (used.Contains(enemy) && attempts < 50 && used.Count < pool.Count);
-
-                used.Add(enemy);
-                picked.Add(enemy);
-            }
-
-            return picked;
-        }
+        private static List<EnemyData> PickEnemiesFromPool(Table<EnemyData> pool, int pickCount) =>
+            pool.GetRandomItems(Mathf.Min(pickCount, pool.Count));
 
     }
 }

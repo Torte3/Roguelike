@@ -1,12 +1,13 @@
+#nullable enable
 using TMPro;
 using UnityEngine;
 
 namespace View.UI
 {
-    public class ItemPreviewWindow : MonoBehaviour
+    public class ItemPreviewView : MonoBehaviour
     {
         [SerializeField] private TMP_Text _titleText;
-        [SerializeField] private InventoryItemView _itemView;
+        [SerializeField] private ItemPreviewItemView _itemView;
         [SerializeField] private TMP_Text _itemInfo;
 
         public void SetVisibility(bool isVisible)
@@ -14,14 +15,12 @@ namespace View.UI
             gameObject.SetActive(isVisible);
         }
 
-        public void SetPreview(string title, ItemViewData itemData, string? note)
+        public void SetPreview(string title, ItemPreviewViewData data, string? note = null)
         {
             if (_titleText != null)
-            {
                 _titleText.text = title;
-            }
-            _itemView.Set(itemData);
-            _itemInfo.text = $"{note ?? string.Empty}{itemData.info}";
+            _itemView.Set(data);
+            _itemInfo.text = $"{note ?? string.Empty}{data.info}";
         }
     }
 }

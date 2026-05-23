@@ -46,6 +46,7 @@ MonoBehaviour:
     Stairs: 1
   CanPickUp: 0
   CanUseItem: 0
+  CanReceivePlayerGift: 0
   Skills: []
   HasLastSkill: 0
   LastSkill:
