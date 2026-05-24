@@ -108,7 +108,7 @@ namespace Domain.Model.Character.Status
                 FlagStatType.CannotAct => CommonSenseParameters.OneTurnStunEquivalentHpReduction,
                 FlagStatType.CannotMove => CommonSenseParameters.OneTurnStunEquivalentHpReduction / 2,
                 FlagStatType.Confused => CommonSenseParameters.OneTurnStunEquivalentHpReduction / 2,
-                FlagStatType.Clairvoyant => 0.05f,
+                FlagStatType.Clairvoyant => 0.02f,
                 FlagStatType.Blind => CommonSenseParameters.OneTurnStunEquivalentHpReduction / 2,
                 FlagStatType.NarrowVision => CommonSenseParameters.OneTurnStunEquivalentHpReduction / 4,
                 FlagStatType.OverDrive => 0.1f,

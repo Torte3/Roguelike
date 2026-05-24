@@ -65,7 +65,7 @@ namespace Domain.Service.Events
         public async UniTask Execute(IMap map)
         {
             GameLog.Add(Entity.IsVisible, $"<color=red>{Name}</color>が起動した");
-            await _skill.Use(Name, Entity.CurrentPosition, map);
+            await _skill.Use(Name, Entity.CurrentPosition, map, Entity.Id);
             if (Random.value < _probabilityOfBreaking)
             {
                 GameLog.Add(Entity.IsVisible, $"<color=red>{Name}</color>は壊れた");

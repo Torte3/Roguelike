@@ -30,19 +30,15 @@ namespace Domain.Service.Effect
 
         public override float Evaluate(IActorOfEffect actor, ITargetOfEffect target)
         {
-            var lostRatio = (float)(target.CurrentMaxHp - target.CurrentHp) / target.CurrentMaxHp;
-            var healRatio = (float)Formula.CalcHeal(_power) / target.CurrentMaxHp;
-            if (lostRatio >= healRatio)
-            {
-                return healRatio;
-            }
+            if (target.CurrentMaxHp <= 0)
+                return 0;
 
-            if (lostRatio > 0.5f)
-            {
-                return lostRatio;
-            }
+            var missingHp = target.CurrentMaxHp - target.CurrentHp;
+            if (missingHp <= 0)
+                return 0;
 
-            return 0;
+            var actualHeal = Mathf.Min(Formula.CalcHeal(_power), missingHp);
+            return (float)actualHeal / target.CurrentMaxHp;
         }
 
         public override float EvaluatePrice()

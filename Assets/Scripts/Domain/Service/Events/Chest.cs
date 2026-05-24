@@ -20,7 +20,7 @@ using Utilities.Serialize.Option;
 
 namespace Domain.Service.Events
 {
-    public class Chest : ISerializable<ChestMemento>, IPlayerEventEntity, IIconEntity, ILockedEntity
+    public class Chest : ISerializable<ChestMemento>, IPlayerEventEntity, ILockedEntity
     {
         public EntityBase Entity { get; init; }
         public bool IsGrounded => true;

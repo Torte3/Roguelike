@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f8ad2ba14d6a7844c9e89791070d4735, type: 3}
-  m_Name: "\u30D4\u30E9\u30DF\u30C3\u30C9"
+  m_Name: "\u592A\u967D\u738B\u306E\u5893"
   m_EditorClassIdentifier: 
-  Name: "\u30D4\u30E9\u30DF\u30C3\u30C9"
+  Name: "\u592A\u967D\u738B\u306E\u5893"
   Group: 1
   CharacterType:
     rid: 5486256507571666950
@@ -158,7 +158,7 @@ MonoBehaviour:
   DropItemRate: 0
   DropItemTable:
     items:
-    - Item: {fileID: 11400000, guid: 4f78e74bb0a46d340b80fa884693a6ba, type: 2}
+    - Item: {fileID: 0}
       Weight: 1
   references:
     version: 2

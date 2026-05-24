@@ -195,7 +195,6 @@ MonoBehaviour:
       - {fileID: 11400000, guid: 2b045713cb7d6e54ea5ffe25d92d2c2e, type: 2}
       - {fileID: 11400000, guid: 39e2655359ee23849a08986deb7d4d67, type: 2}
       - {fileID: 11400000, guid: 3e0015680b2a57e4e931251eb397155c, type: 2}
-      - {fileID: 11400000, guid: 4dc220e2ae820bd43a4381a4175107c1, type: 2}
       - {fileID: 11400000, guid: 57658faa4ac5dc4408e88968c2ff06d0, type: 2}
       - {fileID: 11400000, guid: 5a2cd9508daaac54eab5650878e86ba2, type: 2}
       - {fileID: 11400000, guid: 639d9cf7bd33a554394c232e98d5ae62, type: 2}
@@ -213,7 +212,6 @@ MonoBehaviour:
       - {fileID: 11400000, guid: a493fdfa772ac674db886e8e0e10aec4, type: 2}
       - {fileID: 11400000, guid: b28f04956c79ed249962defc99823646, type: 2}
       - {fileID: 11400000, guid: bfdbc1c6d7b83a34a8d8533b8bd1d24e, type: 2}
-      - {fileID: 11400000, guid: c036cc98b9b91ee4fa51a14516677307, type: 2}
       - {fileID: 11400000, guid: c92a2f406f872944491897031fac767e, type: 2}
       - {fileID: 11400000, guid: ccf9cc8488a4d1144af41f0e1f3b10e2, type: 2}
       - {fileID: 11400000, guid: fa53fd44a1e190443a7ad3c67c61bbb5, type: 2}
@@ -305,9 +303,9 @@ MonoBehaviour:
             - {fileID: 11400000, guid: 7b70ff2864835eb479d3552172b5763a, type: 2}
             - {fileID: 11400000, guid: 58b5a647b4970804d89fb9e6bbe90642, type: 2}
             - {fileID: 11400000, guid: c6c6c83729860b24bbde54874dc2b8f4, type: 2}
-            - {fileID: 11400000, guid: 67ab94dcf2dc98b4a8ba5b6dd2a296be, type: 2}
-            - {fileID: 11400000, guid: cc237994c27fb664f94657701968b99e, type: 2}
-            - {fileID: 11400000, guid: 5484172c81b51a94b8ca56cfaa81b79b, type: 2}
+            - {fileID: 0}
+            - {fileID: 0}
+            - {fileID: 0}
         Weight: 10
   SpawnItem:
     Potions: 20

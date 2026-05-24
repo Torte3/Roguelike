@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f8ad2ba14d6a7844c9e89791070d4735, type: 3}
-  m_Name: "\u30DE\u30B8\u30AB\u30EB\u30B8\u30A7\u30EB"
+  m_Name: "\u30D5\u30E9\u30B9\u30B3"
   m_EditorClassIdentifier: 
-  Name: "\u30DE\u30B8\u30AB\u30EB\u30B8\u30A7\u30EB"
+  Name: "\u30D5\u30E9\u30B9\u30B3"
   Group: 1
   CharacterType:
-    rid: 2541219158355345428
-  _sprite: {fileID: 21300000, guid: 2d760effdb840184685ee187ede2f8c5, type: 3}
+    rid: 2541219246146060293
+  _sprite: {fileID: 21300000, guid: d7473fdd4fe09744ca7d0a667411bdcd, type: 3}
   IsBoss: 0
-  Hp: 6
+  Hp: 1
   Aggression: 1
   Behavior:
     wanderAround: 1
@@ -50,11 +50,11 @@ MonoBehaviour:
   Skills:
   - Skill:
       <Position>k__BackingField:
-        rid: 8023009114449248375
+        rid: 8023009114449248387
       <Area>k__BackingField:
-        rid: 8023009114449248376
+        rid: 8023009114449248388
       <Effects>k__BackingField:
-      - rid: 8023009114449248377
+      - rid: 8023009114449248389
       <Repeats>k__BackingField: 1
       <ProbabilityOfSuccess>k__BackingField: 0.95
       <Cost>k__BackingField: 0
@@ -67,19 +67,19 @@ MonoBehaviour:
   HasLastSkill: 1
   LastSkill:
     <Position>k__BackingField:
-      rid: 2541219158355345427
+      rid: 2541219246146060297
     <Area>k__BackingField:
-      rid: 5486256397401194502
+      rid: 2541219246146060294
     <Effects>k__BackingField:
-    - rid: 2541219158355345426
+    - rid: 2541219246146060296
     <Repeats>k__BackingField: 1
     <ProbabilityOfSuccess>k__BackingField: 1
     <Cost>k__BackingField: 0
     <RushDistance>k__BackingField: 0
     <BackStepDistance>k__BackingField: 0
-    <ChargeTurn>k__BackingField: 0
+    <ChargeTurn>k__BackingField: 1
     <CoolTime>k__BackingField: 0
-    <Log>k__BackingField: "\u306E\u4E00\u90E8\u304C\u98DB\u3073\u6563\u3063\u305F\u3002"
+    <Log>k__BackingField: "\u306F\u7206\u767A\u3057\u305F\u3002"
   AttackMultiplier: 1
   ElementAttackMultiplier:
     data: []
@@ -93,37 +93,38 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2541219158355345426
-      type: {class: SpawnCharacterEffect, ns: Domain.Service.Effect, asm: Domain.Service}
-      data:
-        _character:
-          _name: "\u30DE\u30B8\u30AB\u30EB\u30C9\u30ED\u30C3\u30D7"
-        _count: 2
-        _inheritsShiny: 0
-    - rid: 2541219158355345427
-      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
-      data: 
-    - rid: 2541219158355345428
-      type: {class: SlimeSmall, ns: Domain.Model.Character.Type, asm: Domain.Model}
+    - rid: 2541219246146060293
+      type: {class: Potion, ns: Domain.Model.Character.Type, asm: Domain.Model}
       data:
         Type: 0
-    - rid: 5486256397401194502
+    - rid: 2541219246146060294
       type: {class: CircleArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
       data:
         ContainsSelf: 0
         CanIgnoreWalls: 0
-        Radius: 1
-    - rid: 8023009114449248375
-      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
-      data: 
-    - rid: 8023009114449248376
-      type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
-      data: 
-    - rid: 8023009114449248377
+        Radius: 2
+    - rid: 2541219246146060296
       type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:
         _elementPowers:
         - _element: 0
-          _power: 2
+          _power: 12
+        _criticalRate: 0
+        _isWeaponAttack: 0
+    - rid: 2541219246146060297
+      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data: 
+    - rid: 8023009114449248387
+      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data: 
+    - rid: 8023009114449248388
+      type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data: 
+    - rid: 8023009114449248389
+      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _elementPowers:
+        - _element: 0
+          _power: 3
         _criticalRate: 0
         _isWeaponAttack: 0

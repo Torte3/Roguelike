@@ -1,9 +1,10 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Character.Status;
 using Domain.Model.Effect;
 using Domain.Model.Map;
+using Unity.Logging;
 using Utilities;
 
 namespace Domain.Service.Action
@@ -12,7 +13,19 @@ namespace Domain.Service.Action
     {
         public bool Doable(IActor actor, IMap map)
         {
-            return !actor.Status.IsFlagStat(FlagStatType.CannotAct) && Skill.IsUsable();
+            if (actor.Status.IsFlagStat(FlagStatType.CannotAct))
+            {
+                Log.Debug($"[InputBlock][UseSkill] reason:Actor has CannotAct flag., skill:{Skill.Info()}, direction:{Direction}");
+                return false;
+            }
+
+            if (!Skill.IsUsable())
+            {
+                Log.Debug($"[InputBlock][UseSkill] reason:Skill.IsUsable() is false., skill:{Skill.Info()}, direction:{Direction}");
+                return false;
+            }
+
+            return true;
         }
 
         public async UniTask Do(IActor actor, IMap map, IInput input)

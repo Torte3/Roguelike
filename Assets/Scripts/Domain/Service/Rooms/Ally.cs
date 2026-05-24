@@ -13,7 +13,7 @@ namespace Domain.Service.Rooms
 {
     public class Ally : PlayerEvent
     {
-        private const float GiftAffectionPerPrice = 1f / 1000f;
+        private const float GiftAffectionPerPrice = 1f / 100f;
 
         public Ally(ICharacter character, EnemyBehavior behavior) : base(
             null,

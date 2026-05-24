@@ -10,16 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f8ad2ba14d6a7844c9e89791070d4735, type: 3}
-  m_Name: "\u30DE\u30B8\u30AB\u30EB\u30EA\u30AD\u30C3\u30C9"
+  m_Name: "\u30E2\u30B9"
   m_EditorClassIdentifier: 
-  Name: "\u30DE\u30B8\u30AB\u30EB\u30EA\u30AD\u30C3\u30C9"
+  Name: "\u30E2\u30B9"
   Group: 1
   CharacterType:
-    rid: 2541219158355345424
-  _sprite: {fileID: 21300000, guid: b05dac6f161d1394281cff62c61fc7ec, type: 3}
+    rid: 5486256560184492032
+  _sprite: {fileID: 21300000, guid: f6f6c90a5f9c9d04c92e3c01ccaa7063, type: 3}
   IsBoss: 0
-  Hp: 10
-  Aggression: 1
+  Hp: 8
+  Aggression: 4
   Behavior:
     wanderAround: 1
     Default: 2
@@ -28,15 +28,15 @@ MonoBehaviour:
     greaterThanTopBound: 1
     distanceTopBound: 6
     PrioritizeMovementWhenDistanceGreaterThanTopBound: 0
-    UseBottomBound: 0
+    UseBottomBound: 1
     distanceBottomBound: 3
-    lessThanBottomBound: 1
+    lessThanBottomBound: 3
     PrioritizeMovementWhenDistanceLessThanBottomBound: 0
     PrioritizeEnemiesOverLeaders: 1
     ChaseLeader: 1
   MoveSpeed: 2
   Flags: 
-  IsFlying: 0
+  IsFlying: 1
   CanThroughWalls: 0
   CanMimic: 0
   MimicWeights:
@@ -50,11 +50,11 @@ MonoBehaviour:
   Skills:
   - Skill:
       <Position>k__BackingField:
-        rid: 8023009114449248380
+        rid: 5486256464210165763
       <Area>k__BackingField:
-        rid: 8023009114449248379
+        rid: 5486256464210165764
       <Effects>k__BackingField:
-      - rid: 8023009114449248381
+      - rid: 3119344396326407490
       <Repeats>k__BackingField: 1
       <ProbabilityOfSuccess>k__BackingField: 0.95
       <Cost>k__BackingField: 0
@@ -62,16 +62,32 @@ MonoBehaviour:
       <BackStepDistance>k__BackingField: 0
       <ChargeTurn>k__BackingField: 0
       <CoolTime>k__BackingField: 0
-      <Log>k__BackingField: "\u306F\u4F53\u5F53\u305F\u308A\u3057\u305F"
+      <Log>k__BackingField: "\u306E\u653B\u6483"
     Priority: 0
-  HasLastSkill: 1
+  - Skill:
+      <Position>k__BackingField:
+        rid: 3794997872339714061
+      <Area>k__BackingField:
+        rid: 3794997872339714062
+      <Effects>k__BackingField:
+      - rid: 3794997872339714063
+      <Repeats>k__BackingField: 1
+      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
+      <RushDistance>k__BackingField: 0
+      <BackStepDistance>k__BackingField: 0
+      <ChargeTurn>k__BackingField: 0
+      <CoolTime>k__BackingField: 10
+      <Log>k__BackingField: "\u306F\u7652\u3084\u3057\u306E\u9C57\u7C89\u3092\u632F\u308A\u307E\u3044\u305F"
+    Priority: 0
+  HasLastSkill: 0
   LastSkill:
     <Position>k__BackingField:
-      rid: 2541219158355345427
+      rid: -2
     <Area>k__BackingField:
-      rid: 5486256397401194503
+      rid: -2
     <Effects>k__BackingField:
-    - rid: 8023009114449248378
+    - rid: -2
     <Repeats>k__BackingField: 1
     <ProbabilityOfSuccess>k__BackingField: 1
     <Cost>k__BackingField: 0
@@ -79,7 +95,7 @@ MonoBehaviour:
     <BackStepDistance>k__BackingField: 0
     <ChargeTurn>k__BackingField: 0
     <CoolTime>k__BackingField: 0
-    <Log>k__BackingField: "\u306E\u4E00\u90E8\u304C\u98DB\u3073\u6563\u3063\u305F\u3002"
+    <Log>k__BackingField: 
   AttackMultiplier: 1
   ElementAttackMultiplier:
     data: []
@@ -93,37 +109,41 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2541219158355345424
-      type: {class: Slime, ns: Domain.Model.Character.Type, asm: Domain.Model}
-      data:
-        Type: 12
-    - rid: 2541219158355345427
-      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
-      data: 
-    - rid: 5486256397401194503
-      type: {class: CircleArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
-      data:
-        ContainsSelf: 0
-        CanIgnoreWalls: 0
-        Radius: 1
-    - rid: 8023009114449248378
-      type: {class: SpawnCharacterEffect, ns: Domain.Service.Effect, asm: Domain.Service}
-      data:
-        _character:
-          _name: "\u30DE\u30B8\u30AB\u30EB\u30B8\u30A7\u30EB"
-        _count: 2
-        _inheritsShiny: 1
-    - rid: 8023009114449248379
-      type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
-      data: 
-    - rid: 8023009114449248380
-      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
-      data: 
-    - rid: 8023009114449248381
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 3119344396326407490
       type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:
         _elementPowers:
         - _element: 0
-          _power: 3
+          _power: 4
         _criticalRate: 0
         _isWeaponAttack: 0
+    - rid: 3794997872339714061
+      type: {class: NearByCharacter, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data:
+        NumberOfTarget: 1
+        TargetAlly: 1
+        TargetEnemy: 0
+        TargetNeutral: 0
+        TargetSelf: 0
+    - rid: 3794997872339714062
+      type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data: 
+    - rid: 3794997872339714063
+      type: {class: HealEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _power: 8
+    - rid: 5486256464210165763
+      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data: 
+    - rid: 5486256464210165764
+      type: {class: LineArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data:
+        ContainsSelf: 0
+        CanIgnoreWalls: 0
+        Length: 1
+    - rid: 5486256560184492032
+      type: {class: Moth, ns: Domain.Model.Character.Type, asm: Domain.Model}
+      data:
+        Type: 2

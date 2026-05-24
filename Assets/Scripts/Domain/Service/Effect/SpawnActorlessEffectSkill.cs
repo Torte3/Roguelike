@@ -4,6 +4,7 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
+using Domain.Model.Entity;
 using Domain.Model.Effect;
 using Domain.Model.Effect.Area;
 using Domain.Model.Item;
@@ -75,7 +76,7 @@ namespace Domain.Service.Effect
                 .SelectMany(spawnPosition => _area.Get(spawnPosition, map));
         }
 
-        public async UniTask<ISkillResult> Use(string? name, Vector2Int position, IMap map)
+        public async UniTask<ISkillResult> Use(string? name, Vector2Int position, IMap map, Id<IEntity>? excludeEntityId = null)
         {
             if (_log != null && _log != "")
                 GameLog.Add(map.Player.Character.IsVisible(position), $"{name}{_log}");
@@ -107,6 +108,9 @@ namespace Domain.Service.Effect
                                  .OrderBy(target => Vector2.Distance(target.Entity.CurrentPosition, position))
                                  .Reverse())
                     {
+                        if (excludeEntityId != null && target.Entity.Id == excludeEntityId)
+                            continue;
+
                         switch (target)
                         {
                             case ICharacter character:

@@ -304,7 +304,7 @@ namespace Game
             AddMoneyToRoom(data, roomId, 3);
             AddTrapsToRoom(data, roomId, 3);
 
-            AddChestToRoom(data, roomId);
+            AddChestToRoom(data, roomId, forcePrefixedWeapon: true);
 
             return MonsterHouse.Build(_tilemap.GetRoom(roomId));
         }
@@ -456,42 +456,47 @@ namespace Game
             _characters.Add(character);
         }
 
-        private void AddChestToRoom(FloorSpec data, Id<Room> roomId)
+        private void AddChestToRoom(FloorSpec data, Id<Room> roomId, bool forcePrefixedWeapon = false)
         {
             var position = GetRandomBlankPositionInRoom(roomId);
-            if (RandUtils.IsLessThanProbability(data.MimicChance))
+            if (!forcePrefixedWeapon && RandUtils.IsLessThanProbability(data.MimicChance))
             {
                 _chests.Add(Chest.Build(data.Mimic, position));
                 return;
             }
 
-            if (RandUtils.IsLessThanProbability(data.WeaponChanceInChest))
+            if (forcePrefixedWeapon)
             {
-                var weaponData = data.ItemDatabase.GetRandomItem(ItemCategory.Weapons, _progress);
-                if (weaponData is DirectWeaponData directWeapon)
-                {
-                    var weapon = DirectWeapon.Build(
-                        directWeapon,
-                        prefix: data.WeaponPrefixes.GetRandomItem(_progress),
-                        isCursed: false);
-                    _chests.Add(Chest.Build(weapon, position));
-                }
-                else if (weaponData is RangedWeaponData rangedWeapon)
-                {
-                    var weapon = RangedWeapon.Build(
-                        rangedWeapon,
-                        prefix: data.WeaponPrefixes.GetRandomItem(_progress),
-                        isCursed: false);
-                    _chests.Add(Chest.Build(weapon, position));
-                }
-                else
-                {
-                    _chests.Add(Chest.Build(weaponData, position));
-                }
+                AddPrefixedWeaponChest(data, position);
             }
             else
             {
                 _chests.Add(Chest.Build(data.ChestItems.GetRandomItem(_progress), position));
+            }
+        }
+
+        private void AddPrefixedWeaponChest(FloorSpec data, Vector2Int position)
+        {
+            var weaponData = data.ItemDatabase.GetRandomItem(ItemCategory.Weapons, _progress);
+            if (weaponData is DirectWeaponData directWeapon)
+            {
+                var weapon = DirectWeapon.Build(
+                    directWeapon,
+                    prefix: data.WeaponPrefixes.GetRandomItem(_progress),
+                    isCursed: false);
+                _chests.Add(Chest.Build(weapon, position));
+            }
+            else if (weaponData is RangedWeaponData rangedWeapon)
+            {
+                var weapon = RangedWeapon.Build(
+                    rangedWeapon,
+                    prefix: data.WeaponPrefixes.GetRandomItem(_progress),
+                    isCursed: false);
+                _chests.Add(Chest.Build(weapon, position));
+            }
+            else
+            {
+                _chests.Add(Chest.Build(weaponData, position));
             }
         }
 

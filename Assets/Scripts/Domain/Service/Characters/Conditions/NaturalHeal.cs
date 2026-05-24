@@ -26,7 +26,7 @@ namespace Domain.Service.Characters.Conditions
 
         public float Evaluate(ITargetOfEffect target)
         {
-            return Power / target.CurrentMaxHp;
+            return Power / target.CurrentMaxHp / 2f;
         }
 
         public float EvaluatePrice()

@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f8ad2ba14d6a7844c9e89791070d4735, type: 3}
-  m_Name: "\u30C0\u30FC\u30AF\u30CD\u30B9"
+  m_Name: "\u30F4\u30A9\u30A4\u30C9\u30B3\u30A2"
   m_EditorClassIdentifier: 
-  Name: "\u30C0\u30FC\u30AF\u30CD\u30B9"
+  Name: "\u30F4\u30A9\u30A4\u30C9\u30B3\u30A2"
   Group: 1
   CharacterType:
     rid: 2541219246146060307

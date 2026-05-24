@@ -25,7 +25,7 @@ namespace Domain.Service.Characters.Conditions
 
         public float Evaluate(ITargetOfEffect target)
         {
-            return 1f / CommonSenseParameters.AttacksToDefeatPlayer;
+            return 0.07f;
         }
 
         public float EvaluatePrice()

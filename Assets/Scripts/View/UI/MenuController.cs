@@ -18,6 +18,7 @@ namespace View.UI
         [SerializeField] private TitleMenu _titleMenu;
         [SerializeField] private DungeonMenu _dungeonMenu;
         [SerializeField] private SettingWindow _settingMenu;
+        [SerializeField] private StatisticsMenu _statisticsMenu;
         [SerializeField] private ItemLibraryView _itemLibraryMenu;
         [SerializeField] private InfoMenu _infoMenu;
         [SerializeField] private ChoiceMenu _choiceMenu;
@@ -277,6 +278,11 @@ namespace View.UI
         public void PushItemLibraryMenu()
         {
             PushMenu(_itemLibraryMenu);
+        }
+
+        public void PushStatisticsMenu()
+        {
+            PushMenu(_statisticsMenu);
         }
     }
 }

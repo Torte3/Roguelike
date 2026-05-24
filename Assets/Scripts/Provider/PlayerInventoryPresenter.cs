@@ -165,12 +165,12 @@ namespace Provider
                 var purchasePrice = map.Player.Character.Status.IsFlagStat(FlagStatType.Negotiator)
                     ? Mathf.RoundToInt(basePrice / 2f)
                     : basePrice;
-                return $"\n<color=green>{purchasePrice}G</color>";
+                return $"\n{purchasePrice}G".SetColored(Colors.MediumSeaGreen);
             }
             else
             {
                 var salePrice = Mathf.RoundToInt(basePrice / 2f);
-                return $"\n<color=blue>{salePrice}G</color>";
+                return $"\n{salePrice}G".SetColored(Colors.LightSteelBlue);
             }
         }
     }

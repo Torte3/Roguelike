@@ -6,6 +6,7 @@ using Domain.Model.Character;
 using Domain.Model.Character.Status;
 using Domain.Model.Item;
 using Domain.Model.Map;
+using Unity.Logging;
 using Utilities;
 
 namespace Domain.Service.Action
@@ -16,17 +17,20 @@ namespace Domain.Service.Action
         {
             if (actor.Status.IsFlagStat(FlagStatType.CannotAct))
             {
+                Log.Debug($"[InputBlock][UseItem] reason:Actor has CannotAct flag., item:{Item.DebugInfo()}, direction:{Direction}");
                 return false;
             }
 
             if (Item.IsEquipped.IsSome() && !actor.Inventory.Contains(Item))
             {
+                Log.Debug($"[InputBlock][UseItem] reason:Item is equipped but not found in inventory., item:{Item.DebugInfo()}, direction:{Direction}");
                 return false;
             }
 
             if (!actor.Inventory.CanRemove(Item)
                 && map.Items.At(actor.Entity.CurrentPosition).FirstOrDefault()?.Item != Item)
             {
+                Log.Debug($"[InputBlock][UseItem] reason:Item is neither removable from inventory nor present on current tile., item:{Item.DebugInfo()}, direction:{Direction}");
                 return false;
             }
 
@@ -35,7 +39,13 @@ namespace Domain.Service.Action
                 return true;
             }
 
-            return Item.CanAttemptUse;
+            if (!Item.CanAttemptUse)
+            {
+                Log.Debug($"[InputBlock][UseItem] reason:Item.CanAttemptUse is false., item:{Item.DebugInfo()}, direction:{Direction}");
+                return false;
+            }
+
+            return true;
         }
 
         public async UniTask Do(IActor actor, IMap map, IInput input)

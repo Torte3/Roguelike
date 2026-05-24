@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Domain.Model::Domain.Model.Item.ArtifactData
   Icon: {fileID: 1240741089, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
   IsShiny: 0
-  _rarity: 3
+  _rarity: 4
   UseCustomBasePrice: 0
   CustomBasePrice: 0
   AdditionalPrice: 0

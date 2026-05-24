@@ -228,6 +228,10 @@ def decode_unicode_name(raw: str) -> str:
     return name
 
 
+def decode_asset_name(raw: str) -> str:
+    return decode_unicode_name(raw)
+
+
 def parse_refs(text: str) -> dict:
     refs = {}
     ref_section = text.split("references:", 1)
@@ -781,163 +785,166 @@ def append_catalog_sections(lines: list[str], consumables: list[dict], artifacts
 
 
 weapon_dir = db / "ItemData/武器"
-weapons = []
 
-def decode_asset_name(raw: str) -> str:
-    name = raw.strip().strip('"')
-    if "\\u" in name:
-        return name.encode("ascii").decode("unicode_escape")
-    return name
 
-for asset in sorted(weapon_dir.rglob("*.asset")):
-    text = asset.read_text(encoding="utf-8")
-    name_m = re.search(r'm_Name: "?([^"\n]+)"?', text)
-    name = decode_asset_name(name_m.group(1)) if name_m else asset.stem
-    kind = "近接" if asset.parent.name == "DirectWeapon" else "射撃"
-    power_m = re.search(r"Power: (\d+)", text)
-    power = int(power_m.group(1)) if power_m else None
-    limit_m = re.search(r"FeatureLimit: (\d+)", text)
-    feature_limit = int(limit_m.group(1)) if limit_m else None
-    usage_m = re.search(r"UsageLimit: (\d+)", text)
-    usage_limit = int(usage_m.group(1)) if usage_m else None
-    rarity_m = re.search(r"_rarity: (\d+)", text)
-    rarity = RARITY_NAMES.get(int(rarity_m.group(1)), "?") if rarity_m else "?"
-    upgrade_m = re.search(r"UpgradeLimit: (\d+)", text)
-    upgrade_limit = int(upgrade_m.group(1)) if upgrade_m else None
-    feats = re.findall(r"stringValue: (\w+)", text)
-    feat_names = [FEATURE_NAME.get(f, f) for f in feats]
-    weapons.append(
-        {
-            "name": name,
-            "kind": kind,
-            "power": power,
-            "rarity": rarity,
-            "feature_limit": feature_limit,
-            "usage_limit": usage_limit,
-            "upgrade_limit": upgrade_limit,
-            "features": feat_names,
-            "feature_keys": feats,
-        }
-    )
+def main():
+    weapons = []
 
-lines = []
-lines.append("## アイテムデータ")
-lines.append("")
-lines.append("データソース: `Assets/Database/DungeonBluePrintData/Dungeon.asset`（出現プール）、`MapGraph.asset`（ボス報酬）、`Assets/Database/ItemData/`（武器定義）。")
-lines.append("")
+    for asset in sorted(weapon_dir.rglob("*.asset")):
+        text = asset.read_text(encoding="utf-8")
+        name_m = re.search(r'm_Name: "?([^"\n]+)"?', text)
+        name = decode_asset_name(name_m.group(1)) if name_m else asset.stem
+        kind = "近接" if asset.parent.name == "DirectWeapon" else "射撃"
+        power_m = re.search(r"Power: (\d+)", text)
+        power = int(power_m.group(1)) if power_m else None
+        limit_m = re.search(r"FeatureLimit: (\d+)", text)
+        feature_limit = int(limit_m.group(1)) if limit_m else None
+        usage_m = re.search(r"UsageLimit: (\d+)", text)
+        usage_limit = int(usage_m.group(1)) if usage_m else None
+        rarity_m = re.search(r"_rarity: (\d+)", text)
+        rarity = RARITY_NAMES.get(int(rarity_m.group(1)), "?") if rarity_m else "?"
+        upgrade_m = re.search(r"UpgradeLimit: (\d+)", text)
+        upgrade_limit = int(upgrade_m.group(1)) if upgrade_m else None
+        feats = re.findall(r"stringValue: (\w+)", text)
+        feat_names = [FEATURE_NAME.get(f, f) for f in feats]
+        weapons.append(
+            {
+                "name": name,
+                "kind": kind,
+                "power": power,
+                "rarity": rarity,
+                "feature_limit": feature_limit,
+                "usage_limit": usage_limit,
+                "upgrade_limit": upgrade_limit,
+                "features": feat_names,
+                "feature_keys": feats,
+            }
+        )
 
-lines.append("### 出現プール一覧")
-lines.append("")
-lines.append("マスターデータ上、各アイテムがどのプールに登録されているか。○ = 登録あり。")
-lines.append("")
-lines.append("- **通常**: フロアに落ちるアイテム（`SpawnItem` カテゴリ重み付き抽選）")
-lines.append("- **宝箱**: 宝箱の中身（`ChestItems` 等。フロアの `WeaponChanceInChest` により通常武器プールから武器が出る場合あり）")
-lines.append("- **ボス**: ボス撃破後の報酬宝箱（`MapGraph` の `_bossReward`）")
-lines.append("- **店**: ショップの品揃え（`ShopItems`）")
-lines.append("")
-lines.append("| アイテム | 通常 | 宝箱 | ボス | 店 |")
-lines.append("|---|---|:---:|:---:|:---:|")
-for item in all_items:
-    n = "○" if item in pools["normal"] else ""
-    c = "○" if item in pools["chest"] else ""
-    b = "○" if item in pools["boss"] else ""
-    s = "○" if item in pools["shop"] else ""
-    lines.append(f"| {item} | {n} | {c} | {b} | {s} |")
-lines.append("")
-
-consumables, artifacts = load_catalog_items()
-append_catalog_sections(lines, consumables, artifacts)
-
-lines.append("### 武器一覧")
-lines.append("")
-lines.append("各武器の基礎ステータスと初期付与能力。合成で能力上限まで追加可能。")
-lines.append("")
-lines.append("| 武器 | 種別 | レア度 | 攻撃力 | 能力上限 | 使用回数 | 強化上限 | 固有能力 |")
-lines.append("|---|---|---|---:|---:|---:|---:|---|")
-rarity_order = {"Common": 0, "Uncommon": 1, "Rare": 2, "Epic": 3, "Legendary": 4}
-for w in sorted(weapons, key=lambda x: (rarity_order.get(x["rarity"], 99), x["name"])):
-    feats = "、".join(w["features"]) if w["features"] else "（なし）"
-    lines.append(
-        f"| {w['name']} | {w['kind']} | {w['rarity']} | {w['power']} | {w['feature_limit']} | {w['usage_limit']} | {w['upgrade_limit']} | {feats} |"
-    )
-lines.append("")
-
-lines.append("### 武器能力（ItemFeature）一覧")
-lines.append("")
-lines.append("武器に付与できる特殊能力。ゲーム内表示名と、コード上の効果説明。")
-lines.append("")
-
-feature_groups = [
-    ("攻撃範囲・形態（近接）", ["TwoRangeAttack", "FanAttack", "SpinAttack"]),
-    ("攻撃形態（射撃）", ["ArcingShot", "Piercing", "Explosive"]),
-    ("攻撃補助", ["Lunge", "BackStep", "ChargeAttack", "DoubleAttack", "TripleAttack", "Knockback", "Critical", "Dig", "BreakTrap", "Absorbing", "GuaranteedHit", "EnhanceThrow"]),
-    ("状態異常付与", ["Paralysis", "Blind", "Confusion", "Sleep", "Poison", "Slowness", "Restraint", "EnhanceAbnormalCondition"]),
-    ("属性", ["Fire", "Ice", "Thunder", "Light", "Dark"]),
-    ("その他", ["EnhanceDurability", "Artistic"]),
-]
-
-for group_name, keys in feature_groups:
-    lines.append(f"#### {group_name}")
+    lines = []
+    lines.append("## アイテムデータ")
     lines.append("")
-    lines.append("| 能力名 | 説明 |")
-    lines.append("|---|---|")
-    for k in keys:
-        lines.append(f"| {FEATURE_NAME[k]} | {FEATURE_DESC[k]} |"    )
+    lines.append("データソース: `Assets/Database/DungeonBluePrintData/Dungeon.asset`（出現プール）、`MapGraph.asset`（ボス報酬）、`Assets/Database/ItemData/`（武器定義）。")
     lines.append("")
 
-lines.append("### 武器接頭辞（プレフィックス）")
-lines.append("")
-lines.append("武器名の前に付く修飾語。能力（ItemFeature）とは別枠で、武器の基礎性能や上限値を補正する。")
-lines.append("")
-lines.append("- **付与タイミング**: 宝箱の中身が武器枠になったとき、`WeaponPrefixes` から1つ抽選される。")
-lines.append("- **対象**: 近接武器・射撃武器。通常ドロップ、店売り、ボス固定報酬、シャイニー敵の所持武器には通常付かない。")
-lines.append("- **現状の出現**: 各 `FloorData` の `WeaponChanceInChest` が 0 の場合、宝箱から接頭辞付き武器は出ない。")
-lines.append("- **呪い付き**: 接頭辞の `IsCursed` が有効な場合、その接頭辞が付いた武器は生成時に呪われる。")
-lines.append("- **表示名**: `接頭辞名 + 武器名` で表示される（例: `鋭いロングソード`）。")
-lines.append("")
-PREFIX_ROLES = {
-    "名工の": "万能型",
-    "堅牢な": "超耐久型",
-    "大きな": "軽い合成ベース",
-    "巨大な": "本格合成ベース",
-    "未完の": "大投資型",
-    "硬い": "素直な耐久型",
-    "禍々しい": "癖の強い混合型",
-    "継ぎ接ぎの": "極端な能力枠ロマン",
-    "良質な": "素直な強化投資型",
-    "血染めの": "短命高火力型",
-    "鋭い": "素直な火力型",
-}
+    lines.append("### 出現プール一覧")
+    lines.append("")
+    lines.append("マスターデータ上、各アイテムがどのプールに登録されているか。○ = 登録あり。")
+    lines.append("")
+    lines.append("- **通常**: フロアに落ちるアイテム（`SpawnItem` カテゴリ重み付き抽選）")
+    lines.append("- **宝箱**: 宝箱の中身（`AllChestItems` = `ChestItems` + 宝箱用武器・指輪プール）")
+    lines.append("- **ボス**: ボス撃破後の報酬宝箱（`MapGraph` の `_bossReward`）")
+    lines.append("- **店**: ショップの品揃え（`ShopItems`）")
+    lines.append("")
+    lines.append("| アイテム | 通常 | 宝箱 | ボス | 店 |")
+    lines.append("|---|---|:---:|:---:|:---:|")
+    for item in all_items:
+        n = "○" if item in pools["normal"] else ""
+        c = "○" if item in pools["chest"] else ""
+        b = "○" if item in pools["boss"] else ""
+        s = "○" if item in pools["shop"] else ""
+        lines.append(f"| {item} | {n} | {c} | {b} | {s} |")
+    lines.append("")
 
-lines.append("| 接頭辞 | 威力倍率 | 能力上限追加 | 使用回数倍率 | 強化上限追加 | 呪い付き | 役割 |")
-lines.append("|---|---:|---:|---:|---:|:---:|:---:|")
+    consumables, artifacts = load_catalog_items()
+    append_catalog_sections(lines, consumables, artifacts)
 
-prefix_dir = db / "WeaponPrefix"
-for asset in sorted(prefix_dir.glob("*.asset")):
-    text = asset.read_text(encoding="utf-8")
-    name_m = re.search(r'm_Name: "?([^"\n]+)"?', text)
-    name = decode_asset_name(name_m.group(1)) if name_m else asset.stem
-    pm = re.search(r"PowerMagnification: ([\d.]+)", text)
-    fl = re.search(r"FeatureLimitAdditional: (\d+)", text)
-    um = re.search(r"UsageLimitMagnification: ([\d.]+)", text)
-    au = re.search(r"AdditionalUpgradeLimit: (\d+)", text)
-    cursed = re.search(r"IsCursed: ([01])", text)
-    cursed_text = "○" if cursed and cursed.group(1) == "1" else ""
-    role = PREFIX_ROLES.get(name, "")
-    lines.append(
-        f"| {name} | {pm.group(1) if pm else '?'} | {fl.group(1) if fl else '?'} | {um.group(1) if um else '?'} | {au.group(1) if au else '?'} | {cursed_text} | {role} |"
-    )
-lines.append("")
+    lines.append("### 武器一覧")
+    lines.append("")
+    lines.append("各武器の基礎ステータスと初期付与能力。合成で能力上限まで追加可能。")
+    lines.append("")
+    lines.append("| 武器 | 種別 | レア度 | 攻撃力 | 能力上限 | 使用回数 | 強化上限 | 固有能力 |")
+    lines.append("|---|---|---|---:|---:|---:|---:|---|")
+    rarity_order = {"Common": 0, "Uncommon": 1, "Rare": 2, "Epic": 3, "Legendary": 4}
+    for w in sorted(weapons, key=lambda x: (rarity_order.get(x["rarity"], 99), x["name"])):
+        feats = "、".join(w["features"]) if w["features"] else "（なし）"
+        lines.append(
+            f"| {w['name']} | {w['kind']} | {w['rarity']} | {w['power']} | {w['feature_limit']} | {w['usage_limit']} | {w['upgrade_limit']} | {feats} |"
+        )
+    lines.append("")
 
-lines.append("---")
-lines.append("")
+    lines.append("### 武器能力（ItemFeature）一覧")
+    lines.append("")
+    lines.append("武器に付与できる特殊能力。ゲーム内表示名と、コード上の効果説明。")
+    lines.append("")
 
-out = "\n".join(lines)
-(root / "tools/wiki_item_data_section.md").write_text(out, encoding="utf-8")
+    feature_groups = [
+        ("攻撃範囲・形態（近接）", ["TwoRangeAttack", "FanAttack", "SpinAttack"]),
+        ("攻撃形態（射撃）", ["ArcingShot", "Piercing", "Explosive"]),
+        ("攻撃補助", ["Lunge", "BackStep", "ChargeAttack", "DoubleAttack", "TripleAttack", "Knockback", "Critical", "Dig", "BreakTrap", "Absorbing", "GuaranteedHit", "EnhanceThrow"]),
+        ("状態異常付与", ["Paralysis", "Blind", "Confusion", "Sleep", "Poison", "Slowness", "Restraint", "EnhanceAbnormalCondition"]),
+        ("属性", ["Fire", "Ice", "Thunder", "Light", "Dark"]),
+        ("その他", ["EnhanceDurability", "Artistic"]),
+    ]
 
-wiki_path = root / "WIKI.md"
-wiki_text = wiki_path.read_text(encoding="utf-8")
-start = wiki_text.index("## アイテムデータ")
-end = wiki_text.index("## 未確定")
-wiki_path.write_text(wiki_text[:start] + out + wiki_text[end:], encoding="utf-8")
-print(f"Wrote {len(lines)} lines to wiki section and WIKI.md")
+    for group_name, keys in feature_groups:
+        lines.append(f"#### {group_name}")
+        lines.append("")
+        lines.append("| 能力名 | 説明 |")
+        lines.append("|---|---|")
+        for k in keys:
+            lines.append(f"| {FEATURE_NAME[k]} | {FEATURE_DESC[k]} |")
+        lines.append("")
+
+    lines.append("### 武器接頭辞（プレフィックス）")
+    lines.append("")
+    lines.append("武器名の前に付く修飾語。能力（ItemFeature）とは別枠で、武器の基礎性能や上限値を補正する。")
+    lines.append("")
+    lines.append("- **付与タイミング**: モンスターハウスの宝箱のみ。`WeaponPrefixes` から1つ抽選される。")
+    lines.append("- **対象**: 近接武器・射撃武器。通常宝箱・通常ドロップ、店売り、ボス固定報酬、シャイニー敵の所持武器には通常付かない。")
+    lines.append("- **呪い付き**: 接頭辞の `IsCursed` が有効な場合、その接頭辞が付いた武器は生成時に呪われる。")
+    lines.append("- **表示名**: `接頭辞名 + 武器名` で表示される（例: `鋭いロングソード`）。")
+    lines.append("")
+    prefix_roles = {
+        "名工の": "万能型",
+        "堅牢な": "超耐久型",
+        "大きな": "軽い合成ベース",
+        "巨大な": "本格合成ベース",
+        "未完の": "大投資型",
+        "硬い": "素直な耐久型",
+        "禍々しい": "癖の強い混合型",
+        "継ぎ接ぎの": "極端な能力枠ロマン",
+        "良質な": "素直な強化投資型",
+        "血染めの": "短命高火力型",
+        "鋭い": "素直な火力型",
+    }
+
+    lines.append("| 接頭辞 | 威力倍率 | 能力上限追加 | 使用回数倍率 | 強化上限追加 | 呪い付き | 役割 |")
+    lines.append("|---|---:|---:|---:|---:|:---:|:---:|")
+
+    prefix_dir = db / "WeaponPrefix"
+    for asset in sorted(prefix_dir.glob("*.asset")):
+        text = asset.read_text(encoding="utf-8")
+        name_m = re.search(r'm_Name: "?([^"\n]+)"?', text)
+        name = decode_asset_name(name_m.group(1)) if name_m else asset.stem
+        pm = re.search(r"PowerMagnification: ([\d.]+)", text)
+        fl = re.search(r"FeatureLimitAdditional: (\d+)", text)
+        um = re.search(r"UsageLimitMagnification: ([\d.]+)", text)
+        au = re.search(r"AdditionalUpgradeLimit: (\d+)", text)
+        cursed = re.search(r"IsCursed: ([01])", text)
+        cursed_text = "○" if cursed and cursed.group(1) == "1" else ""
+        role = prefix_roles.get(name, "")
+        lines.append(
+            f"| {name} | {pm.group(1) if pm else '?'} | {fl.group(1) if fl else '?'} | {um.group(1) if um else '?'} | {au.group(1) if au else '?'} | {cursed_text} | {role} |"
+        )
+    lines.append("")
+
+    lines.append("---")
+    lines.append("")
+
+    out = "\n".join(lines)
+    (root / "tools/wiki_item_data_section.md").write_text(out, encoding="utf-8")
+
+    wiki_path = root / "WIKI.md"
+    wiki_text = wiki_path.read_text(encoding="utf-8")
+    start = wiki_text.index("## アイテムデータ")
+    if "## 敵データ" in wiki_text:
+        end = wiki_text.index("## 敵データ")
+    else:
+        end = wiki_text.index("## 未確定")
+    wiki_path.write_text(wiki_text[:start] + out + wiki_text[end:], encoding="utf-8")
+    print(f"Wrote {len(lines)} lines to wiki section and WIKI.md")
+
+
+if __name__ == "__main__":
+    main()

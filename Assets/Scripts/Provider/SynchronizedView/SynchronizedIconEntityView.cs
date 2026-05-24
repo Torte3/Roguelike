@@ -87,6 +87,11 @@ namespace Provider
                 return ObjectLoader.LoadPrefab("Trap").GetComponent<EntityView>();
             }
 
+            if (eventEntity is Chest)
+            {
+                return ObjectLoader.LoadPrefab("Chest").GetComponent<EntityView>();
+            }
+
             if (eventEntity is Stairs stairs)
             {
                 switch (stairs.Type)

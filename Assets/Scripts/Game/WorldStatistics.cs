@@ -106,7 +106,8 @@ namespace Game
                     }
                 );
                 map.Player.Character.OnItemUsed.Subscribe(RecordItemUsed);
-                map.Player.Character.Entity.OnDestroyed.Subscribe(RecordDeath);
+                map.Player.Character.Entity.OnDestroyed.Subscribe(cause =>
+                    RecordDeath(map.Player.Character.GetNameIgnoreVisibility(map.Player) + cause));
                 map.Characters.SubscribeIncludingCurrentObservables(
                     character => character.OnDead,
                     (character, _) =>

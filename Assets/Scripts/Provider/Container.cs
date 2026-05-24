@@ -53,6 +53,7 @@ namespace Provider
             builder.RegisterComponentInHierarchy<CameraFlameRect>();
             builder.RegisterComponentInHierarchy<MainMenu>();
             builder.RegisterComponentInHierarchy<SettingWindow>();
+            builder.RegisterComponentInHierarchy<StatisticsMenu>();
             builder.RegisterComponentInHierarchy<MenuController>();
             builder.RegisterComponentInHierarchy<ChoiceMenu>();
             builder.RegisterComponentInHierarchy<CharacterSelectMenu>();
@@ -85,6 +86,7 @@ namespace Provider
             builder.RegisterPlainEntryPoint<ShopInfoPresenter>();
             builder.RegisterPlainEntryPoint<ItemPreviewPresenter>();
             builder.RegisterPlainEntryPoint<StatisticsPresenter>();
+            builder.RegisterPlainEntryPoint<StatisticsMenuPresenter>();
             builder.RegisterPlainEntryPoint<ItemSelectPresenter>();
             builder.RegisterPlainEntryPoint<Presenter>();
 
