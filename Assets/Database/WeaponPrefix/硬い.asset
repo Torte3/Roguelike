@@ -15,9 +15,7 @@ MonoBehaviour:
   Name: "\u786C\u3044"
   _rarity: 0
   PowerMagnification: 1
+  FeatureLimitAdditional: 0
   UsageLimitMagnification: 1.5
   AdditionalUpgradeLimit: 0
-  AdditionalEffects: []
-  references:
-    version: 2
-    RefIds: []
+  IsCursed: 0

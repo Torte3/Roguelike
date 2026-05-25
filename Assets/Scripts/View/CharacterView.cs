@@ -1,12 +1,14 @@
 using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using R3;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using Utilities;
 
 namespace View
 {
+
     [RequireComponent(typeof(EntityView), typeof(Animator), typeof(ParticleController))]
     public class CharacterView : MonoBehaviour, IDirectional
     {
@@ -24,12 +26,10 @@ namespace View
 
         public void Construct(string characterTypeName, bool isEnemy, bool isAlly)
         {
-            var animation = Addressables
-                .LoadAssetAsync<RuntimeAnimatorController>($"Assets/Animations/{characterTypeName}.controller")
-                .WaitForCompletion();
+            var animation = ObjectLoader.LoadAnimation(characterTypeName);
 
             _animator = GetComponent<Animator>();
-            _animator.runtimeAnimatorController = Instantiate(animation);
+            _animator.runtimeAnimatorController = animation;
 
             UpdateGroupMarker(isEnemy, isAlly);
         }
@@ -46,15 +46,22 @@ namespace View
 
         public void UpdateGroupMarker(bool isEnemy, bool isAlly)
         {
-            var color = (isEnemy, isAlly) switch
+            var groupMarkerColor = (isEnemy, isAlly) switch
             {
                 (true, false) => new Color(1, 0, 0, 0.5f),
                 (false, true) => new Color(0, 1, 0, 0.5f),
+                (false, false) => Color.clear,
                 (true, true) => throw new InvalidOperationException("A character cannot be both an enemy and an ally."),
-                _ => Color.clear
             };
-            _groupMarker.color = color;
-            _minimapMarker.color = new Color(color.r, color.g, color.b, 1);
+            var minimapMarkerColor = (isEnemy, isAlly) switch
+            {
+                (true, false) => new Color(1, 0, 0, 1f),
+                (false, true) => new Color(0, 1, 0, 1f),
+                (false, false) => new Color(1, 1, 1, 1f),
+                (true, true) => throw new InvalidOperationException("A character cannot be both an enemy and an ally."),
+            };
+            _groupMarker.color = groupMarkerColor;
+            _minimapMarker.color = minimapMarkerColor;
         }
 
         public void UpdateHpBar(float maxHp, float hp)
@@ -72,7 +79,7 @@ namespace View
             _animator.SetBool("Walk", true);
             _animator.speed = 2;
             var entityView = GetComponent<EntityView>();
-            await UniTask.WaitUntil(() => !entityView.IsMoving);
+            await UniTask.WaitUntil(() => !entityView.IsMoving, cancellationToken: destroyCancellationToken);
             _animator.SetBool("Walk", false);
             _animator.speed = 1;
         }

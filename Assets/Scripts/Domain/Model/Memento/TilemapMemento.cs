@@ -12,36 +12,32 @@ namespace Domain.Model.Memento
     [Serializable]
     public class TilemapMemento
     {
-        [field: SerializeField] public int Width { get; private set; }
-        public int Height => _tiles.Length / Width;
-        [SerializeField] private TileMemento[] _tiles;
-
-        public ObservableDictionary<Vector2Int, TileData> Tiles => new(
-            _tiles
-                .Select((x, index) => (new Vector2Int(index % Width, index / Width), new TileData(x)))
-                .ToDictionary(x => x.Item1, x => x.Item2));
-
+        [field: SerializeField] public string Seed { get; private set; }
+        [SerializeField] private SerializableDictionary<Vector2Int, TileMemento> _tiles;
+        public ObservableDictionary<Vector2Int, TileData> Tiles =>
+            new(_tiles.ToDictionary(pair => pair.Key, pair => new TileData(pair.Value)));
         [SerializeField] private SerializableDictionary<Vector2Int, OverlayTileCategory> _overlayTiles;
         public ObservableDictionary<Vector2Int, OverlayTileCategory> OverlayTiles => new(_overlayTiles);
 
-        public TilemapMemento(int width, int height, IDictionary<Vector2Int, TileData> tiles,
+        public TilemapMemento(
+            string seed,
+            IDictionary<Vector2Int, TileData> tiles,
             IDictionary<Vector2Int, OverlayTileCategory> overlayTiles)
         {
-            var tileMementos = new TileMemento[width * height];
-            foreach (var (position, tile) in tiles)
-            {
-                tileMementos[position.x + position.y * width] = tile.Serialize();
-            }
-
-            Width = width;
-            _tiles = tileMementos;
+            Seed = seed;
+            _tiles = tiles.ToSerializableDictionary(pair => pair.Key, pair => pair.Value.Serialize());
             _overlayTiles = overlayTiles.ToSerializable();
         }
 
-        public TilemapMemento(int width, TileMemento[] tiles, IDictionary<Vector2Int, OverlayTileCategory> overlayTiles)
+        public TilemapMemento(
+            int width,
+            TileMemento[] tiles,
+            IDictionary<Vector2Int, OverlayTileCategory> overlayTiles)
         {
-            Width = width;
-            _tiles = tiles;
+            Seed = "";
+            _tiles = tiles
+                .Select((tile, index) => (index, tile))
+                .ToSerializableDictionary(pair => new Vector2Int(pair.index % width, pair.index / width), pair => pair.tile);
             _overlayTiles = overlayTiles.ToSerializable();
         }
     }

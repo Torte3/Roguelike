@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using Domain.Model.Setting;
-using R3;
 using Unity.Logging;
 using VContainer;
 using View.UI;
@@ -13,23 +13,26 @@ namespace Provider
         public SettingPresenter(SettingWindow settingWindow)
         {
             Log.Debug("[Menu]Set options window");
-            Settings.OnValuesSet.Subscribe(_ => SetOptions(settingWindow));
             SetOptions(settingWindow);
         }
-
         public void SetOptions(SettingWindow settingWindow)
         {
             settingWindow.Clear();
-            foreach (var option in Settings.GetOptions())
+            SetOptions(settingWindow, Settings.GetOptions());
+        }
+        public void SetOptions(SettingWindow settingWindow, List<IOptionInput> options)
+        {
+            foreach (var option in options)
                 switch (option)
                 {
                     case Slider slider:
-                        settingWindow.AddIntOption(slider.Name, slider.Min, slider.Max, slider.Value)
-                            .Subscribe(value => slider.SetValue(value));
+                        settingWindow.AddIntOption(slider.Name, slider.Min, slider.Max, slider.Value, slider.IsEnabled);
+                        break;
+                    case LabeledSlider labeledSlider:
+                        settingWindow.AddLabeledIntOption(labeledSlider.Name, labeledSlider.Options, labeledSlider.Index, labeledSlider.IsEnabled);
                         break;
                     case CheckBox checkbox:
-                        settingWindow.AddBoolOption(checkbox.Name, checkbox.Value)
-                            .Subscribe(value => checkbox.SetValue(value));
+                        settingWindow.AddBoolOption(checkbox.Name, checkbox.Value, checkbox.IsEnabled);
                         break;
                     default:
                         throw new ArgumentException();

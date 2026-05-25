@@ -1,18 +1,21 @@
-﻿#nullable enable
+#nullable enable
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
+using Domain.Model.Character.Status;
+using Domain.Model.Dungeon;
 using Domain.Model.Effect;
 using Domain.Model.Effect.Area;
 using Domain.Model.Effect.Position;
 using Domain.Model.Evaluation;
-using Domain.Model.Item;
 using Domain.Model.Map;
+using Domain.Model.Item;
 using Domain.Model.Memento;
 using Domain.Model.Setting;
 using Domain.Service.Logs;
+using R3;
 using UnityEngine;
 using Utilities;
 
@@ -24,55 +27,32 @@ namespace Domain.Service.Effect
         private readonly IArea _area;
         private readonly List<IEffect> _effects;
         public int Repeats { get; private set; }
-        public int RushDistance { get; private set; }
-        public int BackStepDistance { get; private set; }
         public float ProbabilityOfSuccess { get; private set; }
         private readonly string? _log;
 
-        public SpawnEffectSkill(IEffectPosition position, IArea area, List<IEffect> effect, int repeats,
-            int rushDistance,
-            int backStepDistance, float probabilityOfSuccess, string? log)
+        public SpawnEffectSkill(SpawnEffectSkillMemento data)
         {
-            _position = position;
-            _area = area;
-            _effects = effect;
-            Repeats = repeats;
-            RushDistance = rushDistance;
-            BackStepDistance = backStepDistance;
-            ProbabilityOfSuccess = probabilityOfSuccess;
-            _log = log;
-        }
-
-        public SpawnEffectSkill(SpawnEffectSkillMemento data) : this(data.Position, data.Area, data.Effects,
-            data.Repeats,
-            data.RushDistance, data.BackStepDistance, data.ProbabilityOfSuccess, data.Log)
-        {
-        }
-
-        public SpawnEffectSkill CopyWith(
-            IEffectPosition? position = null,
-            IArea? area = null,
-            List<IEffect>? effect = null,
-            int? repeats = null,
-            int? rushDistance = null,
-            int? backStepDistance = null,
-            float? probabilityOfSuccess = null,
-            string? log = null)
-        {
-            return new SpawnEffectSkill(
-                position ?? _position,
-                area ?? _area,
-                effect ?? _effects,
-                repeats ?? Repeats,
-                rushDistance ?? RushDistance,
-                backStepDistance ?? BackStepDistance,
-                probabilityOfSuccess ?? ProbabilityOfSuccess,
-                log ?? _log
-            );
+            _position = data.Position;
+            _area = data.Area;
+            _effects = data.Effects;
+            Repeats = data.Repeats;
+            ProbabilityOfSuccess = data.ProbabilityOfSuccess;
+            RushDistance = data.RushDistance;
+            BackStepDistance = data.BackStepDistance;
+            _log = data.Log;
         }
 
         public Color Color => _effects.First().Color;
         public bool IsDirectional => _area.IsDirectional || _position.IsDirectional;
+
+        public int RushDistance { get; private set; }
+        public int BackStepDistance { get; private set; }
+
+        public IEffectPosition EffectPosition => _position;
+
+        public IArea EffectArea => _area;
+
+        public IReadOnlyList<IEffect> EffectList => _effects;
 
         public SpawnEffectSkillMemento Serialize()
         {
@@ -82,9 +62,9 @@ namespace Domain.Service.Effect
                 _area,
                 _effects,
                 Repeats,
+                ProbabilityOfSuccess,
                 RushDistance,
                 BackStepDistance,
-                ProbabilityOfSuccess,
                 _log
             );
         }
@@ -97,9 +77,9 @@ namespace Domain.Service.Effect
                 data.Area,
                 data.Effects,
                 data.Repeats,
+                data.ProbabilityOfSuccess,
                 data.RushDistance,
                 data.BackStepDistance,
-                data.ProbabilityOfSuccess,
                 data.Log
             );
         }
@@ -107,49 +87,67 @@ namespace Domain.Service.Effect
         public IEnumerable<Vector2Int> GetArea(IActorOfEffect actor, Vector2Int position, Direction8 direction,
             IMap map, bool onlyVisible = false)
         {
+            for (var i = 0; i < RushDistance; i++)
+            {
+                if (actor.CanMove(position, direction, map) && !actor.Status.IsFlagStat(FlagStatType.CannotMove))
+                    position += direction.Vector();
+                else
+                    break;
+            }
+
+            return GetAreaIgnoreRush(actor, position, direction, map, onlyVisible);
+        }
+
+        private IEnumerable<Vector2Int> GetAreaIgnoreRush(IActorOfEffect actor, Vector2Int position, Direction8 direction,
+            IMap map, bool onlyVisible = false)
+        {
             var spawnPositions = _position.Get(actor, position, direction, map);
             if (onlyVisible)
             {
                 return spawnPositions
-                    .Where(actor.VisibleArea.Contains)
+                    .Where(map.Player.Character.VisibleArea.Contains)
                     .SelectMany(spawnPosition => _area.Get(spawnPosition, direction, map))
-                    .Where(actor.VisibleArea.Contains);
+                    .Where(map.Player.Character.VisibleArea.Contains);
             }
 
             return spawnPositions
                 .SelectMany(spawnPosition => _area.Get(spawnPosition, direction, map));
         }
-
-        public async UniTask<ISkillResult> Use(IActorOfEffect actor, Vector2Int position, Direction8 direction,
-            IMap map)
+        public async UniTask<ISkillResult> Use(IActorOfEffect actor, IItem? sourceItem, Vector2Int position,
+            Direction8 direction, IMap map)
         {
             if (_log != null && _log != "")
-                GameLog.Add($"{actor.GetName(map.Player)}{_log}");
+                GameLog.Add(actor.IsVisible, $"{actor.GetName(map.Player)}{_log}");
 
-            if (Random.value > ProbabilityOfSuccess)
-            {
-                GameLog.Add("しかし効果がなかった");
-                return SpawnEffectSkillResult.Failed;
-            }
+            var effectiveRepeats = GetEffectiveRepeats(actor, sourceItem);
+            var successes = RandUtils.RollSuccesses(effectiveRepeats, ProbabilityOfSuccess);
 
-            if (_position is ProjectileImpact projectileImpact)
+            for (var i = 0; i < successes; i++)
             {
-                await map.ShowThrowAnimation(projectileImpact.Icon.Value, position, direction,
-                    CommonSenseParameters.ThrowDistance, projectileImpact.CanHitLayer.ToArray());
-            }
+                if (_position is ProjectileImpact projectileImpact)
+                {
+                    await map.ShowThrowAnimation(projectileImpact.Icon.Value, position, direction,
+                        CommonSenseParameters.ThrowDistance, projectileImpact.IsPiercing, projectileImpact.CanHitLayer.ToArray());
+                }
 
-            var area = GetArea(actor, position, direction, map);
-            if (_effects.Any(effect =>
-                    effect is AttackEffect ||
-                    effect is AbsorbsEffect ||
-                    effect is PercentageDamageEffect ||
-                    effect is BreakEffect))
-            {
-                map.SetGrasses(area, false);
-            }
+                var area = GetAreaIgnoreRush(actor, position, direction, map);
+                if (_effects.Any(effect =>
+                        effect is AttackEffect ||
+                        effect is AbsorbsEffect ||
+                        effect is PercentageDamageEffect ||
+                        effect is BreakEffect))
+                {
+                    map.SetGrasses(area, false);
+                }
 
-            for (var i = 0; i < Repeats; i++)
-            {
+                if (_effects.Any(effect =>
+                        effect is AttackEffect ||
+                        effect is AbsorbsEffect ||
+                        effect is PercentageDamageEffect))
+                {
+                    map.RevealMimic(area);
+                    map.AttackStatue(area);
+                }
                 foreach (var effect in _effects)
                 {
                     foreach (var target in map.Entities.In(area)
@@ -164,24 +162,27 @@ namespace Domain.Service.Effect
                                 if (effect.Impact == Impact.Harmful)
                                 {
                                     var impactValue = effect.Evaluate(actor, character);
-                                    character.WasAttackedBy(actor, impactValue);
+                                    character.OnAttackedBy(actor, impactValue);
 
-                                    map.GetCharactersCanSeePosition(character.Entity.CurrentPosition)
-                                        .Where(target => target != actor && target != actor)
-                                        .ForEach(c =>
-                                            c.Affiliation.OnCharacterAttacked(actor.Affiliation, character.Affiliation,
-                                                impactValue));
+                                    foreach (var c in map.GetCharactersCanSeePosition(character.Entity.CurrentPosition)
+                                                            .Where(target => target != actor && target != actor))
+                                    {
+                                        c.Affiliation.OnCharacterAttacked(actor.Affiliation, character.Affiliation,
+                                            impactValue);
+                                    }
+
                                 }
                                 else if (effect.Impact == Impact.Beneficial)
                                 {
                                     var impactValue = effect.Evaluate(actor, character);
-                                    character.WasHealedBy(actor, impactValue);
+                                    character.OnHealedBy(actor, impactValue);
 
-                                    map.GetCharactersCanSeePosition(character.Entity.CurrentPosition)
-                                        .Where(target => target != actor && target != actor)
-                                        .ForEach(c =>
-                                            c.Affiliation.OnCharacterHealed(actor.Affiliation, character.Affiliation,
-                                                impactValue));
+                                    foreach (var c in map.GetCharactersCanSeePosition(character.Entity.CurrentPosition)
+                                                            .Where(target => target != actor && target != actor))
+                                    {
+                                        c.Affiliation.OnCharacterHealed(actor.Affiliation, character.Affiliation,
+                                            impactValue);
+                                    }
                                 }
 
                                 break;
@@ -193,33 +194,42 @@ namespace Domain.Service.Effect
 
                     await effect.Apply(actor, area, map);
                 }
+
+                if (map.Player.Character.VisibleArea.Intersect(area).Any())
+                {
+                    map.SpawnEffect(area, Color);
+                    await UniTask.Delay(Settings.GlobalSettings.EffectDisplayTime.CurrentValue);
+                }
             }
 
-            if (map.Player.Character.VisibleArea.Intersect(area).Any())
+            if (successes == 0)
             {
-                map.SpawnEffect(area, Color);
-                await UniTask.Delay(Settings.EffectDisplayTime.CurrentValue);
+                GameLog.AddAppend(actor.IsVisible, "しかし効果がなかった");
+                return SpawnEffectSkillResult.Failed;
+            }
+            else if (successes < effectiveRepeats)
+            {
+                GameLog.AddAppend(actor.IsVisible, $"{successes}回成功した");
             }
 
-            return SpawnEffectSkillResult.Success(Color, area);
+            return SpawnEffectSkillResult.Success;
         }
 
-        public float Evaluate(IActorOfEffect actor, Vector2Int position, Direction8 direction, IMap map)
+        public float Evaluate(IActorOfEffect actor, IItem? sourceItem, Vector2Int position, Direction8 direction,
+            IMap map)
         {
             for (var i = 0; i < RushDistance; i++)
             {
-                if (actor.CanMove(position, direction, map))
+                if (actor.CanMove(position, direction, map) && !actor.Status.IsFlagStat(FlagStatType.CannotMove))
                     position += direction.Vector();
             }
 
             var area = GetArea(actor, position, direction, map, true);
             var characters = map.Characters.In(area);
-            var totalEvaluation = 0f;
-
-            if (characters.Count() <= 0)
-            {
+            if (_effects.Any(ContainsEntityTargetEffect) && !characters.Any())
                 return -1;
-            }
+
+            var totalEvaluation = 0f;
 
             foreach (var effect in _effects)
             {
@@ -253,7 +263,26 @@ namespace Domain.Service.Effect
                 totalEvaluation += effect.Evaluate(actor, area);
             }
 
-            return totalEvaluation * ProbabilityOfSuccess;
+            return totalEvaluation * GetEffectiveRepeats(actor, sourceItem) * ProbabilityOfSuccess;
+        }
+
+        private static bool ContainsEntityTargetEffect(IEffect effect) =>
+            effect switch
+            {
+                EntityTargetEffect => true,
+                ActorlessEntityTargetEffect => true,
+                RandomEffect random => random.Effects.Any(ContainsEntityTargetEffect),
+                _ => false
+            };
+
+        private int GetEffectiveRepeats(IActorOfEffect actor, IItem? sourceItem)
+        {
+            var repeats = Repeats;
+            if (sourceItem?.Category == ItemCategory.Potions
+                && actor.Status.IsFlagStat(FlagStatType.PotionMaster))
+                repeats += CommonSenseParameters.PotionMasterEffectRepeatBonus;
+
+            return repeats;
         }
 
         public float EvaluatePrice()
@@ -263,69 +292,69 @@ namespace Domain.Service.Effect
             {
                 price += effect.EvaluatePrice();
             }
+            price *= Repeats;
 
-            price *= Mathf.Max(_position.EvaluateHitProbability(), RushDistance);
             price *= _area.EvaluateArea();
+            price *= _position.EvaluateHitProbability();
             return price * ProbabilityOfSuccess;
         }
 
-        public List<UpgradeData> GetUpgrades()
+        public string Info()
         {
-            return new List<UpgradeData>();
+            return InfoOnUse();
         }
 
-        public Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            var children = new Dictionary<string, IHasUpgrades>();
-            foreach (var effect in _effects)
-            {
-                children.Add(effect.UpgradePathName, effect);
-            }
-
-            children.Add(_position.UpgradePathName, _position);
-            children.Add(_area.UpgradePathName, _area);
-            return children;
-        }
-
-        public string InfoOnUse(bool omitProbabilityOfSuccess = false)
+        public string InfoOnUse(bool omitProbabilityOfSuccess = false, bool useOrThrowCombinedTargets = false)
         {
             var info = "";
-            if (Repeats > 1)
-                info += $"効果は{Repeats}回発動する\n";
             if (RushDistance > 0)
-                info += $"\n{RushDistance}マス前に進み\n";
-            info += $"{_position.Info()}の{_area.Info()}を対象にして\n";
+                info += $"最初に{ItemDescriptionRichText.RichSpatialCells(RushDistance)}前に進む\n";
+            var positionInfo = _position.Info();
+            var areaInfo = _area.Info();
+            info += EffectTargetDescription.OnUse(positionInfo, areaInfo, useOrThrowCombinedTargets) + "\n";
             foreach (var (effect, index) in _effects.Index())
             {
-                info += effect.Info();
+                info += ItemDescriptionRichText.StyleEffectInfo(effect, effect.Info());
             }
+            if (Repeats > 1)
+                info += $"効果は{ItemDescriptionRichText.RichMeta(Repeats)}回発動する\n";
+            if (!omitProbabilityOfSuccess)
+                info += ItemDescriptionRichText.ColorPercentagesInPlainText($"成功率：{ProbabilityOfSuccess:P0}\n");
 
             if (BackStepDistance > 0)
-                info += $"{BackStepDistance}マス後ろに下がる\n";
-            if (!omitProbabilityOfSuccess)
-                info += $"発動は{ProbabilityOfSuccess:P0}の確率で成功する\n";
+                info += $"最後に{ItemDescriptionRichText.RichSpatialCells(BackStepDistance)}後ろに下がる\n";
             return info;
         }
 
         public string InfoOnThrow(bool omitEffects = false)
         {
             var info = "";
-            if (Repeats > 1)
-                info += $"効果は{Repeats}回発動する\n";
-            info += $"{_position.Info()}の{_area.Info()}を対象にして\n";
+            if (RushDistance > 0)
+                info += $"最初に{ItemDescriptionRichText.RichSpatialCells(RushDistance)}前に進む\n";
+            var positionInfo = _position.Info();
+            var areaInfo = _area.Info();
+            var targetLine = EffectTargetDescription.OnThrow(positionInfo, areaInfo);
             if (!omitEffects)
             {
+                info += targetLine + "\n";
                 foreach (var (effect, index) in _effects.Index())
                 {
-                    info += effect.Info();
+                    info += ItemDescriptionRichText.StyleEffectInfo(effect, effect.Info());
                 }
             }
             else
             {
+                info += targetLine + "\n";
                 info += "使用時と同じ効果を発揮する\n";
             }
 
-            info += $"発動は{ProbabilityOfSuccess:P0}の確率で成功する\n";
+            if (Repeats > 1)
+                info += $"効果は{ItemDescriptionRichText.RichMeta(Repeats)}回発動する\n";
+
+            info += ItemDescriptionRichText.ColorPercentagesInPlainText($"成功率：{ProbabilityOfSuccess:P0}\n");
+
+            if (BackStepDistance > 0)
+                info += $"最後に{ItemDescriptionRichText.RichSpatialCells(BackStepDistance)}後ろに下がる\n";
             return info;
         }
     }

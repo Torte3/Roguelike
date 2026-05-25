@@ -1,0 +1,143 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42c9d6e8f38cdc547ad116f2420ef50e, type: 3}
+  m_Name: "\u306A\u305E\u306E\u77F3"
+  m_EditorClassIdentifier: 
+  Category: 6
+  Icon: {fileID: -2078992839, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
+  IsShiny: 0
+  _rarity: 2
+  _useCustomBasePrice: 0
+  CustomBasePrice: 0
+  AdditionalPrice: 0
+  MultiplyPrice: 1
+  EffectType: 1
+  UseOnDeath: 0
+  SpawnEffectsOnUse: 1
+  SpawnEffectsOnThrow: 1
+  IsSameEffect: 0
+  IsSameSkill: 1
+  SkillOnUse:
+    <Position>k__BackingField:
+      rid: 2541219106150416402
+    <Area>k__BackingField:
+      rid: 8023009205756100712
+    <Effects>k__BackingField:
+    - rid: 8023009205756100711
+    <Repeats>k__BackingField: 1
+    <ProbabilityOfSuccess>k__BackingField: 0.95
+    <Cost>k__BackingField: 0
+    <RushDistance>k__BackingField: 0
+    <BackStepDistance>k__BackingField: 0
+    <ChargeTurn>k__BackingField: 0
+    <CoolTime>k__BackingField: 0
+  SkillOnThrow:
+    <Area>k__BackingField:
+      rid: 8023009205756100712
+    <Effects>k__BackingField:
+    - rid: 8023009205756100711
+    <ProbabilityOfSuccess>k__BackingField: 0.9
+  ItemEffect:
+    rid: -2
+  InventoryEffect:
+    rid: -2
+  UsageLimit: 1
+  UpgradeLimit: 3
+  PassiveConditions: []
+  _featuresToMergeWeapon: []
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 2541219106150416402
+      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data: 
+    - rid: 8023009205756100711
+      type: {class: RandomEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        Effects:
+        - rid: 8023009205756100714
+        - rid: 8023009205756100716
+        - rid: 8023009205756100717
+        - rid: 8023009205756100718
+        - rid: 8023009205756100720
+        - rid: 8023009205756100721
+        - rid: 8023009205756100722
+        - rid: 8023009205756100723
+        - rid: 8023009205756100724
+        - rid: 8023009205756100725
+        - rid: 8023009205756100726
+    - rid: 8023009205756100712
+      type: {class: CircleArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data:
+        ContainsSelf: 1
+        CanIgnoreWalls: 0
+        Radius: 1
+    - rid: 8023009205756100714
+      type: {class: TeleportEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data: 
+    - rid: 8023009205756100716
+      type: {class: ClearConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data: 
+    - rid: 8023009205756100717
+      type: {class: DropItemEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _probabilityOfSuccess: 1
+    - rid: 8023009205756100718
+      type: {class: SpawnRandomCharacterEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _count: 3
+    - rid: 8023009205756100720
+      type: {class: HealEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _power: 30
+    - rid: 8023009205756100721
+      type: {class: AddConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _condition:
+          _name: "\u52A0\u901F"
+        _probabilityOfSuccess: 1
+    - rid: 8023009205756100722
+      type: {class: AddConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _condition:
+          _name: "\u920D\u8DB3"
+        _probabilityOfSuccess: 1
+    - rid: 8023009205756100723
+      type: {class: AddConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _condition:
+          _name: "\u518D\u751F"
+        _probabilityOfSuccess: 1
+    - rid: 8023009205756100724
+      type: {class: AddConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _condition:
+          _name: "\u6BD2"
+        _probabilityOfSuccess: 1
+    - rid: 8023009205756100725
+      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _elementPowers:
+        - _element: 4
+          _power: 10
+        _criticalRate: 0
+        _isWeaponAttack: 0
+    - rid: 8023009205756100726
+      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _elementPowers:
+        - _element: 5
+          _power: 10
+        _criticalRate: 0
+        _isWeaponAttack: 0

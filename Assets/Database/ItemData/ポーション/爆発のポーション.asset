@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42c9d6e8f38cdc547ad116f2420ef50e, type: 3}
+  m_Name: "\u7206\u767A\u306E\u30DD\u30FC\u30B7\u30E7\u30F3"
+  m_EditorClassIdentifier: 
+  Category: 0
+  Icon: {fileID: 187119880, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
+  IsShiny: 0
+  _rarity: 3
+  _useCustomBasePrice: 0
+  CustomBasePrice: 0
+  AdditionalPrice: 0
+  MultiplyPrice: 1
+  EffectType: 1
+  UseOnDeath: 0
+  SpawnEffectsOnUse: 1
+  SpawnEffectsOnThrow: 1
+  IsSameEffect: 0
+  IsSameSkill: 1
+  SkillOnUse:
+    <Position>k__BackingField:
+      rid: 2541219106150416411
+    <Area>k__BackingField:
+      rid: 4425516923575599143
+    <Effects>k__BackingField:
+    - rid: 3961642730205741164
+    - rid: 3961642730205741165
+    - rid: 3961642730205741166
+    <Repeats>k__BackingField: 1
+    <ProbabilityOfSuccess>k__BackingField: 0.95
+    <Cost>k__BackingField: 0
+    <RushDistance>k__BackingField: 0
+    <BackStepDistance>k__BackingField: 0
+    <ChargeTurn>k__BackingField: 0
+    <CoolTime>k__BackingField: 0
+  SkillOnThrow:
+    <Area>k__BackingField:
+      rid: 4425516923575599143
+    <Effects>k__BackingField:
+    - rid: 3961642730205741164
+    - rid: 3961642730205741165
+    - rid: 3961642730205741166
+    <ProbabilityOfSuccess>k__BackingField: 0.9
+  ItemEffect:
+    rid: -2
+  InventoryEffect:
+    rid: -2
+  UsageLimit: 1
+  UpgradeLimit: 3
+  PassiveConditions: []
+  _featuresToMergeWeapon: []
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 2541219106150416411
+      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data: 
+    - rid: 3961642730205741164
+      type: {class: PercentageDamageEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _damageRate: 0.5
+    - rid: 3961642730205741165
+      type: {class: DigEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data: 
+    - rid: 3961642730205741166
+      type: {class: BreakEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        ApplyToCharacter: 0
+        ApplyToItem: 1
+        ApplyToMoney: 1
+        ApplyToTrap: 1
+        ApplyToChest: 1
+        ApplyToStatue: 1
+    - rid: 4425516923575599143
+      type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data: 

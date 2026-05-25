@@ -1,24 +1,22 @@
 using System;
 using Domain.Model.Character;
 using Domain.Model.Dungeon;
+using Domain.Model.Entity;
 using Domain.Model.Item;
-using UnityEngine;
 
 namespace Domain.Service.ItemEffect
 {
     [Serializable]
     public class UpgradeItem : IItemEffect
     {
-        [SerializeField] private string _filter = "";
-
         public bool CanApplyTo(IPlayer player, IItem item)
         {
-            return item.CanAnyUpgrade(_filter);
+            return item.CanUpgrade();
         }
 
-        public void Apply(IPlayer player, IItem item, ItemPlaceholders itemPlaceholders)
+        public void Apply(IPlayer player, IItem item, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
         {
-            item.RandomUpgrade(player, itemPlaceholders, _filter);
+            item.Upgrade(player, itemHolder, itemPlaceholders);
         }
 
         public float EvaluatePrice()
@@ -28,7 +26,7 @@ namespace Domain.Service.ItemEffect
 
         public string Info()
         {
-            return _filter != "" ? $"強化({_filter})" : "強化(ランダム)";
+            return "強化";
         }
     }
 }

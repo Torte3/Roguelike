@@ -1,16 +1,20 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using Domain.Model.Memento;
+using Utilities.WorldCreater;
 
 namespace Domain.Model.Map
 {
     public class TileData : ISerializable<TileMemento>
     {
-        public readonly TileCategory TileType;
+        public readonly MapType MapType;
+        public readonly int Index;
         public bool IsKnown { get; private set; }
 
         public TileData(TileMemento memento)
         {
-            TileType = memento.TileType;
+            MapType = memento.MapType;
+            Index = memento.Index;
             IsKnown = memento.IsKnown;
         }
 
@@ -18,62 +22,61 @@ namespace Domain.Model.Map
         {
             return new TileMemento
             (
-                TileType,
+                MapType,
+                Index,
                 IsKnown
             );
         }
 
-        public static TileMemento Build(TileCategory tileType, bool isKnown)
+        public static TileMemento Build(MapType mapType, TileCategory tileCategory, bool isKnown)
         {
+            if (mapType == MapType.WorldMap)
+                throw new ArgumentException("WorldMap cannot be used with TileCategory");
             return new TileMemento
             (
-                tileType,
+                mapType,
+                (int)tileCategory,
                 isKnown
             );
         }
 
-        public bool IsWalkable()
+        public static TileMemento Build(WorldTileType worldTileType, bool isKnown)
         {
-            return TileType switch
-            {
-                TileCategory.Floor => true,
-                TileCategory.Water => false,
-                TileCategory.Wall => false,
-                TileCategory.UnbreakableWall => false,
-                TileCategory.Blank => false,
-                _ => throw new InvalidEnumArgumentException()
-            };
+            return new TileMemento
+            (
+                MapType.WorldMap,
+                (int)worldTileType,
+                isKnown
+            );
         }
 
-        public bool IsPassable()
+        public TileCategory Category()
         {
-            return TileType switch
-            {
-                TileCategory.Floor => true,
-                TileCategory.Water => true,
-                TileCategory.Wall => false,
-                TileCategory.UnbreakableWall => false,
-                TileCategory.Blank => false,
-                _ => throw new InvalidEnumArgumentException()
-            };
+            if (MapType != MapType.WorldMap)
+                return (TileCategory)Index;
+            else
+                return ((WorldTileType)Index).Category();
         }
-
-        public bool IsTransparent()
-        {
-            return TileType switch
-            {
-                TileCategory.Floor => true,
-                TileCategory.Water => true,
-                TileCategory.Wall => false,
-                TileCategory.UnbreakableWall => false,
-                TileCategory.Blank => false,
-                _ => throw new InvalidEnumArgumentException()
-            };
-        }
-
+        public bool IsWalkable() => Category().IsWalkable();
+        public bool IsPassable() => Category().IsPassable();
+        public bool IsTransparent() => Category().IsTransparent();
         public void SetKnown(bool isKnown)
         {
             IsKnown = isKnown;
         }
+    }
+
+    public static class WorldTileTypeExtension
+    {
+        public static TileCategory Category(this WorldTileType worldTileType) => worldTileType switch
+        {
+            WorldTileType.Blank => TileCategory.Blank,
+            WorldTileType.Grass => TileCategory.Floor,
+            WorldTileType.Ocean => TileCategory.Water,
+            WorldTileType.Mountain => TileCategory.Wall,
+            WorldTileType.Forest => TileCategory.Floor,
+            WorldTileType.Desert => TileCategory.Floor,
+            _ => throw new InvalidEnumArgumentException()
+        };
     }
 }

@@ -32,21 +32,9 @@ namespace Domain.Service.Effect
             return 50f;
         }
 
-        public override string UpgradePathName => "氷生成";
-
-        public override List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>();
-        }
-
-        public override Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
-        }
-
         public override string Info()
         {
-            return "水上なら氷を生成する\n";
+            return "水上なら氷を生成\n";
         }
     }
 }

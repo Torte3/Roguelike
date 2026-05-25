@@ -16,6 +16,10 @@ MonoBehaviour:
   Icon: {fileID: 1522504690, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
   IsShiny: 0
   _rarity: 1
+  _useCustomBasePrice: 0
+  CustomBasePrice: 0
+  AdditionalPrice: 0
+  MultiplyPrice: 1
   EffectType: 1
   UseOnDeath: 0
   SpawnEffectsOnUse: 1
@@ -31,6 +35,11 @@ MonoBehaviour:
     - rid: 3794997484628475917
     <Repeats>k__BackingField: 1
     <ProbabilityOfSuccess>k__BackingField: 0.95
+    <Cost>k__BackingField: 0
+    <RushDistance>k__BackingField: 0
+    <BackStepDistance>k__BackingField: 0
+    <ChargeTurn>k__BackingField: 0
+    <CoolTime>k__BackingField: 0
   SkillOnThrow:
     <Area>k__BackingField:
       rid: -2
@@ -39,10 +48,12 @@ MonoBehaviour:
     <ProbabilityOfSuccess>k__BackingField: 0.9
   ItemEffect:
     rid: -2
-  StorageCapacity: 0
+  InventoryEffect:
+    rid: -2
   UsageLimit: 1
   UpgradeLimit: 3
   PassiveConditions: []
+  _featuresToMergeWeapon: []
   references:
     version: 2
     RefIds:
@@ -59,6 +70,7 @@ MonoBehaviour:
         ApplyToMoney: 0
         ApplyToTrap: 1
         ApplyToChest: 0
+        ApplyToStatue: 0
     - rid: 4425516923575599136
       type: {class: CircleArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
       data:

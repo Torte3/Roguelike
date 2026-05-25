@@ -1,8 +1,8 @@
 #nullable enable
 using Game;
-using Utilities;
 using VContainer;
 using View.UI;
+using R3;
 
 namespace Provider
 {
@@ -11,9 +11,10 @@ namespace Provider
         [Inject]
         public DungeonInfoPresenter(World world, DungeonInfoView dungeonInfoView)
         {
-            world.ActiveMap.SubscribeToAllItemsIgnoreNull(map =>
+            world.OnActiveMapChanged.Subscribe(mapChanged =>
             {
-                dungeonInfoView.SetInfo(map.Name, map.Location.Level);
+                var map = mapChanged.Map;
+                dungeonInfoView.SetInfo(map.Name, map.Depth);
             });
         }
     }

@@ -35,7 +35,7 @@ namespace Utilities
             var current = start;
             _openHash.Add(current);
             _map[current].Open(null, 0);
-            var count = 100;
+            var count = 1000;
             while (count-- > 0)
             {
                 if (_openHash.Count <= 0)

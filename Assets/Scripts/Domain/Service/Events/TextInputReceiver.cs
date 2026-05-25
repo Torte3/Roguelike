@@ -7,25 +7,25 @@ namespace Domain.Service.Events
 {
     public class TextInputReceiver
     {
-        private readonly Subject<Unit> _onShownTextInput = new();
-        public Observable<Unit> OnShownTextInput => _onShownTextInput;
-        private readonly AsyncReactiveProperty<string> _onReceivedTextInput = new("");
+        private readonly Subject<bool> _onShownTextInput = new();
+        public Observable<bool> OnShownTextInput => _onShownTextInput;
+        private readonly AsyncReactiveProperty<string?> _onReceivedTextInput = new(null);
 
-        public async UniTask<string> GetTextInput()
+        public async UniTask<string?> GetTextInput(bool canCancel = false)
         {
             Log.Debug("GetTextInput");
-            ShowTextInput();
+            ShowTextInput(canCancel);
             var text = await _onReceivedTextInput.WaitAsync();
             Log.Debug($"GetTextInput: {text}");
             return text;
         }
 
-        private void ShowTextInput()
+        private void ShowTextInput(bool canCancel)
         {
-            _onShownTextInput.OnNext(Unit.Default);
+            _onShownTextInput.OnNext(canCancel);
         }
 
-        public void SetTextInput(string text)
+        public void SetTextInput(string? text)
         {
             _onReceivedTextInput.Value = text;
         }

@@ -8,7 +8,6 @@ namespace Domain.Model.Map
     public interface IMapPosition
     {
         public Vector2Int Position { get; init; }
-        public bool IsOverlapped(params EntityLayer[] layers);
         public bool IsBlankIgnoreWall(params EntityLayer[] layers);
         public bool IsBlank(params EntityLayer[] layers);
         public bool IsBlankAndStandable(params EntityLayer[] layers);

@@ -1,6 +1,4 @@
 #nullable enable
-
-
 using Domain.Model.Character.Status;
 using Domain.Model.Character.Type;
 using Domain.Model.Effect;
@@ -10,6 +8,9 @@ using Sirenix.OdinInspector;
 using UnityEngine;
 using Utilities.Table;
 using Utilities.Serialize;
+using System.Collections.Generic;
+using System.Linq;
+using System;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -24,30 +25,36 @@ namespace Domain.Model.Character
         [ReadOnly][Required] public string Name = "";
         public CharacterGroup Group = CharacterGroup.Monster;
         [SerializeReference][Required] public ICharacterType CharacterType;
+        [PreviewField(Alignment = ObjectFieldAlignment.Left), ReadOnly] public Sprite _sprite;
         public bool IsBoss;
         [MinValue(1)] public int Hp;
         public Aggression Aggression = Aggression.AvoidAllies;
         public BehaviorData Behavior;
         public MoveSpeed MoveSpeed = MoveSpeed.Normal;
-        public bool IsHard;
-        public bool IsHeavy;
+        public List<FlagStatType> Flags;
         public bool IsFlying;
         public bool CanThroughWalls;
+        public bool CanMimic;
+        [ShowIf("@" + nameof(CanMimic))] public MimicWeights MimicWeights = new();
         public bool CanPickUp;
         public bool CanUseItem;
-        public EnemySkillData[] Skills;
+        public bool CanReceivePlayerGift;
+        public List<CharacterSkillWithRuleData> Skills;
         public bool HasLastSkill;
-        [ShowIf("@HasLastSkill")] public SkillData LastSkill;
+        [ShowIf("@" + nameof(HasLastSkill))] public SkillData LastSkill;
+        [MinValue(0)] public float AttackMultiplier = 1f;
+        public SerializableDictionary<Element, float> ElementAttackMultiplier;
         public SerializableDictionary<Element, float> ElementDamageRateMultiplier;
         public SerializableDictionary<ConditionTemplate, float> ConditionResistance;
         [Range(0, 1)] public float DropItemRate;
-        [ShowIf("@DropItemRate > 0")] public Table<ItemData> DropItemTable;
+        [ShowIf("@" + nameof(DropItemRate) + " > 0")] public Table<ItemData> DropItemTable;
 #if UNITY_EDITOR
         private void OnValidate()
         {
             var assetPath = AssetDatabase.GetAssetPath(GetInstanceID());
             Name = Path.GetFileNameWithoutExtension(assetPath);
-            EditorUtility.SetDirty(this);
+
+            Flags = Flags.Distinct().ToList();
 
             foreach (var skill in Skills)
             {
@@ -59,8 +66,16 @@ namespace Domain.Model.Character
                 LastSkill.OnValidate(1);
             }
 
+            CanReceivePlayerGift = Name != "店員" && CanUseItem;
+
             EditorUtility.SetDirty(this);
         }
 #endif
+    }
+    [Serializable]
+    public class CharacterSkillWithRuleData
+    {
+        [Required] public SkillData Skill;
+        [MinValue(0)] public int Priority;
     }
 }

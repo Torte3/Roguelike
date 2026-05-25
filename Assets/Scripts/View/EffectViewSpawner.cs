@@ -1,13 +1,22 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
+using Utilities;
+using VContainer;
 
 namespace View
 {
     public class EffectViewSpawner
     {
-        private readonly GameObject _effect = Addressables.LoadAssetAsync<GameObject>("Assets/Prefabs/Effect.prefab")
-            .WaitForCompletion();
+        private readonly GameObject _effect;
+        private readonly TextSpawner _textSpawner;
+
+        [Inject]
+        public EffectViewSpawner(TextSpawner textSpawner)
+        {
+            _effect = ObjectLoader.LoadPrefab("Effect");
+            _textSpawner = textSpawner;
+        }
 
         public void Spawn(IEnumerable<Vector2Int> area, Color color, int effectDisplayMilliseconds)
         {
@@ -32,6 +41,22 @@ namespace View
                 spawnedEffect.GetComponent<SpriteRenderer>().color = color;
                 spawnedEffects.Add(spawnedEffect);
             }
+
+            return spawnedEffects;
+        }
+
+        public List<GameObject> SpawnChargePreview(
+            IEnumerable<Vector2Int> area,
+            Color color,
+            int turn,
+            Vector2Int characterPosition)
+        {
+            var spawnedEffects = SpawnPreview(area, color);
+
+            var text = _textSpawner.SpawnNumber(
+                new Vector2(characterPosition.x, characterPosition.y),
+                turn.ToString());
+            spawnedEffects.Add(text.gameObject);
 
             return spawnedEffects;
         }

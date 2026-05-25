@@ -1,10 +1,11 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Character.Status;
-using Domain.Model.Character.Type;
+using Domain.Model.Dungeon;
 using Domain.Model.Effect;
 using Domain.Model.Effect.Area;
 using Domain.Model.Effect.Position;
@@ -23,107 +24,224 @@ namespace Domain.Service.Characters
 {
     public sealed class CharacterFactory
     {
-        public static PlayerMemento BuildPlayer(string Name, Vector2Int spawnPosition)
+        public static PlayerMemento BuildPlayer(PlayerData data, Vector2Int spawnPosition)
         {
-            var character = new CharacterMemento
-            (
-                Name,
-                new Human("Chara_Hero1_USM"),
-                PlayerBehavior.Build(),
-                CharacterStatusManager.Build(CommonSenseParameters.PlayerMaxHealth,
-                    CommonSenseParameters.PlayerNaturalRecoveryRate,
-                    new Dictionary<Element, float>(), new Dictionary<Element, float>(),
-                    new Dictionary<ConditionTemplate, float>(), 10, false, false, true, 1, false),
-                EntityBase.Build(spawnPosition, EntityLayer.Middle),
-                Direction8.Down,
-                new List<CharacterSkillMemento>
+            var flags = data.Flags.ToHashSet();
+            flags.Add(FlagStatType.IsAffectedByTrap);
+            if (data.Name == "Thief")
+                flags.Add(FlagStatType.StealEmpower);
+            var defaultSkill = new SkillData(
+                position: new AtFeet(),
+                area: new LineArea(1, false, false),
+                effects: new List<IEffect>
                 {
-                    CharacterSkill.Build(
-                        SpawnEffectSkill.Build(
-                            new SkillData(
-                                new AtFeet(),
-                                new LineArea(1, false, false),
-                                new List<IEffect>
-                                {
-                                    new AttackEffect(
-                                        new List<ElementPower> { new(Element.Physical, 3) },
-                                        0
-                                    )
-                                },
-                                0,
-                                0,
-                                "は殴りかかった")
-                        ),
+                    new AttackEffect(
+                        new List<ElementPower>
+                        {
+                            new ElementPower(Element.Physical, 1)
+                        },
                         0
                     )
                 },
-                Option<SpawnEffectSkillMemento>.None,
-                Storage.Build(10, true),
-                new List<string>(),
-                CharacterAffiliationManager.Build(CharacterGroup.Human),
-                Aggression.AttackAnyone,
-                true,
-                false,
-                false,
-                false,
-                false,
-                true,
-                true
+                repeats: 1,
+                probabilityOfSuccess: CommonSenseParameters.SkillOnUseProbabilityOfSuccess,
+                cost: 0,
+                rushDistance: 0,
+                backStepDistance: 0,
+                chargeTurn: 0,
+                coolTime: 0,
+                log: "は殴りかかった。"
+            );
+
+            var character = new CharacterMemento
+            (
+                name: data.Name,
+                characterType: data.CharacterType,
+                behavior: PlayerBehavior.Build(),
+                status: CharacterStatusManager.Build(
+                    maxHp: data.Hp,
+                    hpNaturalRecoveryAmount: CommonSenseParameters.PlayerNaturalRecoveryRate,
+                    attackMultiplier: data.AttackMultiplier,
+                    elementAttackMultiplier: data.ElementAttackMultiplier,
+                    elementDamageRateMultiplier: data.ElementDamageRateMultiplier,
+                    conditionResistance: data.ConditionResistance,
+                    viewRange: CommonSenseParameters.PlayerVisionRange,
+                    flags: flags,
+                    waitTime: data.MoveSpeed.ToWaitTime(),
+                    isSlept: false,
+                    doActImmediately: false
+                ),
+                entity: EntityBase.Build(spawnPosition, EntityLayer.Middle),
+                direction: Direction8.Down,
+                skills: new List<CharacterSkillWithRuleMemento>
+                {
+                    new CharacterSkillWithRuleMemento(
+                        SkillWithCost.Build(defaultSkill),
+                        0
+                    )
+                },
+                lastSkill: Option<SpawnEffectSkillMemento>.None,
+                inventory: Storage.Build(data.InventoryCapacity, new(), true, true),
+                knownItemNames: new List<string>(),
+                affiliation: CharacterAffiliationManager.Build(CharacterGroup.Human),
+                aggression: Aggression.AttackAnyone,
+                isLeader: true,
+                isShiny: false,
+                isBoss: data.IsBoss,
+                isFlying: data.IsFlying,
+                canThroughWalls: data.CanThroughWalls,
+                canPickUp: true,
+                canUseItem: true,
+                canReceivePlayerGift: false
             );
             return new PlayerMemento(character, 0);
         }
 
         public static CharacterMemento BuildCharacter(EnemyData data, Vector2Int spawnPosition,
+            IItemMemento? additionalDropItem = null,
             Direction8 direction = Direction8.Down, bool isSlept = false, bool isShiny = false,
-            IAffiliation? affiliation = null, (Location, Vector2Int)? homePosition = null)
+            IAffiliation? affiliation = null, Location? homeLocation = null, bool doActImmediately = false)
         {
-            var inventory = Storage.Build(10, true);
+            var items = new List<IItemMemento>();
             if (RandUtils.IsLessThanProbability(data.DropItemRate) && data.DropItemTable.Count > 0)
             {
                 var dropItem = data.DropItemTable.GetRandomItem();
-                inventory.Items[0] = Item.Build(dropItem).ToOption();
+                items.Add(Item.Build(dropItem));
             }
+            if (additionalDropItem != null)
+            {
+                items.Add(additionalDropItem);
+            }
+            var inventory = Storage.Build(20, items, true, true);
+
+            var attackMultiplier = data.AttackMultiplier;
+            if (isShiny)
+                attackMultiplier += 1f;
 
             return new CharacterMemento
             (
-                isShiny ? "☆" + data.Name : data.Name,
-                data.CharacterType,
-                EnemyBehavior.Build(
+                name: isShiny ? "☆" + data.Name : data.Name,
+                characterType: data.CharacterType,
+                behavior: EnemyBehavior.Build(
                     data.Behavior,
-                    homePosition
+                    homeLocation.ToOption()
                 ),
-                CharacterStatusManager.Build(isShiny ? data.Hp * 10 : data.Hp, 0.1f,
-                    isShiny
-                        ? Enum.GetValues(typeof(Element)).Cast<Element>().ToDictionary(element => element, _ => 2f)
-                        : new Dictionary<Element, float>(), data.ElementDamageRateMultiplier, data.ConditionResistance,
-                    8, data.IsHard,
-                    data.IsHeavy, false, data.MoveSpeed.ToWaitTime(), isSlept),
-                EntityBase.Build(spawnPosition, EntityLayer.Middle),
-                direction,
-                data.Skills.Select(x => CharacterSkill.Build(SpawnEffectSkill.Build(x.Skill), x.CoolTime)).ToList(),
-                (data.HasLastSkill ? SpawnEffectSkill.Build(data.LastSkill) : null).ToOption(),
-                inventory,
-                new List<string>(),
-                CharacterAffiliationManager.Build(data.Group, affiliation),
-                data.Aggression,
-                false,
-                isShiny,
-                data.IsBoss,
-                data.IsFlying,
-                data.CanThroughWalls,
-                data.CanPickUp,
-                data.CanUseItem
+                status: CharacterStatusManager.Build(
+                    maxHp: isShiny ? data.Hp * 5 : data.Hp,
+                    hpNaturalRecoveryAmount: 0.1f,
+                    attackMultiplier: attackMultiplier,
+                    elementAttackMultiplier: data.ElementAttackMultiplier,
+                    elementDamageRateMultiplier: data.ElementDamageRateMultiplier,
+                    conditionResistance: data.ConditionResistance,
+                    viewRange: 8,
+                    flags: data.Flags.ToHashSet(),
+                    waitTime: data.MoveSpeed.ToWaitTime(),
+                    isSlept: isSlept,
+                    doActImmediately: doActImmediately
+                ),
+                entity: EntityBase.Build(spawnPosition, EntityLayer.Middle),
+                direction: direction,
+                skills: data.Skills.Select(x => CharacterSkillWithRule.Build(x)).ToList(),
+                lastSkill: (data.HasLastSkill ? SpawnEffectSkill.Build(data.LastSkill) : null).ToOption(),
+                inventory: inventory,
+                knownItemNames: new List<string>(),
+                affiliation: CharacterAffiliationManager.Build(data.Group, affiliation),
+                aggression: data.Aggression,
+                isLeader: data.IsBoss,
+                isShiny: isShiny,
+                isBoss: data.IsBoss,
+                isFlying: data.IsFlying,
+                canThroughWalls: data.CanThroughWalls,
+                canPickUp: data.CanPickUp,
+                canUseItem: data.CanUseItem,
+                canReceivePlayerGift: data.CanReceivePlayerGift
             );
         }
 
-        public IPlayer CreatePlayer(PlayerMemento playerData, CharacterControlInputReceiver receiver, IMap map)
+        public static IPlayer CreatePlayer(PlayerMemento playerData, CharacterControlInputReceiver receiver, IGameManager gameManager, IMap map)
         {
-            return new Player(playerData, receiver, map);
+            return new Player(playerData, receiver, gameManager, map);
         }
 
-        public ICharacter CreateCharacter(CharacterMemento data, ICharacterBehavior behavior, IMap map)
+        public static ICharacter CreateCharacter(CharacterMemento data, ICharacterBehavior behavior, IGameManager gameManager, IMap map)
         {
-            return new Character(data, behavior, map, false);
+            return new Character(data, behavior, gameManager, map, false);
+        }
+
+        public static float EvaluateDamageRate(EnemyData enemyData)
+        {
+            var sum = 0f;
+            foreach (var element in Enum.GetValues(typeof(Element)))
+            {
+                if (enemyData.ElementDamageRateMultiplier.TryGetValue((Element)element, out var multiplier))
+                {
+                    sum += multiplier;
+                }
+                else
+                {
+                    sum += 1;
+                }
+            }
+            return sum / Enum.GetValues(typeof(Element)).Length;
+        }
+        public static float EvaluateSkills(IEnumerable<SkillData> skills)
+        {
+            var virtualSkills = skills.Select(x => new VirtualSkill(x)).ToList();
+            var sum = 0f;
+            var turn = 0;
+            while (turn < 100)
+            {
+                foreach (var skill in virtualSkills)
+                {
+                    skill.Update(1);
+                }
+                var selectedSkill = virtualSkills.Where(x => x.IsReady()).MaxByOrDefault(x => x.Value, null);
+                if (selectedSkill == null)
+                {
+                    turn++;
+                    continue;
+                }
+                if (selectedSkill.ChargeTurn > 0)
+                {
+                    foreach (var skill in virtualSkills)
+                    {
+                        skill.Update(selectedSkill.ChargeTurn);
+                    }
+
+                    sum += selectedSkill.Value * selectedSkill.ChargeTurn;
+                    turn += selectedSkill.ChargeTurn;
+                }
+                selectedSkill.Use();
+                sum += selectedSkill.Value;
+                turn++;
+            }
+            return sum / turn;
+        }
+        private class VirtualSkill
+        {
+            public float Value;
+            public int ChargeTurn;
+            public int CoolTime;
+            private int _remainingCoolTime;
+            public VirtualSkill(SkillData skill)
+            {
+                Value = new SpawnEffectSkill(SpawnEffectSkill.Build(skill)).EvaluatePrice();
+                ChargeTurn = skill.ChargeTurn;
+                CoolTime = skill.CoolTime;
+                _remainingCoolTime = 0;
+            }
+            public void Update(int turnCount)
+            {
+                _remainingCoolTime = Mathf.Max(0, _remainingCoolTime - turnCount);
+            }
+            public void Use()
+            {
+                _remainingCoolTime = 1 + CoolTime;
+            }
+            public bool IsReady()
+            {
+                return _remainingCoolTime == 0;
+            }
         }
     }
 }

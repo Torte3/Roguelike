@@ -4,6 +4,7 @@ namespace Domain.Model.Item
     {
         None,
         SpawnEffect,
-        ItemTarget
+        ItemTarget,
+        InventoryTarget
     }
 }

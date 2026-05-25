@@ -1,42 +1,33 @@
 using System.Collections.Generic;
-using Domain.Model.Item;
 using Domain.Model.Map;
 using UnityEngine;
 using Utilities;
 
 namespace Domain.Model.Effect.Position
 {
-    public class AllCharacter : IActorlessEffectPosition
+    public class AllCharacter : IPositionOnlyDependentEffectPosition
     {
         public bool IsDirectional => false;
 
         public IEnumerable<Vector2Int> Get(IActorOfEffect actor, Vector2Int position, Direction8 direction,
             IMap map)
         {
-            return Get(position, direction, map);
+            return Get(position, map);
         }
 
-        public IEnumerable<Vector2Int> Get(Vector2Int position, Direction8 direction,
-            IMap map)
+        public IEnumerable<Vector2Int> Get(Vector2Int position, Direction8 direction, IMap map)
         {
-            return map.AllCharacterPositions();
+            return Get(position, map);
+        }
+
+        public IEnumerable<Vector2Int> Get(Vector2Int position, IMap map)
+        {
+            return map.AllCharacterPositionsFast();
         }
 
         public float EvaluateHitProbability()
         {
             return 300;
-        }
-
-        public string UpgradePathName => "全キャラクター";
-
-        public List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>();
-        }
-
-        public Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
         }
 
         public string Info()

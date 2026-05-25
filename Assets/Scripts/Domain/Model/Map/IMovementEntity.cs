@@ -1,11 +1,11 @@
 using Domain.Model.Entity;
-using Domain.Model.Memento;
+using Utilities;
 
 namespace Domain.Model.Map
 {
     public interface IMovementEntity : IEntity
     {
         MovementEntityType Type { get; }
-        Location Destination { get; }
+        Id<IMap> Destination { get; }
     }
 }

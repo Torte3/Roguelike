@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Domain.Model.Character;
 using Domain.Model.Entity;
 using UnityEngine;
@@ -8,6 +8,7 @@ namespace Domain.Model.Effect
 {
     public interface IActorOfEffect : IHasName, IHasStatus, IHasAffiliation, IEntity
     {
+        public bool CanReadItem { get; }
         public bool IsShiny { get; }
         public bool IsFlying { get; }
         public bool CanThroughWalls { get; }

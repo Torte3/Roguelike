@@ -56,6 +56,19 @@ namespace Utilities
             return Random.value > probability;
         }
 
+        public static int RollSuccesses(int trials, float probability)
+        {
+            int successes = 0;
+            for (int i = 0; i < trials; i++)
+            {
+                if (IsLessThanProbability(probability))
+                {
+                    successes++;
+                }
+            }
+            return successes;
+        }
+
         public static T GetAtRandom<T>(this IEnumerable<T> ie)
         {
             return GetAtRandom(ie, 1, max => Random.Range(0, max))[0];
@@ -68,7 +81,7 @@ namespace Utilities
 
         public static List<T> GetAtRandom<T>(this IEnumerable<T> ie, int n, Func<int, int> randomRange)
         {
-            if (!ie.Any()) throw new Exception("IEnumerable Argument is null or empty");
+            if (!ie.Any() && n > 0) throw new Exception("IEnumerable Argument is null or empty");
             if (n > ie.Count())
                 throw new Exception(
                     "The number of elements to be retrieved is greater than the number of elements in IEnumerable");
@@ -94,6 +107,11 @@ namespace Utilities
         }
 
         public static int WeightedIndex(this IEnumerable<float> source)
+        {
+            return WeightedIndex(source, Random.value);
+        }
+
+        public static int WeightedIndex(params float[] source)
         {
             return WeightedIndex(source, Random.value);
         }
@@ -134,6 +152,51 @@ namespace Utilities
         public static int WeightedIndex<T>(this IEnumerable<T> source, Func<T, float> weightSelector)
         {
             return WeightedIndex(source, Random.value, weightSelector);
+        }
+
+        public static List<int> WeightedIndices(this IEnumerable<float> source, int count)
+        {
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            if (count == 0)
+                return new List<int>();
+
+            var weights = source.ToList();
+            if (count > weights.Count)
+            {
+                throw new ArgumentException(
+                    $"Cannot pick {count} unique indices from a collection with {weights.Count} elements.",
+                    nameof(count));
+            }
+
+            var remainingIndices = Enumerable.Range(0, weights.Count).ToList();
+            var result = new List<int>(count);
+
+            for (var i = 0; i < count; i++)
+            {
+                var localIndex = weights.WeightedIndex();
+                if (localIndex < 0)
+                {
+                    throw new InvalidOperationException(
+                        "Cannot pick a weighted index: all remaining weights are zero or negative.");
+                }
+
+                result.Add(remainingIndices[localIndex]);
+                remainingIndices.RemoveAt(localIndex);
+                weights.RemoveAt(localIndex);
+            }
+
+            return result;
+        }
+
+        public static List<T> GetWeightedAtRandom<T>(
+            this IEnumerable<T> source,
+            int count,
+            Func<T, float> weightSelector)
+        {
+            var list = source.ToList();
+            var indices = list.Select(weightSelector).WeightedIndices(count);
+            return indices.Select(i => list[i]).ToList();
         }
 
         public static int RangeWithoutExcludes(int n, params int[] excludeList)
@@ -188,8 +251,9 @@ namespace Utilities
                 var value = list[k];
                 list[k] = list[i];
                 list[i] = value;
-                yield return value;
             }
+
+            return list;
         }
     }
 }

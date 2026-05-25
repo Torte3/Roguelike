@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
+using Domain.Model.Character;
 using Domain.Model.Character.Status;
 using Domain.Model.Effect;
 using Domain.Model.Evaluation;
 using UnityEngine;
+using Utilities;
 
 namespace Domain.Service.Effect
 {
@@ -18,12 +20,23 @@ namespace Domain.Service.Effect
             var elementDamages = new List<float>();
             foreach (var elementPower in powers)
             {
-                var elementAttackMultiplier = actor.GetElementAttackMultiplier(elementPower.Element);
-                var elementResistanceMultiplier = target.GetElementDamageRateMultiplier(elementPower.Element);
-                elementDamages.Add(elementPower.Power * elementAttackMultiplier * elementResistanceMultiplier);
+                var attackMultiplier = actor.Status.GetCombinedElementAttackMultiplier(elementPower.Element);
+                var elementResistanceMultiplier = target.Status.GetElementDamageRateMultiplier(elementPower.Element);
+                elementDamages.Add(elementPower.Power * attackMultiplier * elementResistanceMultiplier);
             }
 
-            return Mathf.Max(1, Mathf.RoundToInt(elementDamages.Sum() * (isCritical ? 2 : 1)));
+            var damage = elementDamages.Sum() * (isCritical ? 2 : 1);
+            if (target.Status.IsFlagStat(FlagStatType.AdjacentAttackGuard) && IsAdjacentAttack(actor, target))
+                damage *= CommonSenseParameters.AdjacentDamageMultiplier;
+
+            return Mathf.Max(1, Mathf.RoundToInt(damage));
+        }
+
+        private static bool IsAdjacentAttack(IActorOfEffect actor, ITargetOfEffect target)
+        {
+            return VectorExtension.ChebyshevDistance(
+                       actor.Entity.CurrentPosition,
+                       target.Entity.CurrentPosition) <= 1;
         }
 
         public static int EvaluateDamage(List<ElementPower> powers, bool isCritical = false)
@@ -43,7 +56,10 @@ namespace Domain.Service.Effect
 
         public static int CalcExplosionDamage(float damageRate, ITargetOfEffect target)
         {
-            return Mathf.Max(1, Mathf.RoundToInt(target.CurrentHp * damageRate));
+            var damage = Mathf.Max(1, Mathf.RoundToInt(target.CurrentMaxHp * damageRate));
+            if (target.Status.IsFlagStat(FlagStatType.ExplosionProof))
+                return Mathf.Min(CommonSenseParameters.DamageWhenExplosionProof, damage);
+            return damage;
         }
 
         public static int EvaluateExplosionDamage(float damageRate)

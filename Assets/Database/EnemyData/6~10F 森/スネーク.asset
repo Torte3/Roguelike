@@ -16,6 +16,7 @@ MonoBehaviour:
   Group: 1
   CharacterType:
     rid: 2541219106150416432
+  _sprite: {fileID: 21300000, guid: a8b0c4d6908207e4f889aaf2a39d4537, type: 3}
   IsBoss: 0
   Hp: 5
   Aggression: 1
@@ -31,15 +32,21 @@ MonoBehaviour:
     distanceBottomBound: 3
     lessThanBottomBound: 1
     PrioritizeMovementWhenDistanceLessThanBottomBound: 0
-    PrioritizeEnemiesOverLeaders: 0
+    PrioritizeEnemiesOverLeaders: 1
     ChaseLeader: 1
   MoveSpeed: 2
-  IsHard: 0
-  IsHeavy: 0
+  Flags: 
   IsFlying: 0
   CanThroughWalls: 0
+  CanMimic: 0
+  MimicWeights:
+    ItemRevealOnPickUp: 1
+    ItemRevealOnUse: 1
+    Money: 1
+    Stairs: 1
   CanPickUp: 0
   CanUseItem: 0
+  CanReceivePlayerGift: 0
   Skills:
   - Skill:
       <Position>k__BackingField:
@@ -50,11 +57,14 @@ MonoBehaviour:
       - rid: 2541219281251860493
       - rid: 5486256397401194497
       <Repeats>k__BackingField: 1
+      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
       <RushDistance>k__BackingField: 0
       <BackStepDistance>k__BackingField: 0
-      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <ChargeTurn>k__BackingField: 0
+      <CoolTime>k__BackingField: 1
       <Log>k__BackingField: "\u306F\u565B\u307F\u3064\u3044\u305F\u3002"
-    CoolTime: 0
+    Priority: 0
   HasLastSkill: 0
   LastSkill:
     <Position>k__BackingField:
@@ -64,19 +74,23 @@ MonoBehaviour:
     <Effects>k__BackingField:
     - rid: -2
     <Repeats>k__BackingField: 1
+    <ProbabilityOfSuccess>k__BackingField: 1
+    <Cost>k__BackingField: 0
     <RushDistance>k__BackingField: 0
     <BackStepDistance>k__BackingField: 0
-    <ProbabilityOfSuccess>k__BackingField: 1
+    <ChargeTurn>k__BackingField: 0
+    <CoolTime>k__BackingField: 0
     <Log>k__BackingField: 
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
   ElementDamageRateMultiplier:
     data: []
   ConditionResistance:
     data: []
-  DropItemRate: 0.05
+  DropItemRate: 0
   DropItemTable:
-    items:
-    - Item: {fileID: 11400000, guid: ad1e9b5ff56f79b4eb94b02d030649f3, type: 2}
-      Weight: 1
+    items: []
   references:
     version: 2
     RefIds:
@@ -97,8 +111,9 @@ MonoBehaviour:
       data:
         _elementPowers:
         - _element: 0
-          _power: 4
+          _power: 6
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 2541219281251860495
       type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data: 

@@ -13,16 +13,21 @@ MonoBehaviour:
   m_Name: "\u9EBB\u75FA"
   m_EditorClassIdentifier: 
   Condition:
-    rid: 2541219281251860497
+    rid: 3119344245011382287
   RemovalCondition:
     RemoveByElapsedTurn: 1
     Duration: 3
     RemoveByDamage: 0
     Probability: 0
-    RemoveByEnemyNearby: 0
+    RemoveByCharacterNearby: 0
+    CharacterNearbyProbability: 0
+  InflictLog: "\u306F\u9EBB\u75FA\u3057\u305F"
+  DeleteLog: "\u306E\u3057\u3073\u308C\u304C\u53D6\u308C\u305F"
   references:
     version: 2
     RefIds:
-    - rid: 2541219281251860497
-      type: {class: Paralyzed, ns: Domain.Service.Characters.Conditions, asm: Domain.Service}
-      data: 
+    - rid: 3119344245011382287
+      type: {class: FlagCondition, ns: Domain.Service.Characters.Conditions, asm: Domain.Service}
+      data:
+        _flagStatType:
+          stringValue: CannotAct

@@ -1,20 +1,20 @@
 ﻿using System;
-using Domain.Model.Condition;
+using Domain.Model.Character;
 using UnityEngine;
+using Utilities.Serialize;
 
 namespace Domain.Model.Memento
 {
     [Serializable]
     public class ConditionMemento
     {
-        [field: SerializeReference] public IConditionData Condition { get; private set; }
-        [field: SerializeField] public RemovalConditionData RemovalCondition { get; private set; }
+        [SerializeReference] private ScriptableObjectSerializable<ConditionTemplate> _condition;
+        public ConditionTemplate Condition => _condition.Value;
         [field: SerializeField] public int ElapsedTurns { get; private set; }
 
-        public ConditionMemento(IConditionData condition, RemovalConditionData removalCondition, int elapsedTurns)
+        public ConditionMemento(ConditionTemplate condition, int elapsedTurns)
         {
-            Condition = condition;
-            RemovalCondition = removalCondition;
+            _condition = condition.ToSerializable();
             ElapsedTurns = elapsedTurns;
         }
     }

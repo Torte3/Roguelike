@@ -10,7 +10,8 @@ namespace Domain.Model.Character
     {
         public bool CanPickUp { get; }
         public bool CanUseItem { get; }
-        public IReadOnlyList<ICharacterSkill> Skills { get; }
+        public bool CanReceivePlayerGift { get; }
+        public IReadOnlyList<ICharacterSkillWithRule> Skills { get; }
         public bool CanSwap(Vector2Int position, Direction8 direction, IMap map);
         public bool TryPickUpItem(IMap map, bool canPickUpShopItem);
     }

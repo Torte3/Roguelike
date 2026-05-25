@@ -1,7 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using Domain.Model.Character;
+using Domain.Model.Character.Status;
 using Domain.Model.Effect;
 using Domain.Model.Item;
 using Domain.Model.Map;
@@ -20,20 +22,24 @@ namespace Domain.Service.Effect
         private List<ElementPower> _elementPowers;
 
         [Range(0, 1)][SerializeField] private float _criticalRate;
+        [SerializeField][HideInInspector] private bool _isWeaponAttack;
         private float _fixedCriticalRate => Mathf.Clamp(_criticalRate, 0, 1);
 
-        public AttackEffect(List<ElementPower> elementPowers, float criticalRate)
+        public AttackEffect(List<ElementPower> elementPowers, float criticalRate, bool isWeaponAttack = false)
         {
             _elementPowers = elementPowers;
             _criticalRate = criticalRate;
+            _isWeaponAttack = isWeaponAttack;
         }
 
-        public void MultiplyPower(float multiplier)
+        public List<ElementPower> MultiplyPower(float multiplier)
         {
+            var result = new List<ElementPower>();
             foreach (var elementPower in _elementPowers)
             {
-                elementPower.MultiplyPower(multiplier);
+                result.Add(elementPower.MultiplyPower(multiplier));
             }
+            return result;
         }
 
         public override Color Color => Colors.Red;
@@ -41,29 +47,30 @@ namespace Domain.Service.Effect
 
         public override async UniTask Apply(IActorOfEffect actor, ITargetOfEffect target, Vector2Int position, IMap map)
         {
-            if (RandUtils.IsLessThanProbability(_fixedCriticalRate))
+            if (RandUtils.IsLessThanProbability(GetEffectiveCriticalRate(actor)))
             {
                 var damage = Formula.Calc(actor, target, _elementPowers, true);
-                GameLog.Add($"<color=red>クリティカル！{target.GetName(map.Player)}に{damage}のダメージ</color>");
-                target.LoseHp(damage);
+                GameLog.AddAppend(target.IsVisible, $"<color=red>クリティカル！{target.GetName(map.Player)}に{damage}のダメージ。</color>");
+                await target.LoseHp(damage, $"は{actor.GetName(map.Player)}の攻撃で殺された", actor as ICharacter);
             }
             else
             {
                 var damage = Formula.Calc(actor, target, _elementPowers);
-                GameLog.Add($"{target.GetName(map.Player)}に{damage}のダメージ");
-                target.LoseHp(damage);
+                GameLog.AddAppend(target.IsVisible, $"{target.GetName(map.Player)}に{damage}のダメージ。");
+                await target.LoseHp(damage, $"は{actor.GetName(map.Player)}の攻撃で殺された", actor as ICharacter);
             }
         }
 
         public override float Evaluate(IActorOfEffect actor, ITargetOfEffect target)
         {
+            var criticalRate = GetEffectiveCriticalRate(actor);
             var result = Mathf.Min(1,
                              Mathf.Min(target.CurrentHp, (float)Formula.Calc(actor, target, _elementPowers)) /
                              target.CurrentMaxHp) *
-                         (1 - _fixedCriticalRate);
+                         (1 - criticalRate);
             result += Mathf.Min(1,
                 Mathf.Min(target.CurrentHp, (float)Formula.Calc(actor, target, _elementPowers, true)) /
-                target.CurrentMaxHp) * _fixedCriticalRate;
+                target.CurrentMaxHp) * criticalRate;
             return result;
         }
 
@@ -74,37 +81,24 @@ namespace Domain.Service.Effect
             return result;
         }
 
-        public override string UpgradePathName => "攻撃";
-
-        public override List<UpgradeData> GetUpgrades()
+        private float GetEffectiveCriticalRate(IActorOfEffect actor)
         {
-            var upgrades = new List<UpgradeData>();
+            if (_isWeaponAttack
+                && actor.Status.IsFlagStat(FlagStatType.FullHpCritical)
+                && actor.CurrentHp >= actor.CurrentMaxHp)
+                return 1f;
 
-            if (_criticalRate > 0 && _criticalRate < 1f)
-            {
-                upgrades.Add(
-                    new UpgradeData(
-                        "クリティカル率+5%",
-                        () => _criticalRate += 0.05f,
-                        () => _criticalRate -= 0.05f
-                    )
-                );
-            }
-
-            return upgrades;
-        }
-
-        public override Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return _elementPowers.ToDictionary(e => e.UpgradePathName, e => (IHasUpgrades)e);
+            return _fixedCriticalRate;
         }
 
         public override string Info()
         {
-            var info = $"{string.Join(" ", _elementPowers.Select(e => e.Info()))}の攻撃を行う\n";
+            var powers = string.Join("/", _elementPowers.Select(e => $"{e.Element.Name()}{e.Power}"));
+            var info = $"攻撃[{ItemDescriptionRichText.RichAttackPowerSummary(powers)}]\n";
             if (_fixedCriticalRate > 0)
             {
-                info += $"そのとき{_fixedCriticalRate:P0}の確率でクリティカルを発生させる\n";
+                info += "そのとき" + ItemDescriptionRichText.ColorPercentagesInPlainText($"{_fixedCriticalRate:P0}") +
+                        "の確率でクリティカルを発生させる\n";
             }
 
             return info;

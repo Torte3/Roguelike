@@ -1,12 +1,20 @@
-﻿#nullable enable
+#nullable enable
 using Domain.Model.Item;
-using Utilities.Serialize.Result;
 
 namespace Domain.Model.Character
 {
+    public enum InventorySortingMode
+    {
+        None,
+        ByCategory,
+        ByPrice,
+    }
     public interface IInventory : IStorage
     {
-        public IItem? GetItem(int index, int subIndex);
-        public Result<IItem?> Replace(IItem? item, int index, int subIndex);
+        public bool CanAddOrNot(IItem? item);
+        public void AddOrNot(IItem? item);
+        public bool CanReplaceOrRemove(IItem? item, int index);
+        public IItem ReplaceOrRemove(IItem? item, int index);
+        public void Sort(InventorySortingMode sortingMode, ItemMarketPriceTable market);
     }
 }

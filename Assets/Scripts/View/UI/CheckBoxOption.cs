@@ -12,10 +12,12 @@ namespace View.UI
         public Observable<bool> OnValueChanged => _toggle.onValueChanged.AsObservable();
         public Selectable Selectable => _toggle;
 
-        public void SetData(string itemName, bool value)
+        public void SetData(string itemName, ReactiveProperty<bool> value, ReadOnlyReactiveProperty<bool> isEnabled)
         {
             _text.SetText(itemName);
-            _toggle.isOn = value;
+            value.Subscribe(value => _toggle.isOn = value).AddTo(this);
+            _toggle.onValueChanged.AsObservable().Subscribe(v => value.Value = v).AddTo(this);
+            isEnabled.Subscribe(value => _toggle.interactable = value).AddTo(this);
         }
     }
 }

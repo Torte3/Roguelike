@@ -1,6 +1,6 @@
 using System;
-using Domain.Model.Memento;
 using UnityEngine;
+using Utilities;
 
 namespace Domain.Model.Map
 {
@@ -8,9 +8,9 @@ namespace Domain.Model.Map
     public class MapConnection
     {
         [field: SerializeField] public MovementEntityType Type { get; private set; }
-        [field: SerializeField] public Location Destination { get; private set; }
+        [field: SerializeField] public Id<IMap> Destination { get; private set; }
 
-        public MapConnection(MovementEntityType type, Location destination)
+        public MapConnection(MovementEntityType type, Id<IMap> destination)
         {
             Type = type;
             Destination = destination;

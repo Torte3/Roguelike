@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Tilemaps;
 
 namespace View
@@ -7,60 +6,13 @@ namespace View
     public sealed class TileViewController : MonoBehaviour
     {
         [SerializeField] private Tilemap _tilemap;
-        [SerializeField] private Tiles _caveTiles;
-        [SerializeField] private Tiles _forestTiles;
-        [SerializeField] private Tiles _snowTiles;
-        [SerializeField] private Tiles _volcanoTiles;
-        [SerializeField] private Tiles _desertTiles;
-        [SerializeField] private Tiles _dungeonTiles;
-        [SerializeField] private Tiles _voidTiles;
-
-        private Tiles GetTiles(TileSet type)
-        {
-            return type switch
-            {
-                TileSet.Cave => _caveTiles,
-                TileSet.Forest => _forestTiles,
-                TileSet.Snow => _snowTiles,
-                TileSet.Volcano => _volcanoTiles,
-                TileSet.Desert => _desertTiles,
-                TileSet.Dungeon => _dungeonTiles,
-                TileSet.Void => _voidTiles,
-                _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
-            };
-        }
 
         public void Clear()
         {
             _tilemap.ClearAllTiles();
         }
 
-        public void SetFloor(Vector2Int position, TileSet type, TileVisibility? visibility = null)
-        {
-            SetTile(position, GetTiles(type).Floor, visibility);
-        }
-
-        public void SetWater(Vector2Int position, TileSet type, TileVisibility? visibility = null)
-        {
-            SetTile(position, GetTiles(type).Water, visibility, GetTiles(type).Floor);
-        }
-
-        public void SetWall(Vector2Int position, TileSet type, TileVisibility? visibility = null)
-        {
-            SetTile(position, GetTiles(type).Wall, visibility, GetTiles(type).Floor);
-        }
-
-        public void SetUnbreakableWall(Vector2Int position, TileSet type, TileVisibility? visibility = null)
-        {
-            SetTile(position, GetTiles(type).Wall, visibility, GetTiles(type).Floor);
-        }
-
-        public void SetShopFloor(Vector2Int position, TileSet type, TileVisibility? visibility = null)
-        {
-            SetTile(position, GetTiles(type).ShopFloor, visibility);
-        }
-
-        private void SetTile(Vector2Int position, TileBase tile, TileVisibility? visibility = null,
+        public void SetTile(Vector2Int position, TileBase tile, TileVisibility? visibility = null,
             TileBase underTile = null)
         {
             var color = visibility?.GetColor() ?? GetTileColor(position);

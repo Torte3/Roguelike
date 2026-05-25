@@ -1,7 +1,6 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Linq;
-using Domain.Model.Dungeon;
 using Domain.Model.Map;
 using Game;
 using R3;
@@ -18,56 +17,42 @@ namespace Provider
 
         [Inject]
         public TilemapPresenter(TileViewController tileView, OverlayTileViewController overlayTileView,
-            MinimapController minimapController, World world)
+            MinimapController minimapController, TilePalette tilePalette, World world)
         {
-            world.ActiveMap.SubscribeToAllItemsIgnoreNull(map =>
+            world.OnActiveMapChanged.Subscribe(mapChanged =>
                 {
+                    _disposables.Clear();
+                    var map = mapChanged.Map;
                     tileView.Clear();
                     overlayTileView.Clear();
-
-                    var tileSet = map.Type switch
-                    {
-                        SectionType.Cave => TileSet.Cave,
-                        SectionType.Forest => TileSet.Forest,
-                        SectionType.Snow => TileSet.Snow,
-                        SectionType.Volcano => TileSet.Volcano,
-                        SectionType.Desert => TileSet.Desert,
-                        SectionType.Dungeon => TileSet.Dungeon,
-                        SectionType.Void => TileSet.Void,
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
+                    minimapController.Clear();
 
                     foreach (var (position, tileData) in map.TilemapViewer.GetAllTiles())
                     {
-                        SetTile(tileView, minimapController, tileData, position, tileSet, map.ShopRect);
+                        SetTile(tileView, minimapController, tilePalette, tileData, position, map.ShopRect);
                         if (map.TilemapViewer.GetAllGrasses().Contains(position))
-                            overlayTileView.SetGrass(position);
+                            overlayTileView.SetGrass(position, ToTileSet(tileData.MapType));
                         if (map.TilemapViewer.GetAllIces().Contains(position))
                             overlayTileView.SetIce(position);
                         SetVisibility(tileView, overlayTileView, minimapController, position,
                             GetTileVisibility(map, position));
                     }
 
-                    var mapSize = map.TilemapViewer.Rect;
-                    for (var x = mapSize.x - 1; x <= mapSize.x + mapSize.width; x++)
-                    {
-                        tileView.SetUnbreakableWall(new Vector2Int(x, -1), tileSet, TileVisibility.Transparent);
-                        tileView.SetUnbreakableWall(new Vector2Int(x, mapSize.y + mapSize.height), tileSet,
-                            TileVisibility.Transparent);
-                    }
-
-                    for (var y = mapSize.y - 1; y <= mapSize.y + mapSize.height; y++)
-                    {
-                        tileView.SetUnbreakableWall(new Vector2Int(-1, y), tileSet, TileVisibility.Transparent);
-                        tileView.SetUnbreakableWall(new Vector2Int(mapSize.x + mapSize.width, y), tileSet,
-                            TileVisibility.Transparent);
-                    }
-
                     map.TilemapViewer.OnTilesChanged.Subscribe(context =>
                     {
                         foreach (var (position, tile) in context)
                         {
-                            SetTile(tileView, minimapController, tile, position, tileSet, map.ShopRect);
+                            SetTile(tileView, minimapController, tilePalette, tile, position, map.ShopRect);
+                        }
+                    }).AddTo(_disposables);
+
+                    map.TilemapViewer.OnTilesLoaded.Subscribe(context =>
+                    {
+                        foreach (var (position, tile) in context)
+                        {
+                            SetTile(tileView, minimapController, tilePalette, tile, position, map.ShopRect);
+                            SetVisibility(tileView, overlayTileView, minimapController, position,
+                                GetTileVisibility(map, position));
                         }
                     }).AddTo(_disposables);
 
@@ -78,7 +63,12 @@ namespace Provider
                             switch (category)
                             {
                                 case OverlayTileCategory.Grass:
-                                    overlayTileView.SetGrass(position, GetTileVisibility(map, position));
+                                    overlayTileView.SetGrass(
+                                        position,
+                                        map.TilemapViewer.GetTile(position)
+                                            .Map(tile => ToTileSet(tile.MapType))
+                                            .UnwrapOr(() => ToTileSet(map.Type)),
+                                        GetTileVisibility(map, position));
                                     break;
                                 case OverlayTileCategory.FloatingIce:
                                     overlayTileView.SetIce(position, GetTileVisibility(map, position));
@@ -133,11 +123,6 @@ namespace Provider
                 _ => _disposables.Clear());
         }
 
-        ~TilemapPresenter()
-        {
-            Dispose();
-        }
-
         public void Dispose()
         {
             _disposables.Dispose();
@@ -158,35 +143,55 @@ namespace Provider
             return TileVisibility.Transparent;
         }
 
-        public void SetTile(TileViewController tileView, MinimapController minimapController, TileData tileData,
-            Vector2Int position, TileSet type,
-            RectInt? shop, TileVisibility? visibility = null)
+        public TileSet ToTileSet(MapType mapType)
         {
-            switch (tileData.TileType)
+            return mapType switch
+            {
+                MapType.WorldMap => TileSet.WorldMap,
+                MapType.Cave => TileSet.Cave,
+                MapType.Forest => TileSet.Forest,
+                MapType.Snow => TileSet.Snow,
+                MapType.Volcano => TileSet.Volcano,
+                MapType.Desert => TileSet.Desert,
+                MapType.Dungeon => TileSet.Dungeon,
+                MapType.Void => TileSet.Void,
+                _ => throw new ArgumentOutOfRangeException(nameof(mapType), mapType, null)
+            };
+        }
+
+        public void SetTile(TileViewController tileView, MinimapController minimapController, TilePalette tilePalette, Domain.Model.Map.TileData tileData,
+            Vector2Int position, RectInt? shop, TileVisibility? visibility = null)
+        {
+            if (tileData.MapType == MapType.WorldMap)
+            {
+                var (tile, underTile) = tilePalette.GetTile(ToTileSet(tileData.MapType), tileData.Index);
+                tileView.SetTile(position, tile, visibility, underTile);
+            }
+            else
+            {
+                var index = tileData.Category() switch
+                {
+                    TileCategory.Floor => shop.HasValue && shop.Value.Contains(position) ? 1 : 0,
+                    TileCategory.Water => 2,
+                    TileCategory.Wall => 3,
+                    TileCategory.UnbreakableWall => 3,
+                    _ => throw new ArgumentOutOfRangeException(nameof(TileCategory), tileData.Category(), null)
+                };
+                var (tile, underTile) = tilePalette.GetTile(ToTileSet(tileData.MapType), index);
+                tileView.SetTile(position, tile, visibility, underTile);
+            }
+            switch (tileData.Category())
             {
                 case TileCategory.Floor:
-                    if (shop.HasValue && shop.Value.Contains(position))
-                    {
-                        tileView.SetShopFloor(position, type, visibility);
-                        minimapController.SetShopFloor(position, visibility);
-                    }
-                    else
-                    {
-                        tileView.SetFloor(position, type, visibility);
-                        minimapController.SetFloor(position, visibility);
-                    }
-
+                    minimapController.SetFloor(position, visibility);
                     break;
                 case TileCategory.Water:
-                    tileView.SetWater(position, type, visibility);
                     minimapController.SetWater(position, visibility);
                     break;
                 case TileCategory.Wall:
-                    tileView.SetWall(position, type, visibility);
                     minimapController.SetWall(position, visibility);
                     break;
                 case TileCategory.UnbreakableWall:
-                    tileView.SetUnbreakableWall(position, type, visibility);
                     minimapController.SetUnbreakableWall(position, visibility);
                     break;
             }

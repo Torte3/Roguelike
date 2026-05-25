@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System.Collections.Generic;
 using Domain.Model.Condition;
@@ -7,64 +7,88 @@ using Domain.Model.Effect;
 using Domain.Model.Evaluation;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using System.Linq;
+using Utilities.Validation;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
 namespace Domain.Model.Item
 {
-    [CreateAssetMenu(fileName = "Data", menuName = "ScriptableObject/Item")]
-    public class ItemData : ScriptableObject, IHasRarity
+    public interface IItemData : IHasRarity
     {
-        public ItemCategory Category;
+    }
+    [CreateAssetMenu(fileName = "Data", menuName = "ScriptableObject/Item")]
+    public class ItemData : ScriptableObject, IItemData
+    {
+        [SerializeField] public ItemCategory Category;
         [Required] public Sprite Icon;
         public bool IsShiny;
-        public bool CannotUseIfCursed => Category != ItemCategory.Weapons;
-        public bool CannotDropIfCursed => Category == ItemCategory.Weapons;
-        public bool IdentifyIfGot => Category == ItemCategory.Weapons;
-        public bool IdentifyIfUsed => Category != ItemCategory.Wands;
-        public bool AutoDestroyWhenDisabled => Category == ItemCategory.Potions || Category == ItemCategory.Scrolls;
         [SerializeField] private Rarity _rarity;
         public Rarity Rarity => _rarity;
+        private bool IsNotOthersCategory() => Category != ItemCategory.Others;
+        [ShowIf(nameof(IsNotOthersCategory))]
+        [SerializeField] private bool _useCustomBasePrice = false;
+        public bool UseCustomBasePrice => Category == ItemCategory.Others || _useCustomBasePrice;
+        [ShowIf(nameof(UseCustomBasePrice))]
+        [MinValue(0)]
+        public int CustomBasePrice = 0;
+        [ShowIf("@!" + nameof(UseCustomBasePrice))]
+        public int AdditionalPrice = 0;
+        [ShowIf("@!" + nameof(UseCustomBasePrice))]
+        public float MultiplyPrice = 1f;
         public ItemEffectType EffectType = ItemEffectType.SpawnEffect;
 
+        private bool IsSpawnEffect() => EffectType == ItemEffectType.SpawnEffect;
+        private bool IsItemTarget() => EffectType == ItemEffectType.ItemTarget;
+        private bool IsInventoryTarget() => EffectType == ItemEffectType.InventoryTarget;
+
         #region spawn effect
+        [ShowIf(nameof(SpawnEffectsOnUse))] public bool UseOnDeath;
 
-        [ShowIf("SpawnEffectsOnUse")] public bool UseOnDeath;
-
-        [ShowIf("@EffectType == ItemEffectType.SpawnEffect")]
+        [ShowIf(nameof(IsSpawnEffect))]
         public bool SpawnEffectsOnUse = true;
 
-        [ShowIf("@EffectType == ItemEffectType.SpawnEffect")]
+        [ShowIf(nameof(IsSpawnEffect))]
         public bool SpawnEffectsOnThrow;
 
-        [ShowIf("@SpawnEffectsOnUse && SpawnEffectsOnThrow && !IsSameSkill")]
+        [ShowIf("@" + nameof(SpawnEffectsOnUse) + " && " + nameof(SpawnEffectsOnThrow) + " && !" + nameof(IsSameSkill))]
         public bool IsSameEffect;
 
-        [ShowIf("@SpawnEffectsOnUse && SpawnEffectsOnThrow")]
+        [ShowIf("@" + nameof(SpawnEffectsOnUse) + " && " + nameof(SpawnEffectsOnThrow))]
         public bool IsSameSkill;
 
-        [ShowIf("SpawnEffectsOnUse")] public SkillDataOnUse? SkillOnUse;
-        [ShowIf("SpawnEffectsOnThrow")] public SkillDataOnThrow? SkillOnThrow;
-
+        [ShowIf(nameof(SpawnEffectsOnUse))] public SkillDataOnUse? SkillOnUse;
+        [ShowIf(nameof(SpawnEffectsOnThrow))] public SkillDataOnThrow? SkillOnThrow;
         #endregion
 
         #region item target
-
-        [ShowIf("@EffectType == ItemEffectType.ItemTarget")] [SerializeReference] [Required]
+        [ShowIf(nameof(IsItemTarget))]
+        [SerializeReference]
+        [RequiredIfShown]
         public IItemEffect? ItemEffect;
-
         #endregion
 
-        public int StorageCapacity = 0;
-        [ShowIf("_usable")] [MinValue(1)] public int UsageLimit;
+        #region inventory target
+        [ShowIf(nameof(IsInventoryTarget))]
+        [SerializeReference]
+        [RequiredIfShown]
+        public IInventoryEffect? InventoryEffect;
+        #endregion
+
+        [ShowIf(nameof(_usable))][MinValue(1)] public int UsageLimit;
         public int UpgradeLimit = 3;
         [SerializeReference] public List<IConditionData> PassiveConditions;
+        [SerializeField] private List<StringSerializableItemFeature> _featuresToMergeWeapon;
+        public List<ItemFeature> FeaturesToMergeWeapon => _featuresToMergeWeapon.Select(feature => feature.Value).ToList();
+
 
         private bool _usable => EffectType switch
         {
             ItemEffectType.SpawnEffect => SpawnEffectsOnUse || SpawnEffectsOnThrow,
             ItemEffectType.ItemTarget => ItemEffect != null,
+            ItemEffectType.InventoryTarget => InventoryEffect != null,
             _ => false
         };
 
@@ -138,11 +162,6 @@ namespace Domain.Model.Item
             if (SkillOnThrow != null)
             {
                 SkillOnThrow.OnValidate();
-            }
-
-            if (UpgradeLimit == 0)
-            {
-                UpgradeLimit = 3;
             }
 
             EditorUtility.SetDirty(this);

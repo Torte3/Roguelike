@@ -16,8 +16,9 @@ MonoBehaviour:
   Group: 0
   CharacterType:
     rid: 861543580450947072
+  _sprite: {fileID: 1465634788, guid: eca6ad6f85d552347a9d1d89bfabdf8d, type: 3}
   IsBoss: 0
-  Hp: 30
+  Hp: 40
   Aggression: 4
   Behavior:
     wanderAround: 1
@@ -34,12 +35,18 @@ MonoBehaviour:
     PrioritizeEnemiesOverLeaders: 1
     ChaseLeader: 1
   MoveSpeed: 2
-  IsHard: 0
-  IsHeavy: 0
+  Flags: 
   IsFlying: 0
   CanThroughWalls: 0
+  CanMimic: 0
+  MimicWeights:
+    ItemRevealOnPickUp: 1
+    ItemRevealOnUse: 1
+    Money: 1
+    Stairs: 1
   CanPickUp: 0
   CanUseItem: 1
+  CanReceivePlayerGift: 1
   Skills:
   - Skill:
       <Position>k__BackingField:
@@ -49,11 +56,14 @@ MonoBehaviour:
       <Effects>k__BackingField:
       - rid: 5486256464210165779
       <Repeats>k__BackingField: 2
+      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
       <RushDistance>k__BackingField: 0
       <BackStepDistance>k__BackingField: 0
-      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <ChargeTurn>k__BackingField: 0
+      <CoolTime>k__BackingField: 1
       <Log>k__BackingField: "\u306F\u9023\u6483\u3092\u653E\u3063\u305F"
-    CoolTime: 1
+    Priority: 0
   - Skill:
       <Position>k__BackingField:
         rid: 5486256287083921410
@@ -62,11 +72,14 @@ MonoBehaviour:
       <Effects>k__BackingField:
       - rid: 5486256287083921409
       <Repeats>k__BackingField: 1
-      <RushDistance>k__BackingField: 2
-      <BackStepDistance>k__BackingField: 0
       <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
+      <RushDistance>k__BackingField: 0
+      <BackStepDistance>k__BackingField: 0
+      <ChargeTurn>k__BackingField: 0
+      <CoolTime>k__BackingField: 3
       <Log>k__BackingField: "\u306F\u7A81\u9032\u3057\u305F"
-    CoolTime: 3
+    Priority: 0
   - Skill:
       <Position>k__BackingField:
         rid: 5486256464210165780
@@ -75,11 +88,14 @@ MonoBehaviour:
       <Effects>k__BackingField:
       - rid: 5486256464210165782
       <Repeats>k__BackingField: 1
-      <RushDistance>k__BackingField: 0
-      <BackStepDistance>k__BackingField: 1
       <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
+      <RushDistance>k__BackingField: 0
+      <BackStepDistance>k__BackingField: 0
+      <ChargeTurn>k__BackingField: 0
+      <CoolTime>k__BackingField: 0
       <Log>k__BackingField: "\u306F\u4E0B\u304C\u308A\u653B\u6483\u3057\u305F"
-    CoolTime: 0
+    Priority: 0
   HasLastSkill: 0
   LastSkill:
     <Position>k__BackingField:
@@ -89,10 +105,16 @@ MonoBehaviour:
     <Effects>k__BackingField:
     - rid: -2
     <Repeats>k__BackingField: 1
+    <ProbabilityOfSuccess>k__BackingField: 1
+    <Cost>k__BackingField: 0
     <RushDistance>k__BackingField: 0
     <BackStepDistance>k__BackingField: 0
-    <ProbabilityOfSuccess>k__BackingField: 1
+    <ChargeTurn>k__BackingField: 0
+    <CoolTime>k__BackingField: 0
     <Log>k__BackingField: 
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
   ElementDamageRateMultiplier:
     data: []
   ConditionResistance:
@@ -116,6 +138,7 @@ MonoBehaviour:
         - _element: 0
           _power: 5
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 5486256287083921410
       type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data: 
@@ -141,6 +164,7 @@ MonoBehaviour:
         - _element: 0
           _power: 3
         _criticalRate: 0.05
+        _isWeaponAttack: 0
     - rid: 5486256464210165780
       type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data: 
@@ -157,3 +181,4 @@ MonoBehaviour:
         - _element: 0
           _power: 4
         _criticalRate: 0
+        _isWeaponAttack: 0

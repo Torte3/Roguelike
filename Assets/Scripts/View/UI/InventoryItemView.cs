@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using R3;
 using TMPro;
 using UnityEngine;
@@ -9,14 +9,16 @@ using Utilities;
 namespace View.UI
 {
     [RequireComponent(typeof(Image), typeof(Selectable))]
-    internal class InventoryItemView : Selectable, ISelectHandler
+    public class InventoryItemView : Selectable, ISelectHandler
     {
+        public ItemViewData ItemData { get; private set; }
         [SerializeField] private Image _icon;
         [SerializeField] private TMP_Text _count;
         [SerializeField] private Image _cursedIcon;
+        [SerializeField] private TMP_Text _name;
         private ParticleController _particles => _icon.GetComponent<ParticleController>();
         private readonly Subject<Unit> _onFocus = new();
-        public Observable<Unit> OnFocus => _onFocus;
+        public Observable<Unit> OnSelected => _onFocus;
 
         public override void OnSelect(BaseEventData eventData)
         {
@@ -24,26 +26,23 @@ namespace View.UI
             base.OnSelect(eventData);
         }
 
-        public void SetIcon(Sprite icon, int? count, bool isCursed, bool isShiny, bool isCountIdentified,
-            bool isCurseIdentified)
+        public void Set(ItemViewData itemData)
+        {
+            ItemData = itemData;
+            SetIcon(itemData.icon);
+            SetCount(itemData.count, itemData.showEquippedBadge, itemData.isCountIdentified);
+            SetCursed(itemData.isCursed, itemData.isCurseIdentified);
+            SetShiny(itemData.isShiny);
+            SetName(itemData.name, itemData.isUsable);
+        }
+
+        private void SetIcon(Sprite? icon)
         {
             _icon.sprite = icon;
-            _icon.enabled = true;
-            SetCount(count, isCountIdentified);
-            SetCursed(isCursed, isCurseIdentified);
-            SetShiny(isShiny);
+            _icon.enabled = icon != null;
         }
 
-        public void Remove()
-        {
-            _icon.sprite = null;
-            _icon.enabled = false;
-            RemoveCount();
-            SetCursed(false, true);
-            SetShiny(false);
-        }
-
-        public void SetCursed(bool isCursed, bool isIdentified)
+        private void SetCursed(bool isCursed, bool isIdentified)
         {
             if (!isIdentified)
             {
@@ -55,7 +54,7 @@ namespace View.UI
             }
         }
 
-        public void SetShiny(bool isShiny)
+        private void SetShiny(bool isShiny)
         {
             if (isShiny)
                 _particles.Add(ParticleType.ShinyStar);
@@ -63,8 +62,14 @@ namespace View.UI
                 _particles.Clear();
         }
 
-        public void SetCount(int? count, bool isIdentified)
+        private void SetCount(int? count, bool showEquippedBadge, bool isIdentified)
         {
+            if (showEquippedBadge)
+            {
+                _count.text = "E";
+                return;
+            }
+
             if (!isIdentified)
                 _count.text = "?";
             else if (count.HasValue)
@@ -73,23 +78,15 @@ namespace View.UI
                 _count.text = "";
         }
 
-        public void RemoveCount()
+        private void SetName(string name, bool isUsable)
         {
-            _count.text = "";
+            _name.text = name;
+            _name.color = isUsable ? Colors.White : Colors.Gray;
         }
 
-        public void Disable()
+        public void UpdateInteractable(bool interactable)
         {
-            _icon.color = Color.gray;
-            _cursedIcon.color = Color.gray;
-            interactable = false;
-        }
-
-        public void Enable()
-        {
-            _icon.color = Color.white;
-            _cursedIcon.color = Color.white;
-            interactable = true;
+            this.interactable = interactable;
         }
     }
 }

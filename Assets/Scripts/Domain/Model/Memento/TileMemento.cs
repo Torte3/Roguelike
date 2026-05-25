@@ -8,12 +8,14 @@ namespace Domain.Model.Memento
     [Serializable]
     public class TileMemento
     {
-        [field: SerializeField] public TileCategory TileType { get; private set; }
+        [field: SerializeField] public MapType MapType { get; private set; }
+        [field: SerializeField] public int Index { get; private set; }
         [field: SerializeField] public bool IsKnown { get; private set; }
 
-        public TileMemento(TileCategory tileType, bool isKnown)
+        public TileMemento(MapType mapType, int index, bool isKnown)
         {
-            TileType = tileType;
+            MapType = mapType;
+            Index = index;
             IsKnown = isKnown;
         }
     }

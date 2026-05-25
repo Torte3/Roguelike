@@ -1,12 +1,15 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using Utilities.Serialize;
 
 namespace View
 {
     public sealed class OverlayTileViewController : MonoBehaviour
     {
         [SerializeField] private Tilemap _tilemap;
-        [SerializeField] private TileBase _grass;
+        [SerializeField] private TileBase _defaultGrass;
+        [SerializeField] private SerializableDictionary<TileSet, TileBase> _grasses;
         [SerializeField] private TileBase _ice;
 
         public void Clear()
@@ -14,9 +17,14 @@ namespace View
             _tilemap.ClearAllTiles();
         }
 
-        public void SetGrass(Vector2Int position, TileVisibility? visibility = null)
+        private TileBase GetGrass(TileSet type)
         {
-            SetTile(position, _grass, visibility);
+            return _grasses.TryGetValue(type, out var grass) ? grass : _defaultGrass;
+        }
+
+        public void SetGrass(Vector2Int position, TileSet type, TileVisibility? visibility = null)
+        {
+            SetTile(position, GetGrass(type), visibility);
         }
 
         public void SetIce(Vector2Int position, TileVisibility? visibility = null)

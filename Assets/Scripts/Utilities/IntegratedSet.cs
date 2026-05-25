@@ -13,7 +13,7 @@ namespace Utilities
         public void Register(IObservableCollection<T> collection)
         {
             _collections.Add(collection);
-            collection.SubscribeToAllItems(Add, Remove);
+            collection.SubscribeIncludingCurrentItems(Add, Remove);
         }
 
         public void UnRegister(IObservableCollection<T> collection)

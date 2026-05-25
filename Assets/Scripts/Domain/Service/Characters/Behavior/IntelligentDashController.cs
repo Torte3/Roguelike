@@ -24,7 +24,7 @@ namespace Domain.Service.Characters.Behavior
                         !character.CanMove(character.CurrentDirection.Reverse().Rotate45Clockwise(), map))
                 )
                )
-                await UniTask.Delay(Settings.DashPauseMilliseconds.Value);
+                await UniTask.Delay(Settings.GlobalSettings.DashPauseMilliseconds.CurrentValue);
         }
 
         public Move Filter(Move move, IHasBehavior character, bool isStarted, IMap map, IInput input)

@@ -18,6 +18,15 @@ namespace Domain.Model.Effect.Position
         public bool TargetSelf;
         public bool IsDirectional => false;
 
+        public NearByCharacter(int numberOfTarget, bool targetAlly, bool targetEnemy, bool targetNeutral, bool targetSelf)
+        {
+            NumberOfTarget = numberOfTarget;
+            TargetAlly = targetAlly;
+            TargetEnemy = targetEnemy;
+            TargetNeutral = targetNeutral;
+            TargetSelf = targetSelf;
+        }
+
         public IEnumerable<Vector2Int> Get(IActorOfEffect actor, Vector2Int position, Direction8 direction,
             IMap map)
         {
@@ -40,26 +49,7 @@ namespace Domain.Model.Effect.Position
 
         public float EvaluateHitProbability()
         {
-            return NumberOfTarget;
-        }
-
-        public string UpgradePathName => "近くのキャラクター";
-
-        public List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>
-            {
-                new(
-                    "対象数+1",
-                    () => NumberOfTarget += 1,
-                    () => NumberOfTarget -= 1
-                )
-            };
-        }
-
-        public Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
+            return 4 + 2 * NumberOfTarget;
         }
 
         public string Info()
@@ -80,7 +70,7 @@ namespace Domain.Model.Effect.Position
             }
 
             if (TargetSelf) info += "（自分含む）";
-            info += $"{NumberOfTarget}体";
+            info += $"{ItemDescriptionRichText.RichSpatial(NumberOfTarget)}体";
 
             return info;
         }

@@ -21,7 +21,7 @@ namespace Domain.Service.Effect
         {
             var randomPosition = map.GetAllBlankAndStandablePositionsOn(EntityLayer.Middle).GetAtRandom().Position;
             target.Entity.Teleport(randomPosition);
-            await UniTask.Delay(Settings.MoveMilliseconds.CurrentValue);
+            await UniTask.Delay(Settings.GlobalSettings.MoveMilliseconds.CurrentValue);
         }
 
         public override float Evaluate(IActorOfEffect actor, ITargetOfEffect target)
@@ -32,18 +32,6 @@ namespace Domain.Service.Effect
         public override float EvaluatePrice()
         {
             return 50f;
-        }
-
-        public override string UpgradePathName => "テレポート";
-
-        public override List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>();
-        }
-
-        public override Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
         }
 
         public override string Info()

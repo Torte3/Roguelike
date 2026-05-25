@@ -82,28 +82,9 @@ namespace Domain.Model.Effect.Area
             return CommonSenseParameters.CircleAreaEvaluate(CanIgnoreWalls, Radius) / 2;
         }
 
-        public string UpgradePathName => "扇形(90°)";
-
-        public List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>
-            {
-                new(
-                    "半径+1",
-                    () => Radius += 1,
-                    () => Radius -= 1
-                )
-            };
-        }
-
-        public Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
-        }
-
         public string Info()
         {
-            var info = $"半径{Radius}マスの扇形内部(90°)";
+            var info = $"前{ItemDescriptionRichText.RichSpatialCells(Radius)}（扇形）";
             if (ContainsSelf) info += "(中心含む)";
             if (CanIgnoreWalls) info += "(壁無視)";
             return info;

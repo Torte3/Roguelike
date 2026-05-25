@@ -2,17 +2,22 @@
 using System;
 using Sirenix.OdinInspector;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 
 namespace Utilities.Serialize
 {
     [Serializable]
     public class IconSerializable
     {
-        [ShowInInspector] [OnValueChanged("OnValidate")]
+        [ShowInInspector]
+#if UNITY_EDITOR
+        [OnValueChanged(nameof(OnValidate))]
+#endif
         private Sprite _value;
 
-        [ReadOnly] [SerializeField] private string _name;
+        [Required]
+        [ReadOnly]
+        [SerializeField]
+        private string _name;
 
         public Sprite Value
         {
@@ -20,8 +25,7 @@ namespace Utilities.Serialize
             {
                 if (_value == null)
                 {
-                    _value = Addressables.LoadAssetAsync<Sprite>($"Assets/Images/icons_full_16.png[{_name}]")
-                        .WaitForCompletion();
+                    _value = ObjectLoader.LoadIcon(_name);
                 }
 
                 return _value;
@@ -34,9 +38,11 @@ namespace Utilities.Serialize
             _name = value.name;
         }
 
+#if UNITY_EDITOR
         private void OnValidate()
         {
             _name = _value.name;
         }
+#endif
     }
 }

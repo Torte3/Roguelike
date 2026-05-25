@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16097a5b2ad98e243a375f972355931f, type: 3}
+  m_Name: "\u307E\u3069\u308D\u307F"
+  m_EditorClassIdentifier: 
+  Condition:
+    rid: 2541219281251860499
+  RemovalCondition:
+    RemoveByElapsedTurn: 0
+    Duration: -1
+    RemoveByDamage: 1
+    Probability: 1
+    RemoveByCharacterNearby: 1
+    CharacterNearbyProbability: 0.25
+  InflictLog: 
+  DeleteLog: "\u306F\u76EE\u304C\u899A\u3081\u305F"
+  references:
+    version: 2
+    RefIds:
+    - rid: 2541219281251860499
+      type: {class: Slept, ns: Domain.Service.Characters.Conditions, asm: Domain.Service}
+      data: 

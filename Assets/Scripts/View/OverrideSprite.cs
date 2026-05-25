@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Sirenix.Utilities;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using Utilities;
@@ -17,7 +18,7 @@ namespace View
         private void Start()
         {
             sr = GetComponent<SpriteRenderer>();
-            character = GetComponent<CharacterView>();
+            character = GetComponent<IDirectional>();
         }
 
         private void LateUpdate()
@@ -45,7 +46,7 @@ namespace View
 
         private Sprite GetSprite(string spriteName, int index)
         {
-            if (_textureSubtypeName == null) return null;
+            if (_textureSubtypeName.IsNullOrWhitespace()) return null;
             if (_isDirectionalTexture)
             {
                 var direction = character.GetDirection();

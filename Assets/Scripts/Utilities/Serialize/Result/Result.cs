@@ -43,7 +43,12 @@ namespace Utilities.Serialize.Result
     {
         public static Result<T> Error => new Error<T>();
         public bool IsError => !isOk;
-        public bool IsOk => isOk;
+        public bool IsOk() => isOk;
+        public bool IsOk(out T value)
+        {
+            value = this.value;
+            return isOk;
+        }
 
         [SerializeField] private bool isOk;
         [SerializeReference] private T value;
@@ -87,52 +92,52 @@ namespace Utilities.Serialize.Result
 
         public T Expect(string msg)
         {
-            return IsOk ? value : throw new Exception(msg);
+            return IsOk() ? value : throw new Exception(msg);
         }
 
         public T Unwrap()
         {
-            return IsOk ? value : throw new Exception($"Tried to unwrap a Error<{FriendlyName(typeof(T))}>!");
+            return IsOk() ? value : throw new Exception($"Tried to unwrap a Error<{FriendlyName(typeof(T))}>!");
         }
 
         public T UnwrapOr(T def = default)
         {
-            return IsOk ? value : def;
+            return IsOk() ? value : def;
         }
 
         public T UnwrapOr(Func<T> provider)
         {
-            return IsOk ? value : provider();
+            return IsOk() ? value : provider();
         }
 
         public T? UnwrapOrNull()
         {
-            return IsOk ? value : default;
+            return IsOk() ? value : default;
         }
 
         public Result<U> Map<U>(Func<T, U> converter)
         {
-            return IsOk ? new Result<U>(converter(value)) : new Error<U>();
+            return IsOk() ? new Result<U>(converter(value)) : new Error<U>();
         }
 
         public async Task<Result<U>> Map<U>(Func<T, Task<U>> converter)
         {
-            return IsOk ? new Result<U>(await converter(value)) : new Error<U>();
+            return IsOk() ? new Result<U>(await converter(value)) : new Error<U>();
         }
 
         public U MapOr<U>(U def, Func<T, U> converter)
         {
-            return IsOk ? converter(value) : def;
+            return IsOk() ? converter(value) : def;
         }
 
         public U MapOr<U>(Func<U> provider, Func<T, U> converter)
         {
-            return IsOk ? converter(value) : provider();
+            return IsOk() ? converter(value) : provider();
         }
 
         public void Match(Action<T> onOk, Action onError)
         {
-            if (IsOk)
+            if (IsOk())
                 onOk(value);
             else
                 onError();
@@ -155,17 +160,17 @@ namespace Utilities.Serialize.Result
 
         public Result<T> Or(Result<T> other)
         {
-            return IsOk ? this : other;
+            return IsOk() ? this : other;
         }
 
         public Result<T> OrElse(Func<Result<T>> option)
         {
-            return IsOk ? this : option();
+            return IsOk() ? this : option();
         }
 
         public Task<Result<T>> OrElse(Func<Task<Result<T>>> option)
         {
-            return IsOk ? Task.FromResult(this) : option();
+            return IsOk() ? Task.FromResult(this) : option();
         }
 
         public void Take()

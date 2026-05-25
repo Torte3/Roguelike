@@ -13,34 +13,29 @@ namespace Utilities.Stats
         {
             _max = new Stat(maxValue);
             _value = new ReactiveProperty<float>(maxValue);
-            MaxValue.Subscribe(_ => clampCurrentValue());
+            Max.Value.Subscribe(_ => clampCurrentValue());
         }
 
         public Resource(int maxValue, int value)
         {
             _max = new Stat(maxValue);
             _value = new ReactiveProperty<float>(value);
-            MaxValue.Subscribe(_ => clampCurrentValue());
+            Max.Value.Subscribe(_ => clampCurrentValue());
         }
 
         public Resource(ResourceData data)
         {
             _max = new Stat(data.Max);
             _value = new ReactiveProperty<float>(data.Value);
-            MaxValue.Subscribe(_ => clampCurrentValue());
+            Max.Value.Subscribe(_ => clampCurrentValue());
         }
 
-        public ReadOnlyReactiveProperty<float> MaxValue => _max.Value;
+        public Stat Max => _max;
         public ReadOnlyReactiveProperty<float> Value => _value;
 
         public void Dispose()
         {
             _value.Dispose();
-        }
-
-        ~Resource()
-        {
-            Dispose();
         }
 
         public ResourceData GetData()
@@ -50,12 +45,12 @@ namespace Utilities.Stats
 
         private void clampCurrentValue()
         {
-            _value.Value = Mathf.Clamp(Value.CurrentValue, 0, MaxValue.CurrentValue);
+            _value.Value = Mathf.Clamp(Value.CurrentValue, 0, Max.CurrentValue);
         }
 
         public void Set(float value)
         {
-            _value.Value = Mathf.Clamp(value, 0, MaxValue.CurrentValue);
+            _value.Value = Mathf.Clamp(value, 0, Max.CurrentValue);
         }
 
         public float Lose(float value)
@@ -66,7 +61,7 @@ namespace Utilities.Stats
             }
 
             var oldValue = Value.CurrentValue;
-            _value.Value = Mathf.Clamp(Value.CurrentValue - value, 0, MaxValue.CurrentValue);
+            _value.Value = Mathf.Clamp(Value.CurrentValue - value, 0, Max.CurrentValue);
             return oldValue - _value.Value;
         }
 
@@ -78,43 +73,13 @@ namespace Utilities.Stats
             }
 
             var oldValue = Value.CurrentValue;
-            _value.Value = Mathf.Clamp(Value.CurrentValue + value, 0, MaxValue.CurrentValue);
+            _value.Value = Mathf.Clamp(Value.CurrentValue + value, 0, Max.CurrentValue);
             return _value.Value - oldValue;
-        }
-
-        public void AddMaxValue(float value)
-        {
-            _max.AddValue(value);
-        }
-
-        public void AddMaxMultiplier(float value)
-        {
-            _max.AddMultiplier(value);
-        }
-
-        public void MultiplyMaxValue(float value)
-        {
-            _max.Multiply(value);
-        }
-
-        public void RemoveMaxValue(float value)
-        {
-            _max.AddValue(-value);
-        }
-
-        public void RemoveMaxMultiplier(float value)
-        {
-            _max.AddMultiplier(-value);
-        }
-
-        public void DivideMaxValue(float value)
-        {
-            _max.Multiply(1 / value);
         }
 
         public bool IsFull()
         {
-            return Value.CurrentValue >= MaxValue.CurrentValue;
+            return Value.CurrentValue >= Max.CurrentValue;
         }
     }
 }

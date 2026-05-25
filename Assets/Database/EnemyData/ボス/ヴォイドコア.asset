@@ -1,0 +1,232 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8ad2ba14d6a7844c9e89791070d4735, type: 3}
+  m_Name: "\u30F4\u30A9\u30A4\u30C9\u30B3\u30A2"
+  m_EditorClassIdentifier: 
+  Name: "\u30F4\u30A9\u30A4\u30C9\u30B3\u30A2"
+  Group: 1
+  CharacterType:
+    rid: 2541219246146060307
+  _sprite: {fileID: 0}
+  IsBoss: 1
+  Hp: 100
+  Aggression: 1
+  Behavior:
+    wanderAround: 1
+    Default: 2
+    PrioritizeMovement: 0
+    UseTopBound: 0
+    greaterThanTopBound: 1
+    distanceTopBound: 6
+    PrioritizeMovementWhenDistanceGreaterThanTopBound: 0
+    UseBottomBound: 0
+    distanceBottomBound: 3
+    lessThanBottomBound: 1
+    PrioritizeMovementWhenDistanceLessThanBottomBound: 0
+    PrioritizeEnemiesOverLeaders: 0
+    ChaseLeader: 1
+  MoveSpeed: 2
+  Flags: 09000000
+  IsFlying: 1
+  CanThroughWalls: 0
+  CanMimic: 0
+  MimicWeights:
+    ItemRevealOnPickUp: 1
+    ItemRevealOnUse: 1
+    Money: 1
+    Stairs: 1
+  CanPickUp: 0
+  CanUseItem: 0
+  CanReceivePlayerGift: 0
+  Skills:
+  - Skill:
+      <Position>k__BackingField:
+        rid: 8023009326398177462
+      <Area>k__BackingField:
+        rid: 8023009326398177463
+      <Effects>k__BackingField:
+      - rid: 8023009326398177464
+      - rid: 8023009326398177465
+      <Repeats>k__BackingField: 1
+      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
+      <RushDistance>k__BackingField: 0
+      <BackStepDistance>k__BackingField: 0
+      <ChargeTurn>k__BackingField: 1
+      <CoolTime>k__BackingField: 5
+      <Log>k__BackingField: "\u306F\u95C7\u3092\u653E\u51FA\u3057\u305F\u3002"
+    Priority: 0
+  - Skill:
+      <Position>k__BackingField:
+        rid: 8023009326398177466
+      <Area>k__BackingField:
+        rid: 8023009326398177467
+      <Effects>k__BackingField:
+      - rid: 8023009326398177468
+      - rid: 8023009326398177469
+      <Repeats>k__BackingField: 1
+      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
+      <RushDistance>k__BackingField: 0
+      <BackStepDistance>k__BackingField: 0
+      <ChargeTurn>k__BackingField: 1
+      <CoolTime>k__BackingField: 10
+      <Log>k__BackingField: "\u306F\u865A\u7121\u3092\u5207\u308A\u88C2\u3044\u305F\u3002"
+    Priority: 0
+  - Skill:
+      <Position>k__BackingField:
+        rid: 8023009326398177470
+      <Area>k__BackingField:
+        rid: 8023009326398177473
+      <Effects>k__BackingField:
+      - rid: 8023009326398177472
+      <Repeats>k__BackingField: 1
+      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
+      <RushDistance>k__BackingField: 0
+      <BackStepDistance>k__BackingField: 0
+      <ChargeTurn>k__BackingField: 1
+      <CoolTime>k__BackingField: 10
+      <Log>k__BackingField: "\u306F\u5F71\u306E\u624B\u3092\u4F38\u3070\u3057\u305F\u3002"
+    Priority: 0
+  - Skill:
+      <Position>k__BackingField:
+        rid: 8023009326398177474
+      <Area>k__BackingField:
+        rid: 8023009326398177475
+      <Effects>k__BackingField:
+      - rid: 8023009326398177476
+      <Repeats>k__BackingField: 1
+      <ProbabilityOfSuccess>k__BackingField: 1
+      <Cost>k__BackingField: 0
+      <RushDistance>k__BackingField: 0
+      <BackStepDistance>k__BackingField: 0
+      <ChargeTurn>k__BackingField: 5
+      <CoolTime>k__BackingField: 20
+      <Log>k__BackingField: "\u306F\u4E16\u754C\u3092\u6697\u304F\u67D3\u3081\u305F\u3002"
+    Priority: 0
+  HasLastSkill: 0
+  LastSkill:
+    <Position>k__BackingField:
+      rid: -2
+    <Area>k__BackingField:
+      rid: -2
+    <Effects>k__BackingField:
+    - rid: -2
+    <Repeats>k__BackingField: 1
+    <ProbabilityOfSuccess>k__BackingField: 1
+    <Cost>k__BackingField: 0
+    <RushDistance>k__BackingField: 0
+    <BackStepDistance>k__BackingField: 0
+    <ChargeTurn>k__BackingField: 0
+    <CoolTime>k__BackingField: 0
+    <Log>k__BackingField: 
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
+  ElementDamageRateMultiplier:
+    data: []
+  ConditionResistance:
+    data: []
+  DropItemRate: 0
+  DropItemTable:
+    items: []
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 2541219246146060307
+      type: {class: Space, ns: Domain.Model.Character.Type, asm: Domain.Model}
+      data:
+        Type: 0
+    - rid: 8023009326398177462
+      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data: 
+    - rid: 8023009326398177463
+      type: {class: CircleArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data:
+        ContainsSelf: 0
+        CanIgnoreWalls: 0
+        Radius: 2
+    - rid: 8023009326398177464
+      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _elementPowers:
+        - _element: 5
+          _power: 5
+        _criticalRate: 0
+        _isWeaponAttack: 0
+    - rid: 8023009326398177465
+      type: {class: AddConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _condition:
+          _name: "\u76F2\u76EE"
+        _probabilityOfSuccess: 1
+    - rid: 8023009326398177466
+      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data: 
+    - rid: 8023009326398177467
+      type: {class: LineArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data:
+        ContainsSelf: 0
+        CanIgnoreWalls: 0
+        Length: 7
+    - rid: 8023009326398177468
+      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _elementPowers:
+        - _element: 5
+          _power: 12
+        _criticalRate: 0
+        _isWeaponAttack: 0
+    - rid: 8023009326398177469
+      type: {class: AddConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _condition:
+          _name: "\u920D\u8DB3"
+        _probabilityOfSuccess: 1
+    - rid: 8023009326398177470
+      type: {class: NearByCharacter, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data:
+        NumberOfTarget: 1
+        TargetAlly: 0
+        TargetEnemy: 1
+        TargetNeutral: 0
+        TargetSelf: 0
+    - rid: 8023009326398177472
+      type: {class: AddConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _condition:
+          _name: "\u62D8\u675F"
+        _probabilityOfSuccess: 1
+    - rid: 8023009326398177473
+      type: {class: CircleArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data:
+        ContainsSelf: 1
+        CanIgnoreWalls: 0
+        Radius: 1
+    - rid: 8023009326398177474
+      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data: 
+    - rid: 8023009326398177475
+      type: {class: CircleArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data:
+        ContainsSelf: 0
+        CanIgnoreWalls: 1
+        Radius: 20
+    - rid: 8023009326398177476
+      type: {class: AddConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _condition:
+          _name: "\u6697\u95C7"
+        _probabilityOfSuccess: 1

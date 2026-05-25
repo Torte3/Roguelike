@@ -1,5 +1,7 @@
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
+using Domain.Model.Entity;
 using Domain.Model.Map;
 using Domain.Model.Memento;
 using Domain.Service.Logs;
@@ -8,7 +10,7 @@ using Utilities;
 
 namespace Domain.Service.Rooms
 {
-    public class MonsterHouse : Room<RoomMemento>
+    public class MonsterHouse : Room<RoomMemento>, IMonsterHouse
     {
         public MonsterHouse(RoomMemento data, Vector2Int playerPosition) : base(data, playerPosition)
         {
@@ -36,11 +38,24 @@ namespace Domain.Service.Rooms
 
         protected override async UniTask FirstTimeEnter(IGameManager gameManager, IMap map)
         {
-            GameLog.Add("<color=red>モンスターハウスだ！</color>");
-            for (var i = 0; i < 10; i++)
+            gameManager.PlayBGM(BGM.MonsterHouse);
+            GameLog.AddIgnoreVisibility("<color=red>モンスターハウスだ！</color>");
+            var area = Rect.size.x * Rect.size.y;
+            var monsterCount = area switch
             {
-                map.SpawnRandomEnemy(map.GetAllBlankAndStandablePositionsOn().In(Rect.RectRange())
-                    .GetAtRandom().Position, false, false);
+                < 50 => 10,
+                < 100 => 15,
+                < 200 => 20,
+                _ => 30,
+            };
+            var allPositions = map
+                .GetAllBlankAndStandablePositionsOn(EntityLayer.Middle)
+                .In(Rect.RectRange());
+            var positions = allPositions
+                .GetAtRandom(Mathf.Min(allPositions.Count(), monsterCount));
+            foreach (var position in positions)
+            {
+                map.SpawnRandomEnemy(position.Position, false);
             }
 
             await UniTask.Delay(1000);

@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -67,6 +67,23 @@ namespace Utilities
         public static IEnumerable<(T item, int index)> Index<T>(this IEnumerable<T> ie)
         {
             return ie.Select((item, index) => (item, index));
+        }
+
+        public static int IndexOf<T>(this IEnumerable<T> source, T value)
+        {
+            var i = 0;
+            foreach (var item in source)
+            {
+                if (EqualityComparer<T>.Default.Equals(item, value))
+                    return i;
+                i++;
+            }
+            return -1;
+        }
+
+        public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> source)
+        {
+            return source.Where(item => item != null).Cast<T>();
         }
 
         public static IEnumerable<Vector2Int> RectRange(this RectInt rect)

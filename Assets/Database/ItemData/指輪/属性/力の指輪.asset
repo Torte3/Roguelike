@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d05bbe6caa05a74e8a0d30dc3973d2c, type: 3}
+  m_Name: "\u529B\u306E\u6307\u8F2A"
+  m_EditorClassIdentifier: Domain.Model::Domain.Model.Item.ArtifactData
+  Icon: {fileID: 1240741089, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
+  IsShiny: 0
+  _rarity: 2
+  UseCustomBasePrice: 0
+  CustomBasePrice: 0
+  AdditionalPrice: 0
+  MultiplyPrice: 1
+  SynthesisSlotLimit: 0
+  HasBuiltInPassive: 1
+  BuiltInPassiveConditionBundle:
+    _displayName: "\u7269\u7406\u5F37\u5316"
+    _conditions:
+    - rid: 8023009043126943855
+  references:
+    version: 2
+    RefIds:
+    - rid: 8023009043126943855
+      type: {class: AddAttackMultiplier, ns: Domain.Service.Characters.Conditions, asm: Domain.Service}
+      data:
+        Element: 0
+        AddedMultiplier: 0.2

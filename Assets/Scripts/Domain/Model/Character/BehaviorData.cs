@@ -12,20 +12,20 @@ namespace Domain.Model.Character
         public bool PrioritizeMovement;
         public bool UseTopBound;
 
-        [ShowIf("UseTopBound")]
+        [ShowIf(nameof(UseTopBound))]
         public MoveTypeWhenDiscoveringTarget greaterThanTopBound = MoveTypeWhenDiscoveringTarget.Chase;
 
-        [ShowIf("UseTopBound")] [MinValue(0)] public float distanceTopBound = 6f;
-        [ShowIf("UseTopBound")] public bool PrioritizeMovementWhenDistanceGreaterThanTopBound;
+        [ShowIf(nameof(UseTopBound))] [MinValue(0)] public float distanceTopBound = 6f;
+        [ShowIf(nameof(UseTopBound))] public bool PrioritizeMovementWhenDistanceGreaterThanTopBound;
         public bool UseBottomBound;
 
-        [ShowIf("UseBottomBound")] [MinValue(0)]
+        [ShowIf(nameof(UseBottomBound))] [MinValue(0)]
         public float distanceBottomBound = 3f;
 
-        [ShowIf("UseBottomBound")]
+        [ShowIf(nameof(UseBottomBound))]
         public MoveTypeWhenDiscoveringTarget lessThanBottomBound = MoveTypeWhenDiscoveringTarget.Chase;
 
-        [ShowIf("UseBottomBound")] public bool PrioritizeMovementWhenDistanceLessThanBottomBound;
+        [ShowIf(nameof(UseBottomBound))] public bool PrioritizeMovementWhenDistanceLessThanBottomBound;
 
         public bool PrioritizeEnemiesOverLeaders;
         public bool ChaseLeader = true;

@@ -19,11 +19,14 @@ MonoBehaviour:
     Duration: 30
     RemoveByDamage: 0
     Probability: 0.5
-    RemoveByEnemyNearby: 0
+    RemoveByCharacterNearby: 0
+    CharacterNearbyProbability: 0
+  InflictLog: "\u306F\u81EA\u7136\u6CBB\u7652\u529B\u304C\u4E0A\u304C\u3063\u305F"
+  DeleteLog: "\u306E\u81EA\u7136\u6CBB\u7652\u529B\u306F\u3082\u3068\u306B\u623B\u3063\u305F"
   references:
     version: 2
     RefIds:
     - rid: 2541219281251860522
       type: {class: NaturalHeal, ns: Domain.Service.Characters.Conditions, asm: Domain.Service}
       data:
-        Power: 0.4
+        Power: 1

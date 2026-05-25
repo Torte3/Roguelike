@@ -15,10 +15,15 @@ namespace View.UI
             _logShownMilliSeconds = milliSeconds;
         }
 
-        public void AddLog(string log)
+        public void AddLog(string message, bool appendToPrevious)
         {
+            if (appendToPrevious && TryAppendToLastLog(message))
+            {
+                return;
+            }
+
             var logText = Instantiate(_logTextPrefab, _content);
-            logText.text = log;
+            logText.text = message;
             logText.gameObject.AddComponent<LifeTimer>().LifeTimeMilliseconds = _logShownMilliSeconds;
             LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)logText.transform);
         }
@@ -29,6 +34,25 @@ namespace View.UI
             {
                 Destroy(logText.gameObject);
             }
+        }
+
+        private bool TryAppendToLastLog(string message)
+        {
+            var childCount = _content.childCount;
+            if (childCount <= 0)
+            {
+                return false;
+            }
+
+            var lastLogText = _content.GetChild(childCount - 1).GetComponent<TMP_Text>();
+            if (lastLogText == null)
+            {
+                return false;
+            }
+
+            lastLogText.text += message;
+            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)lastLogText.transform);
+            return true;
         }
     }
 }

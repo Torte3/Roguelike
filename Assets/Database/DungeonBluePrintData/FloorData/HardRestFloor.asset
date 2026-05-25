@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5dc7cc301501d8444b4bc50d6fc342e7, type: 3}
+  m_Name: HardRestFloor
+  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.FloorData
+  Field: {fileID: 0}
+  ShopChance: 0.1
+  MonsterHouseChance: 0.2
+  RestRoomChance: 1
+  ShinyChance: 0.2
+  ChestChance: 0.15
+  StatueChance: 0.2
+  SleepChance: 0.25
+  MimicChance: 0.2
+  CursedItemChance: 0.05
+  BonfireWeight: 1
+  MagicPotWeight: 1
+  WorkbenchWeight: 1
+  ItemCount: 1
+  MoneyCount: 1
+  MoneyAverage: 100
+  CharacterCount: 1

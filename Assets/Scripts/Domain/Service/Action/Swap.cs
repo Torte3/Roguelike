@@ -22,8 +22,10 @@ namespace Domain.Service.Action
             var target = map.Characters.At(actor.Entity.CurrentPosition + Direction.Vector()).FirstOrDefault();
             if (target == null)
                 throw new InvalidOperationException("target is null");
+            actor.Entity.IsVisualOnly.Value = true;
             actor.Move(Direction, input).Forget();
             target.ForceMove(Direction.Reverse(), input).Forget();
+            actor.Entity.IsVisualOnly.Value = false;
             return UniTask.CompletedTask;
         }
 

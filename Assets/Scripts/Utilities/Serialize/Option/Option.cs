@@ -43,7 +43,12 @@ namespace Utilities.Serialize.Option
     {
         public static Option<T> None => new None<T>();
         public bool IsNone => !hasValue;
-        public bool IsSome => !IsNone;
+        public bool IsSome() => hasValue;
+        public bool IsSome(out T value)
+        {
+            value = this.value;
+            return hasValue;
+        }
         public bool HasValue => hasValue;
 
         [SerializeField] private bool hasValue;
@@ -89,47 +94,47 @@ namespace Utilities.Serialize.Option
 
         public T Expect(string msg)
         {
-            return IsSome ? value : throw new Exception(msg);
+            return IsSome(out value) ? value : throw new Exception(msg);
         }
 
         public T Unwrap()
         {
-            return IsSome ? value : throw new Exception($"Tried to unwrap a None<{FriendlyName(typeof(T))}>!");
+            return IsSome() ? value : throw new Exception($"Tried to unwrap a None<{FriendlyName(typeof(T))}>!");
         }
 
         public T UnwrapOr(T def = default)
         {
-            return IsSome ? value : def;
+            return IsSome() ? value : def;
         }
 
         public T UnwrapOr(Func<T> provider)
         {
-            return IsSome ? value : provider();
+            return IsSome() ? value : provider();
         }
 
         public T? UnwrapOrNull()
         {
-            return IsSome ? value : default;
+            return IsSome() ? value : default;
         }
 
         public Option<U> Map<U>(Func<T, U> converter)
         {
-            return IsSome ? new Option<U>(converter(value)) : new None<U>();
+            return IsSome() ? new Option<U>(converter(value)) : new None<U>();
         }
 
         public async Task<Option<U>> Map<U>(Func<T, Task<U>> converter)
         {
-            return IsSome ? new Option<U>(await converter(value)) : new None<U>();
+            return IsSome() ? new Option<U>(await converter(value)) : new None<U>();
         }
 
         public U MapOr<U>(U def, Func<T, U> converter)
         {
-            return IsSome ? converter(value) : def;
+            return IsSome() ? converter(value) : def;
         }
 
         public U MapOr<U>(Func<U> provider, Func<T, U> converter)
         {
-            return IsSome ? converter(value) : provider();
+            return IsSome() ? converter(value) : provider();
         }
 
         public Option<U> And<U>(Option<U> option)
@@ -149,17 +154,17 @@ namespace Utilities.Serialize.Option
 
         public Option<T> Or(Option<T> other)
         {
-            return IsSome ? this : other;
+            return IsSome() ? this : other;
         }
 
         public Option<T> OrElse(Func<Option<T>> option)
         {
-            return IsSome ? this : option();
+            return IsSome() ? this : option();
         }
 
         public Task<Option<T>> OrElse(Func<Task<Option<T>>> option)
         {
-            return IsSome ? Task.FromResult(this) : option();
+            return IsSome() ? Task.FromResult(this) : option();
         }
 
         public void Take()

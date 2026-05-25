@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: "\u9632\u8B77"
   m_EditorClassIdentifier: 
   Condition:
-    rid: 5486256464210165795
+    rid: 3119344245011382285
   RemovalCondition:
     RemoveByElapsedTurn: 1
     Duration: 5
@@ -21,9 +21,13 @@ MonoBehaviour:
     Probability: 1
     RemoveByCharacterNearby: 0
     CharacterNearbyProbability: 0
+  InflictLog: "\u306F\u5B88\u308A\u3092\u56FA\u3081\u305F"
+  DeleteLog: "\u306E\u5B88\u308A\u306F\u89E3\u9664\u3055\u308C\u305F"
   references:
     version: 2
     RefIds:
-    - rid: 5486256464210165795
-      type: {class: Protected, ns: Domain.Service.Characters.Conditions, asm: Domain.Service}
-      data: 
+    - rid: 3119344245011382285
+      type: {class: FlagCondition, ns: Domain.Service.Characters.Conditions, asm: Domain.Service}
+      data:
+        _flagStatType:
+          stringValue: Hard

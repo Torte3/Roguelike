@@ -1,4 +1,3 @@
-using Cysharp.Threading.Tasks;
 using Domain.Model.Condition;
 using Domain.Model.Effect;
 using Domain.Model.Entity;
@@ -13,24 +12,17 @@ namespace Domain.Service.Characters.Conditions
         public string Name => $"{Element.Name()}攻撃倍率(+{AddedMultiplier:P0})";
         public ParticleType ParticleType => ParticleType.BloodRage;
         public Impact Impact => Impact.Beneficial;
-        public string InflictLog => $"は{Element.Name()}属性の攻撃力が上がった";
-        public string DeleteLog => $"の{Element.Name()}属性の攻撃力は元に戻った";
         public Element Element;
         [MinValue(0)] public float AddedMultiplier = 0f;
 
         public void Inflict(IHasCondition hasCondition, Id<IEntity> actor)
         {
-            hasCondition.Status.AddElementAttackMultiplier(Element, AddedMultiplier);
-        }
-
-        public UniTask Persist(IHasCondition hasCondition)
-        {
-            return UniTask.CompletedTask;
+            hasCondition.Status.GetElementAttackMultiplierStat(Element).Add(AddedMultiplier);
         }
 
         public void Delete(IHasCondition hasCondition, Id<IEntity> actor)
         {
-            hasCondition.Status.RemoveElementAttackMultiplier(Element, AddedMultiplier);
+            hasCondition.Status.GetElementAttackMultiplierStat(Element).Remove(AddedMultiplier);
         }
 
         public float Evaluate(ITargetOfEffect target)

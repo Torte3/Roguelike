@@ -19,11 +19,14 @@ MonoBehaviour:
     Duration: 10
     RemoveByDamage: 0
     Probability: 0
-    RemoveByEnemyNearby: 0
+    RemoveByCharacterNearby: 0
+    CharacterNearbyProbability: 0
+  InflictLog: "\u306F\u6BD2\u3092\u53D7\u3051\u305F"
+  DeleteLog: "\u306E\u6BD2\u306F\u629C\u3051\u305F"
   references:
     version: 2
     RefIds:
     - rid: 2541219281251860498
       type: {class: Poisoned, ns: Domain.Service.Characters.Conditions, asm: Domain.Service}
       data:
-        Power: 1
+        Power: 0.5

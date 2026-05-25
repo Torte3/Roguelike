@@ -1,9 +1,9 @@
 ﻿using Domain.Model.Character;
+using Domain.Model.Entity;
 
 namespace Domain.Model.Condition
 {
-    public interface IHasCondition : IHasStatus, IHasAffiliation
+    public interface IHasCondition : IEntity, IHasStatus, IHasAffiliation, IHasName
     {
-        public string GetName(IPlayer player);
     }
 }

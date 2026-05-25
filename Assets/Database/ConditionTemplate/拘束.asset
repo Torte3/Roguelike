@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: "\u62D8\u675F"
   m_EditorClassIdentifier: 
   Condition:
-    rid: 5486256623760965635
+    rid: 3119344245011382282
   RemovalCondition:
     RemoveByElapsedTurn: 1
     Duration: 8
@@ -21,9 +21,13 @@ MonoBehaviour:
     Probability: 0
     RemoveByCharacterNearby: 0
     CharacterNearbyProbability: 0
+  InflictLog: "\u306F\u62D8\u675F\u3055\u308C\u305F"
+  DeleteLog: "\u306F\u79FB\u52D5\u3067\u304D\u308B\u3088\u3046\u306B\u306A\u3063\u305F"
   references:
     version: 2
     RefIds:
-    - rid: 5486256623760965635
-      type: {class: Bound, ns: Domain.Service.Characters.Conditions, asm: Domain.Service}
-      data: 
+    - rid: 3119344245011382282
+      type: {class: FlagCondition, ns: Domain.Service.Characters.Conditions, asm: Domain.Service}
+      data:
+        _flagStatType:
+          stringValue: CannotMove

@@ -247,7 +247,7 @@ namespace Domain.Service.Characters
             }
             else
             {
-                _forcedAffiliationFlags[(target, type)].AddFlags();
+                _forcedAffiliationFlags[(target, type)].Add();
             }
 
             _onAffiliationChanged.OnNext(new OnAffiliationChangedMessage(target));
@@ -260,7 +260,7 @@ namespace Domain.Service.Characters
                 return;
             }
 
-            _forcedAffiliationFlags[(target, type)].RemoveFlags();
+            _forcedAffiliationFlags[(target, type)].Remove();
             if (_forcedAffiliationFlags[(target, type)].CurrentFlags <= 0)
             {
                 _forcedAffiliationFlags.Remove((target, type));

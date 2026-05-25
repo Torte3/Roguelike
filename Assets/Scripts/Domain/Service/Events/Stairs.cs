@@ -1,7 +1,9 @@
-﻿using System;
+#nullable enable
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
+using Domain.Model.Character;
 using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Map;
@@ -14,31 +16,49 @@ namespace Domain.Service.Events
 {
     public class Stairs : IDisposable, ISerializable<StairsMemento>, IPlayerEventEntity, IMovementEntity
     {
-        public MovementEntityType Type { get; init; }
-        public Location Destination { get; init; }
-        public EntityBase Entity { get; init; }
-        public Id<IEntity> DestinationId { get; init; }
-        public ReadOnlyReactiveProperty<bool> IsLocked { get; private set; }
+        public const string ActiveMagicCircleMapChipName = "(Base)BaseChip_pipo_71";
+        public const string UsedMagicCircleMapChipName = "(Base)BaseChip_pipo_70";
 
-        public Stairs(StairsMemento data, ReadOnlyReactiveProperty<bool> isLocked)
+        public MovementEntityType Type { get; init; }
+        public Id<IMap> Destination { get; init; }
+        public EntityBase Entity { get; init; }
+        public bool IsGrounded => true;
+        public Id<IEntity> DestinationId { get; init; }
+
+        private readonly ReactiveProperty<bool> _isUsed;
+        public ReadOnlyReactiveProperty<bool> CanUse { get; }
+
+        public Stairs(StairsMemento data)
         {
             Type = data.Type;
             Entity = new EntityBase(data.Entity);
             Destination = data.Destination;
             DestinationId = data.DestinationId;
-            IsLocked = isLocked;
-            Event = new PlayerEvent(
-                "階段を見つけた",
-                true,
-                new List<PlayerChoiceEvent>
-                {
-                    new(
-                        "進む",
-                        player => CanExecuteEvent(),
-                        (gameManager, map) => DoEvent(gameManager)
-                    )
-                }
-            );
+            _isUsed = new ReactiveProperty<bool>(
+                Type == MovementEntityType.MagicCircle && data.IsUsed);
+            CanUse = _isUsed
+                .Select(used => Type != MovementEntityType.MagicCircle || !used)
+                .ToReadOnlyReactiveProperty();
+
+            var entityName = Type switch
+            {
+                MovementEntityType.UpStairs => "階段",
+                MovementEntityType.DownStairs => "階段",
+                MovementEntityType.MagicCircle => "魔法陣",
+                _ => throw new NotImplementedException(),
+            };
+            Events = new List<IPlayerEvent>
+            {
+                new PlayerEvent(
+                    $"{entityName}を見つけた",
+                    new List<PlayerChoiceEvent>
+                    {
+                        new(
+                            "進む",
+                            (player, map) => CanUse.CurrentValue,
+                            (gameManager, map) => DoEvent(gameManager)),
+                    }),
+            };
         }
 
         public void Dispose()
@@ -46,55 +66,52 @@ namespace Domain.Service.Events
             Entity.Dispose();
         }
 
-        public IPlayerEvent Event { get; init; }
-
-        private bool CanExecuteEvent()
-        {
-            return !IsLocked.CurrentValue;
-        }
+        public IReadOnlyList<IPlayerEvent> Events { get; init; }
 
         private UniTask DoEvent(IGameManager gameManager)
         {
-            gameManager.LoadMap(Destination, DestinationId);
+            var se = Type switch
+            {
+                MovementEntityType.UpStairs => SE.Stairs,
+                MovementEntityType.DownStairs => SE.Stairs,
+                MovementEntityType.MagicCircle => SE.Teleport,
+                _ => SE.Stairs,
+            };
+            gameManager.PlaySE(se);
+            if (Type == MovementEntityType.MagicCircle)
+                _isUsed.Value = true;
+            gameManager.MoveMap(Destination, DestinationId);
             return UniTask.CompletedTask;
         }
 
-        public UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)
-        {
-            return UniTask.CompletedTask;
-        }
+        public UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map) =>
+            UniTask.CompletedTask;
 
-        public StairsMemento Serialize()
-        {
-            return new StairsMemento
-            (
+        public StairsMemento Serialize() =>
+            new(
                 Type,
                 Destination,
-                entity: Entity.Serialize(),
-                destinationId: DestinationId
-            );
-        }
+                DestinationId,
+                Entity.Serialize(),
+                Type == MovementEntityType.MagicCircle && _isUsed.CurrentValue);
 
-        public static StairsMemento Build(MovementEntityType type, Vector2Int position, Id<IEntity> id,
-            Location destination, Id<IEntity> destinationId)
-        {
-            return new StairsMemento
-            (
+        public static StairsMemento Build(
+            MovementEntityType type,
+            Vector2Int position,
+            Id<IEntity> id,
+            Id<IMap> destination,
+            Id<IEntity> destinationId) =>
+            new(
                 type,
                 destination,
-                entity: EntityBase.Build(id, position, EntityLayer.Bottom),
-                destinationId: destinationId
-            );
-        }
+                destinationId,
+                EntityBase.Build(id, position, EntityLayer.Floor, ignoreGrass: true),
+                false);
 
-        public static StairsMemento Build(MovementEntityType type, Vector2Int position, Location destination)
-        {
-            return Build(type, position, Id<IEntity>.Generate(), destination, Id<IEntity>.Generate());
-        }
-
-        ~Stairs()
-        {
-            Dispose();
-        }
+        public static StairsMemento Build(
+            MovementEntityType type,
+            Vector2Int position,
+            Id<IMap> destination) =>
+            Build(type, position, Id<IEntity>.Generate(), destination, Id<IEntity>.Generate());
     }
 }

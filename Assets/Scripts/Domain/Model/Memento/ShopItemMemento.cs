@@ -1,17 +1,20 @@
 using System;
+using Domain.Model.Item;
 using UnityEngine;
+using Utilities;
 
 namespace Domain.Model.Memento
 {
     [Serializable]
     public class ShopItemMemento
     {
-        [field: SerializeField] public string Id { get; private set; }
+        [SerializeField] private string _id;
+        public Id<IItem> Id => new Id<IItem>(_id);
         [field: SerializeField] public int Price { get; private set; }
 
-        public ShopItemMemento(string id, int price)
+        public ShopItemMemento(Id<IItem> id, int price)
         {
-            Id = id;
+            _id = id.ToString();
             Price = price;
         }
     }

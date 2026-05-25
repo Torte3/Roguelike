@@ -6,18 +6,13 @@ using Utilities;
 
 namespace Domain.Model.Effect.Position
 {
-    public class AtFeet : IActorlessEffectPosition
+    public class AtFeet : IPositionOnlyDependentEffectPosition
     {
         public bool IsDirectional => false;
 
-        public IEnumerable<Vector2Int> Get(IActorOfEffect actor, Vector2Int position, Direction8 direction,
-            IMap map)
-        {
-            return Get(position, direction, map);
-        }
-
-        public IEnumerable<Vector2Int> Get(Vector2Int position, Direction8 direction,
-            IMap map)
+        public IEnumerable<Vector2Int> Get(IActorOfEffect actor, Vector2Int position, Direction8 direction, IMap map) => Get(position, map);
+        public IEnumerable<Vector2Int> Get(Vector2Int position, Direction8 direction, IMap map) => Get(position, map);
+        public IEnumerable<Vector2Int> Get(Vector2Int position, IMap map)
         {
             yield return position;
         }
@@ -25,18 +20,6 @@ namespace Domain.Model.Effect.Position
         public float EvaluateHitProbability()
         {
             return 1;
-        }
-
-        public string UpgradePathName => "その場";
-
-        public List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>();
-        }
-
-        public Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
         }
 
         public string Info()

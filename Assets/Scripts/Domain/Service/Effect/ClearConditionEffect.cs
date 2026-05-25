@@ -29,21 +29,9 @@ namespace Domain.Service.Effect
             return 500;
         }
 
-        public override string UpgradePathName => "全状態異常解除";
-
-        public override List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>();
-        }
-
-        public override Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
-        }
-
         public override string Info()
         {
-            return "対象の全状態異常を解除する\n";
+            return "全状態異常を解除\n";
         }
     }
 }

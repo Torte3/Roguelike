@@ -3,43 +3,59 @@ using System.Collections.Generic;
 using System.Linq;
 using Domain.Model.Map;
 using UnityEngine;
-using Utilities.Serialize;
+using Utilities;
+using Utilities.Serialize.Option;
 using Utilities.Stats;
 
 namespace Domain.Model.Memento
 {
     public class WorldMemento
     {
-        [SerializeField] private SerializableDictionary<string, DungeonMemento> _dungeons;
-
-        public Dictionary<string, DungeonMemento> Dungeons =>
-            _dungeons.ToDictionary(dungeon => dungeon.Key, dungeon => dungeon.Value);
-
-        [SerializeField] private SerializableDictionary<Location, List<MapConnection>> _movements;
-        public Dictionary<Location, List<MapConnection>> Movements => _movements.ToDictionary();
+        [field: SerializeField] public DungeonMemento Dungeon { get; private set; }
         [field: SerializeField] public PlayerMemento Player { get; private set; }
-        [field: SerializeField] public List<string> MapIds { get; private set; }
-        [field: SerializeField] public Location CurrentLocation { get; private set; }
+        [field: SerializeField] public List<CharacterMemento> PartyMembers { get; private set; }
+        [field: SerializeField] public bool IsPlayerDead { get; private set; }
+        [SerializeField] private List<string> _mapIds;
+        public List<Id<IMap>> MapIds => _mapIds.Select(mapId => new Id<IMap>(mapId)).ToList();
+        [SerializeField] private string _currentMapId;
+        public Id<IMap> CurrentMapId => new(_currentMapId);
         [field: SerializeField] public ItemPlaceholdersMemento ItemPlaceholders { get; private set; }
 
-        public WorldMemento(Dictionary<string, DungeonMemento> dungeons,
-            Dictionary<Location, List<MapConnection>> movements, PlayerMemento player,
-            List<string> mapIds, Location currentLocation, ItemPlaceholdersMemento itemPlaceholders)
+        public WorldMemento(
+            DungeonMemento dungeon,
+            PlayerMemento player,
+            List<CharacterMemento> partyMembers,
+            bool isPlayerDead,
+            List<Id<IMap>> mapIds,
+            Id<IMap> currentMapId,
+            ItemPlaceholdersMemento itemPlaceholders)
         {
-            _dungeons = dungeons.ToSerializable();
-            _movements = movements.ToSerializable();
+            Dungeon = dungeon;
             Player = player;
-            MapIds = mapIds;
-            CurrentLocation = currentLocation;
+            PartyMembers = partyMembers;
+            IsPlayerDead = isPlayerDead;
+            _mapIds = mapIds.Select(mapId => mapId.ToString()).ToList();
+            _currentMapId = currentMapId.ToString();
             ItemPlaceholders = itemPlaceholders;
         }
 
-        public WorldMemento CopyWith(Dictionary<string, DungeonMemento>? dungeons = null,
-            Dictionary<Location, List<MapConnection>>? movements = null, PlayerMemento? player = null,
-            List<string>? mapIds = null, Location? currentLocation = null,
+        public WorldMemento CopyWith(
+            DungeonMemento? dungeon = null,
+            PlayerMemento? player = null,
+            List<CharacterMemento>? partyMembers = null,
+            bool? isPlayerDead = null,
+            List<Id<IMap>>? mapIds = null,
+            Id<IMap>? currentMapId = null,
             ItemPlaceholdersMemento? itemPlaceholders = null)
         {
-            return new WorldMemento(dungeons ?? Dungeons, movements ?? Movements, player ?? Player, mapIds ?? MapIds, currentLocation ?? CurrentLocation, itemPlaceholders ?? ItemPlaceholders);
+            return new WorldMemento(
+                dungeon ?? Dungeon,
+                player ?? Player,
+                partyMembers ?? PartyMembers,
+                isPlayerDead ?? IsPlayerDead,
+                mapIds ?? MapIds,
+                currentMapId ?? CurrentMapId,
+                itemPlaceholders ?? ItemPlaceholders);
         }
 
         public WorldMemento RevivePlayer()
@@ -51,6 +67,9 @@ namespace Domain.Model.Memento
                             stats: Player.Character.Status.Stats.CopyWith(
                                 hp: new ResourceData(Player.Character.Status.Stats.Hp.Max, new Stat(Player.Character.Status.Stats.Hp.Max).CurrentValue)
                             )
+                        ),
+                        entity: Player.Character.Entity.CopyWith(
+                            destroyLog: Option<string>.None
                         )
                     )
                 )

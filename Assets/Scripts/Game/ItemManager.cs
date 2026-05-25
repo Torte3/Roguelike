@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +16,6 @@ namespace Game
 {
     public sealed class ItemManager : IDisposable
     {
-        private readonly ItemFactory _factory = new();
         private readonly ObservableList<IItemEntity> _items = new();
         private HashSet<Vector2Int> _allItemPositions = new();
         private CompositeDisposable _disposables = new();
@@ -25,15 +24,24 @@ namespace Game
         public ItemManager()
         {
             _items.ObserveCountChanged().Subscribe(_ => SetAllItemPosition());
-            _items.SubscribeToAllObservables(item => item.Entity.Position, (item, position) => SetAllItemPosition())
-                .AddTo(_disposables);
-            _items.SubscribeToAllObservables(item => item.OnDisabled, (item, dead) =>
-            {
-                if (item.Item.AutoDestroyWhenDisabled)
-                    _items.Remove(item);
-            }).AddTo(_disposables);
-            _items.SubscribeToAllObservables(item => item.Entity.OnDestroyed, (item, dead) => _items.Remove(item))
-                .AddTo(_disposables);
+            _items.SubscribeIncludingCurrentObservables(
+                item => item.Entity.Position,
+                (item, position) => SetAllItemPosition()
+            ).AddTo(_disposables);
+            _items.SubscribeIncludingCurrentObservables(
+                item => item.Item.RemainingUses.SkipLatestValueOnSubscribe(),
+                (item, remainingUses) =>
+                {
+                    if (remainingUses <= 0 && item.Item.AutoDestroyWhenDisabled)
+                    {
+                        _items.Remove(item);
+                    }
+                }
+            ).AddTo(_disposables);
+            _items.SubscribeIncludingCurrentObservables(
+                item => item.Entity.OnDestroyed,
+                (item, dead) => _items.Remove(item)
+            ).AddTo(_disposables);
         }
 
         public IObservableCollection<IItemEntity> Items => _items;
@@ -44,11 +52,6 @@ namespace Game
             _disposables.Dispose();
         }
 
-        ~ItemManager()
-        {
-            Dispose();
-        }
-
         public void AddItem(IItemEntity item)
         {
             _items.Add(item);
@@ -56,14 +59,14 @@ namespace Game
 
         public IItemEntity SpawnItem(IItem item, Vector2Int spawnPosition)
         {
-            var itemEntity = _factory.CreateItem(ItemFactory.Build(spawnPosition, item.Serialize()));
+            var itemEntity = new ItemEntity(ItemEntity.Build(spawnPosition, item.Serialize()));
             AddItem(itemEntity);
             return itemEntity;
         }
 
         public IItemEntity SpawnItem(ItemEntityMemento item)
         {
-            var itemEntity = _factory.CreateItem(item);
+            var itemEntity = new ItemEntity(item);
             AddItem(itemEntity);
             return itemEntity;
         }

@@ -5,7 +5,6 @@ using Cysharp.Threading.Tasks;
 using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Evaluation;
-using Domain.Model.Item;
 using Domain.Model.Map;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -30,8 +29,7 @@ namespace Domain.Service.Effect
             {
                 map.SpawnRandomEnemy(
                     position,
-                    false,
-                    false
+                    isSlept: false
                 );
             }
 
@@ -48,21 +46,9 @@ namespace Domain.Service.Effect
             return 50f;
         }
 
-        public override string UpgradePathName => "ランダム召喚";
-
-        public override List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>();
-        }
-
-        public override Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
-        }
-
         public override string Info()
         {
-            return $"ランダムに{_count}体召喚する\n";
+            return $"ランダムに{_count}体召喚\n";
         }
     }
 }

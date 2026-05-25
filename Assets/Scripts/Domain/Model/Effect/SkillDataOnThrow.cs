@@ -24,13 +24,16 @@ namespace Domain.Model.Effect
 
         public int Repeats => 1;
 
-        public int RushDistance => 0;
-        public int BackStepDistance => 0;
-
         [field: SerializeField]
         [field: Range(0, 1)]
         public float ProbabilityOfSuccess { get; private set; } =
             CommonSenseParameters.SkillOnThrowProbabilityOfSuccess;
+
+        public int Cost => 0;
+        public int RushDistance => 0;
+        public int BackStepDistance => 0;
+        public int ChargeTurn => 0;
+        public int CoolTime => 0;
 
         public string Log => "";
 

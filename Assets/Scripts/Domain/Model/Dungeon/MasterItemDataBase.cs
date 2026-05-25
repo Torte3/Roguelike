@@ -11,23 +11,32 @@ namespace Domain.Model.Dungeon
         public RarityWeightTable<ItemData> Scrolls;
         public RarityWeightTable<ItemData> Books;
         public RarityWeightTable<ItemData> Wands;
-        public RarityWeightTable<ItemData> Weapons;
-        public RarityWeightTable<ItemData> Artifacts;
+        public RarityWeightTable<DirectWeaponData> DirectWeapons;
+        public RarityWeightTable<RangedWeaponData> RangedWeapons;
+        public RarityWeightTable<IItemData> AllWeapons => DirectWeapons.Concat<IItemData, DirectWeaponData, RangedWeaponData>(RangedWeapons);
+        public RarityWeightTable<ArtifactData> Artifacts;
         public RarityWeightTable<ItemData> Others;
         public RarityWeightTable<ItemData> ChestItems;
+        public RarityWeightTable<DirectWeaponData> ChestDirectWeapons;
+        public RarityWeightTable<RangedWeaponData> ChestRangedWeapons;
+        public RarityWeightTable<ArtifactData> ChestArtifacts;
+        public RarityWeightTable<IItemData> AllChestItems => ChestItems
+            .Concat<IItemData, ItemData, DirectWeaponData>(ChestDirectWeapons)
+            .Concat<IItemData, IItemData, RangedWeaponData>(ChestRangedWeapons)
+            .Concat<IItemData, IItemData, ArtifactData>(ChestArtifacts);
         public Table<ShopItemData> ShopItems;
 
-        public ItemData GetRandomItem(ItemCategory category)
+        public IItemData GetRandomItem(ItemCategory category, float progress)
         {
             return category switch
             {
-                ItemCategory.Potions => Potions.GetRandomItem(),
-                ItemCategory.Scrolls => Scrolls.GetRandomItem(),
-                ItemCategory.Books => Books.GetRandomItem(),
-                ItemCategory.Wands => Wands.GetRandomItem(),
-                ItemCategory.Weapons => Weapons.GetRandomItem(),
-                ItemCategory.Artifacts => Artifacts.GetRandomItem(),
-                ItemCategory.Others => Others.GetRandomItem(),
+                ItemCategory.Potions => Potions.GetRandomItem(progress),
+                ItemCategory.Scrolls => Scrolls.GetRandomItem(progress),
+                ItemCategory.Books => Books.GetRandomItem(progress),
+                ItemCategory.Wands => Wands.GetRandomItem(progress),
+                ItemCategory.Weapons => AllWeapons.GetRandomItem(progress),
+                ItemCategory.Artifacts => Artifacts.GetRandomItem(progress),
+                ItemCategory.Others => Others.GetRandomItem(progress),
                 _ => throw new ArgumentOutOfRangeException(nameof(category), category, null)
             };
         }

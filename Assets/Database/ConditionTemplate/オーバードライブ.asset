@@ -13,16 +13,21 @@ MonoBehaviour:
   m_Name: "\u30AA\u30FC\u30D0\u30FC\u30C9\u30E9\u30A4\u30D6"
   m_EditorClassIdentifier: 
   Condition:
-    rid: 4274951402137321472
+    rid: 3119344245011382278
   RemovalCondition:
     RemoveByElapsedTurn: 1
     Duration: 8
     RemoveByDamage: 0
     Probability: 0
-    RemoveByEnemyNearby: 0
+    RemoveByCharacterNearby: 0
+    CharacterNearbyProbability: 0
+  InflictLog: "\u306F\u6642\u3092\u6B62\u3081\u305F"
+  DeleteLog: "\u4EE5\u5916\u306E\u6642\u304C\u52D5\u304D\u51FA\u3057\u305F"
   references:
     version: 2
     RefIds:
-    - rid: 4274951402137321472
-      type: {class: OverDrive, ns: Domain.Service.Characters.Conditions, asm: Domain.Service}
-      data: 
+    - rid: 3119344245011382278
+      type: {class: FlagCondition, ns: Domain.Service.Characters.Conditions, asm: Domain.Service}
+      data:
+        _flagStatType:
+          stringValue: OverDrive

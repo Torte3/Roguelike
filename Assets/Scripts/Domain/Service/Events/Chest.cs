@@ -1,5 +1,7 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
@@ -8,6 +10,7 @@ using Domain.Model.Entity;
 using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Service.Effect;
 using Domain.Service.Items;
 using Domain.Service.Logs;
 using UnityEngine;
@@ -17,58 +20,95 @@ using Utilities.Serialize.Option;
 
 namespace Domain.Service.Events
 {
-    public class Chest : ISerializable<ChestMemento>, IPlayerEventEntity, IIconEntity
+    public class Chest : ISerializable<ChestMemento>, IPlayerEventEntity, ILockedEntity
     {
         public EntityBase Entity { get; init; }
-        private Option<Item> _item;
+        public bool IsGrounded => true;
+        private List<IItem> _items;
         private Option<EnemyData> _mimic;
+        public List<Id<IEntity>> KeyCharacters { get; init; }
 
         public Chest(ChestMemento memento)
         {
-            _item = memento.Item.Map(i => new Item(i));
+            _items = memento.Items.Select(i => i.Deserialize()).ToList();
             _mimic = memento.Mimic;
             Entity = new EntityBase(memento.Entity);
-            Event = new PlayerEvent(
-                "宝箱を見つけた",
-                true,
-                new List<PlayerChoiceEvent>
-                {
-                    new(
-                        "開ける",
-                        player => true,
-                        async (gameManager, map) => { await DoEvent(map); }
-                    )
-                }
-            );
+            KeyCharacters = memento.KeyCharacters;
+            Events = new List<IPlayerEvent>
+            {
+                new PlayerEvent(
+                    "宝箱を見つけた",
+                    new List<PlayerChoiceEvent>
+                    {
+                        new(
+                            "開ける",
+                            (player, map) => CanExecuteEvent(map),
+                            async (gameManager, map) => { await DoEvent(gameManager, map); }
+                        )
+                    }
+                )
+            };
         }
 
         public Sprite Icon => Addressables.LoadAssetAsync<Sprite>("Assets/Images/Monsters/ChestA.png[Chest_0]")
             .WaitForCompletion();
 
-        public IPlayerEvent Event { get; init; }
+        public IReadOnlyList<IPlayerEvent> Events { get; init; }
 
-        private UniTask DoEvent(IMap map)
+        private bool CanExecuteEvent(IMap map)
         {
-            map.RemoveEventEntity(this);
-            if (_item.IsSome)
+            return KeyCharacters.All(keyCharacterId => map.Characters.ById(keyCharacterId) == null);
+        }
+
+        private async UniTask DoEvent(IGameManager gameManager, IMap map)
+        {
+            gameManager.PlaySE(SE.OpenChest);
+            Entity.Destroy($"は{map.Player.Character.GetName(map.Player)}に開かれた");
+
+            IItem? selectedItem = null;
+
+            if (_items.Count > 1)
             {
-                if (map.Player.Character.TryAddToInventory(_item.Value))
+                var choices = _items.Select(item => (item.GetName(map.Player, map.ItemPlaceholders), item)).ToArray();
+                var selectedIndex = await gameManager.GetChoiceWithItemPreview("報酬を選択してください", map, choices);
+                if (selectedIndex >= _items.Count)
+                    return;
+                selectedItem = _items[selectedIndex];
+            }
+            else if (_items.Count == 1)
+            {
+                selectedItem = _items[0];
+            }
+
+            if (selectedItem != null)
+            {
+                if (map.Player.Character.Inventory.CanAddToEmpty())
                 {
-                    GameLog.Add(
-                        $"{map.Player.Character.GetName(map.Player)}は{_item.Value.GetName(map.Player, map.ItemPlaceholders)}を手に入れた");
+                    map.Player.Character.Inventory.AddToEmpty(selectedItem);
+                    gameManager.RequestWorldIconPopup(selectedItem.Icon, Entity.CurrentPosition);
+                    GameLog.AddIgnoreVisibility(
+                        $"{map.Player.Character.GetName(map.Player)}は{selectedItem.GetName(map.Player, map.ItemPlaceholders)}を手に入れた");
                 }
                 else
                 {
-                    GameLog.Add($"{_item.Value.GetName(map.Player, map.ItemPlaceholders)}を拾えなかった");
-                    map.SpawnItem(_item.Value, Entity.CurrentPosition);
+                    GameLog.AddIgnoreVisibility($"{selectedItem.GetName(map.Player, map.ItemPlaceholders)}を拾えなかった");
+                    map.SpawnItem(selectedItem, Entity.CurrentPosition);
                 }
+            }
+            else if (_mimic.IsSome(out var mimic))
+            {
+                map.SpawnEnemyIgnoreMimic(
+                    mimic,
+                    Entity.CurrentPosition,
+                    doActImmediately: true,
+                    isSlept: false,
+                    isShiny: false
+                );
             }
             else
             {
-                map.SpawnEnemy(_mimic.Value, Entity.CurrentPosition, isSlept: false, isShiny: false);
+                throw new Exception("Chest has no item and mimic");
             }
-
-            return UniTask.CompletedTask;
         }
 
         public void Dispose()
@@ -97,14 +137,33 @@ namespace Domain.Service.Events
 
         public async UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)
         {
-            var destination = GetThrowDestination(Entity.CurrentPosition, direction, distance, map);
+            var start = Entity.CurrentPosition;
+            var destination = GetThrowDestination(start, direction, distance, map);
+            var remaining = distance - BlowAwayCollision.CountStepsMoved(start, destination, direction);
+            if (remaining > 0)
+            {
+                var collisionPos = destination + direction.Vector();
+                BlowAwayCollisionSide? blocker = !map.At(collisionPos).IsPassableOnMap()
+                    ? BlowAwayCollisionSide.Wall()
+                    : BlowAwayCollisionSide.FromEntity(map.GetEntityFastAt(collisionPos, EntityLayer.Middle));
+                if (blocker.HasValue)
+                {
+                    await BlowAwayCollision.Apply(
+                        BlowAwayCollisionSide.OtherRigidObject(),
+                        blocker.Value,
+                        remaining,
+                        actor as ICharacter,
+                        map);
+                }
+            }
+
             if (Entity.Visibility.CurrentValue && destination != Entity.CurrentPosition)
             {
                 Entity.SetVisibility(false);
-                await map.ShowThrowAnimation(Icon, Entity.CurrentPosition, direction, distance, EntityLayer.Middle);
+                await map.ShowThrowAnimation(Icon, Entity.CurrentPosition, direction, distance, false, EntityLayer.Middle);
                 Entity.Teleport(map.FindBlankPositionFrom(destination,
                     position => map.At(position)
-                        .CanPlace(false, false, false, EntityLayer.Bottom, EntityLayer.Middle)));
+                        .CanPlace(false, false, false, EntityLayer.Bottom, EntityLayer.Floor, EntityLayer.Middle)));
             }
         }
 
@@ -112,18 +171,19 @@ namespace Domain.Service.Events
         {
             return new ChestMemento
             (
-                _item.Map(i => i.Serialize()),
+                _items.Select(i => i.Serialize()).ToList(),
                 _mimic,
-                Entity.Serialize()
+                Entity.Serialize(),
+                KeyCharacters
             );
         }
 
-        public static ChestMemento Build(Vector2Int position, ItemData item)
+        public static ChestMemento Build(IItemData item, Vector2Int position)
         {
-            return Build(position, new Item(item).Serialize());
+            return Build(item.Build(), position);
         }
 
-        public static ChestMemento Build(Vector2Int position, ItemMemento item)
+        public static ChestMemento Build(IItemMemento item, Vector2Int position)
         {
             return new ChestMemento
             (
@@ -132,12 +192,23 @@ namespace Domain.Service.Events
             );
         }
 
-        public static ChestMemento Build(Vector2Int position, EnemyData mimic)
+        public static ChestMemento Build(EnemyData mimic, Vector2Int position)
         {
             return new ChestMemento
             (
                 mimic,
                 EntityBase.Build(position, EntityLayer.Middle)
+            );
+        }
+
+        public static ChestMemento Build(List<IItemMemento> items, Vector2Int position, List<Id<IEntity>> keyCharacters)
+        {
+            return new ChestMemento
+            (
+                items,
+                Option.None<EnemyData>(),
+                EntityBase.Build(position, EntityLayer.Middle),
+                keyCharacters
             );
         }
     }

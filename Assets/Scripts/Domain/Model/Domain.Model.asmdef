@@ -1,19 +1,21 @@
 {
-  "name": "Domain.Model",
-  "rootNamespace": "",
-  "references": [
-    "GUID:e4182c834e14f2e47bfe4b15a53d4aba",
-    "GUID:f51ebe6a0ceec4240a699833d6309b23",
-    "GUID:4d2014a47cb26f347a356ab843f84c08",
-    "GUID:2116cf5fb945bd64c9a9942fa6d6ef3c"
-  ],
-  "includePlatforms": [],
-  "excludePlatforms": [],
-  "allowUnsafeCode": false,
-  "overrideReferences": false,
-  "precompiledReferences": [],
-  "autoReferenced": false,
-  "defineConstraints": [],
-  "versionDefines": [],
-  "noEngineReferences": false
+    "name": "Domain.Model",
+    "rootNamespace": "",
+    "references": [
+        "GUID:e4182c834e14f2e47bfe4b15a53d4aba",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:4d2014a47cb26f347a356ab843f84c08",
+        "GUID:2116cf5fb945bd64c9a9942fa6d6ef3c",
+        "GUID:b8e24fd1eb19b4226afebb2810e3c19b",
+        "GUID:cfeff6885bc374b8ca19378aba9df0a2"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

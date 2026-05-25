@@ -1,161 +1,172 @@
-﻿#nullable enable
+#nullable enable
+using System.Collections.Generic;
 using R3;
-using Sirenix.Utilities;
 using TMPro;
 using Unity.Logging;
 using UnityEngine;
-using UnityEngine.UI;
+using Utilities;
 
 namespace View.UI
 {
-    public record Focus(int index, int subIndex, bool isGroundItem, bool isEmpty);
     public class InventoryView : MonoBehaviour
     {
-        private const int InventorySize = 10;
-        [SerializeField] private InventoryItemView _itemViewPrefab;
+        [SerializeField] private StorageView _storageView;
         [SerializeField] private TMP_Text _infoText;
         [SerializeField] private Sprite _groundItemIcon;
         [SerializeField] private Sprite _emptyIcon;
-        private readonly ReactiveProperty<(int index, int subIndex)> _focusIndex = new((0, -1));
-        private readonly Subject<int> _onMainFocusChanged = new();
-        private readonly Subject<int> _onLogUpdated = new();
-        private readonly string[] _info = new string[InventorySize + 1];
-        private readonly InventoryItemView[] _itemViews = new InventoryItemView[InventorySize + 2];
-
-        public Observable<Focus> OnFocusChanged => _focusIndex.Select(index => GetFocus(index.index, index.subIndex));
-        public Observable<Focus> OnMainFocusChanged => _onMainFocusChanged.Select(index => GetFocus(index, -1));
-        public Focus CurrentFocus => GetFocus(_focusIndex.CurrentValue.index, _focusIndex.CurrentValue.subIndex);
-
-        private SubStorageView _subStorageView;
-
-        public void Initialize(SubStorageView subStorageView)
+        private readonly ReactiveProperty<int> _focusIndex = new(0);
+        private ItemViewData _defaultGroundItemItem;
+        private ItemViewData _defaultEmptyItem;
+        private List<InventoryViewIndex> _lockedItemIndexes = new();
+        private bool _enabled = true;
+        public ReadOnlyReactiveProperty<InventoryViewIndex> Focus => _focusIndex.Select(index => GetFocus(index)).ToReadOnlyReactiveProperty();
+        public void Initialize()
         {
-            _subStorageView = subStorageView;
+            Log.Debug($"[View]InventoryView Initialize");
+            _defaultGroundItemItem = new ItemViewData("[足元]", false, _groundItemIcon, true, null, false, false, false, true, true,
+            "アイテムを使わずに攻撃\n\n前1マスを対象に\n攻撃[物理1]\n成功率：95%");
+            _defaultEmptyItem = new ItemViewData("", false, _emptyIcon, true, null, false, false, false, true, true,
+            "アイテムを使わずに攻撃\n\n前1マスを対象に\n攻撃[物理1]\n成功率：95%");
+            Reset(new(), true);
 
-            for (var i = 0; i < _itemViews.Length; i++)
-                if (_itemViews[i] == null)
-                    _itemViews[i] = Instantiate(_itemViewPrefab, transform);
+            _storageView.OnSelected
+                .Subscribe(index =>
+                {
+                    _focusIndex.Value = index;
+                });
 
-            _itemViews.ForEach((view, index) => view.OnFocus.Subscribe(_ =>
+            Focus.Subscribe(_ =>
             {
-                _onMainFocusChanged.OnNext(index);
-                _focusIndex.Value = (index, -1);
-            }).AddTo(view));
-            subStorageView.OnFocusChanged.Subscribe(subIndex =>
+                UpdateInfoText();
+            });
+        }
+        public void Reset(List<ItemViewData> itemDataList, bool resetFocus)
+        {
+            Log.Debug($"[View]InventoryView Clear");
+            var itemDataListAndEtc = new List<ItemViewData>(itemDataList)
             {
-                _focusIndex.Value = (_focusIndex.CurrentValue.index, subIndex);
-            }).AddTo(subStorageView);
-            OnFocusChanged.Subscribe(index =>
+                _defaultGroundItemItem,
+                _defaultEmptyItem
+            };
+            _storageView.Reset(itemDataListAndEtc);
+            if (resetFocus)
+                _storageView.Select(0);
+            UpdateInfoText();
+        }
+
+        public void Insert(int index, ItemViewData itemData)
+        {
+            Log.Debug($"[View]InventoryView Insert Index: {index}");
+            _storageView.Insert(itemData, index, true);
+            if (_focusIndex.Value >= index)
             {
-                Log.Debug($"OnFocusChanged: {index}");
-                _infoText.text = GetInfo(CurrentFocus);
-            }).AddTo(this);
-
-            _onLogUpdated.Subscribe(_ => _infoText.text = GetInfo(CurrentFocus)).AddTo(this);
-            _subStorageView.OnLogUpdated.Subscribe(_ => _infoText.text = GetInfo(CurrentFocus)).AddTo(subStorageView);
-
-            _itemViews[InventorySize].SetIcon(_groundItemIcon, null, false, false, true, true);
-            _itemViews[InventorySize + 1].SetIcon(_emptyIcon, null, false, false, true, true);
-
-            for (var i = 0; i < _itemViews.Length; i++)
+                _focusIndex.Value++;
+            }
+        }
+        public void Remove(int index)
+        {
+            Log.Debug($"[View]InventoryView Remove Index: {index}");
+            _storageView.Remove(index);
+            if (_focusIndex.Value > index)
             {
-                SetNavigation(i);
+                _focusIndex.Value--;
+            }
+            else if (_focusIndex.Value == index)
+            {
+                _storageView.Select(index);
+            }
+        }
+        public void Replace(int index, ItemViewData itemData)
+        {
+            Log.Debug($"[View]InventoryView Replace Index: {index}");
+            _storageView.Replace(itemData, index, true);
+            if (Focus.CurrentValue.Index == index)
+                UpdateInfoText();
+        }
+        public void UpdateGroundItem(ItemViewData? itemData)
+        {
+            Log.Debug($"[View]InventoryView UpdateGroundItem");
+            if (itemData != null)
+                _storageView.Replace(itemData with { name = $"[足元] {itemData.name}" }, _storageView.ItemViews.Count - 2, true);
+            else
+                _storageView.Replace(_defaultGroundItemItem, _storageView.ItemViews.Count - 2, true);
+            if (Focus.CurrentValue.IsOnGroundItem)
+                UpdateInfoText();
+        }
+        private InventoryViewIndex GetFocus(int index)
+        {
+            if (index == _storageView.ItemViews.Count - 2)
+                return InventoryViewIndex.GroundItem;
+            else if (index == _storageView.ItemViews.Count - 1)
+                return InventoryViewIndex.Empty;
+            else
+                return new InventoryViewIndex(index);
+        }
+
+        private int GetIndex(InventoryViewIndex index)
+        {
+            Log.Verbose($"[View]InventoryView GetIndex: {index}");
+            if (index.IsOnGroundItem)
+                return _storageView.ItemViews.Count - 2;
+            else if (index.IsOnEmpty)
+                return _storageView.ItemViews.Count - 1;
+            else
+                return index.Index;
+        }
+
+        private void UpdateInfoText()
+        {
+            Log.Debug($"[View]InventoryView UpdateInfoText: {Focus.CurrentValue}");
+            var currentIndex = _focusIndex.CurrentValue;
+            var item = _storageView.GetItem(currentIndex);
+            _infoText.text = item.info;
+        }
+
+        public void SetCanSkip(bool canSkip)
+        {
+            _storageView.UpdateItemSkip(canSkip);
+        }
+
+        public void UpdateAllItemInteractable()
+        {
+            foreach (var (item, index) in _storageView.ItemViews.Index())
+            {
+                var viewIndex = GetFocus(index);
+                var interactable = _enabled && !_lockedItemIndexes.Contains(viewIndex) && item.ItemData.canSelect;
+                _storageView.UpdateItemInteractable(index, interactable);
             }
         }
 
-        public void Start()
+        public void LockItems(List<InventoryViewIndex> lockedItemIndexes)
         {
-            Select(0);
+            Log.Debug($"[View]InventoryView LockItems: Count: {lockedItemIndexes.Count}");
+            _lockedItemIndexes.AddRange(lockedItemIndexes);
+            UpdateAllItemInteractable();
         }
 
-        public void Select(int index)
+        public void UnlockAllItems()
         {
-            _itemViews[index].Select();
-        }
-
-        public void SelectSub(int subIndex)
-        {
-            _subStorageView.Select(subIndex);
-        }
-
-        private Focus GetFocus(int index, int subIndex) => new(index, subIndex, index == InventorySize, index == InventorySize + 1);
-
-        public Selectable Get(int index) => _itemViews[index].GetComponent<Selectable>();
-
-        public void SetNavigationWithSubStorage(SubStorageView subStorageView, int index)
-        {
-            var nav = new Navigation
-            {
-                mode = Navigation.Mode.Explicit,
-                selectOnLeft = _itemViews[(index - 1 + _itemViews.Length) % _itemViews.Length]
-                    .GetComponent<Selectable>(),
-                selectOnRight = _itemViews[(index + 1) % _itemViews.Length].GetComponent<Selectable>(),
-                selectOnDown = subStorageView.First
-            };
-            _itemViews[index].GetComponent<Selectable>().navigation = nav;
-        }
-
-        public void SetNavigation(int index)
-        {
-            var nav = new Navigation
-            {
-                mode = Navigation.Mode.Explicit,
-                selectOnLeft = _itemViews[(index - 1 + _itemViews.Length) % _itemViews.Length]
-                    .GetComponent<Selectable>(),
-                selectOnRight = _itemViews[(index + 1) % _itemViews.Length].GetComponent<Selectable>()
-            };
-            _itemViews[index].GetComponent<Selectable>().navigation = nav;
-        }
-
-        public void Replace(Sprite icon, int? count, bool isCursed, bool isShiny, bool isCountIdentified,
-            bool isCurseIdentified, string info, int index)
-        {
-            _itemViews[index].SetIcon(icon, count, isCursed, isShiny, isCountIdentified, isCurseIdentified);
-            _info[index] = info;
-            UpdateInfo(info, index);
-        }
-
-        public void SetGround()
-        {
-            _itemViews[InventorySize].SetIcon(_groundItemIcon, null, false, false, true, true);
-        }
-
-        public void Remove(int index)
-        {
-            _itemViews[index].Remove();
-            UpdateInfo("", index);
-        }
-
-        public void UpdateInfo(string info, int index)
-        {
-            _info[index] = info;
-            _onLogUpdated.OnNext(index);
-        }
-
-        public string GetInfo(Focus focus)
-        {
-            if (focus.subIndex >= 0)
-                return _subStorageView.GetInfo(focus.subIndex);
-            else
-                return focus.isEmpty ? "" : _info[focus.index];
-        }
-
-        public void DisableItems(int[] disabledItemIndexes)
-        {
-            foreach (var index in disabledItemIndexes)
-                _itemViews[index].Disable();
+            Log.Debug($"[View]InventoryView UnlockAllItems");
+            _lockedItemIndexes.Clear();
+            UpdateAllItemInteractable();
         }
 
         public void EnableAllItems()
         {
-            foreach (var view in _itemViews)
-                view.Enable();
+            Log.Debug($"[View]InventoryView EnableAllItems");
+            if (_enabled)
+                return;
+            _enabled = true;
+            UpdateAllItemInteractable();
         }
 
         public void DisableAllItems()
         {
-            foreach (var view in _itemViews)
-                view.Disable();
+            Log.Debug($"[View]InventoryView DisableAllItems");
+            if (!_enabled)
+                return;
+            _enabled = false;
+            UpdateAllItemInteractable();
         }
     }
 }

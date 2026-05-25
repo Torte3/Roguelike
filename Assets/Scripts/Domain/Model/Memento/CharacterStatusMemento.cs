@@ -22,7 +22,9 @@ namespace Domain.Model.Memento
         public List<(Id<IEntity> actor, ConditionMemento condition)> Conditions =>
             _conditions.Select((x, i) => (new Id<IEntity>(_inflicters[i]), x)).ToList();
 
-        public CharacterStatusMemento(CharacterStatsMemento stats, Dictionary<FlagStatType, int> flagStats,
+        public CharacterStatusMemento(
+            CharacterStatsMemento stats,
+            Dictionary<FlagStatType, int> flagStats,
             List<(Id<IEntity> actor, ConditionMemento condition)> conditions)
         {
             Stats = stats;
@@ -31,7 +33,8 @@ namespace Domain.Model.Memento
             _inflicters = conditions.Select(x => x.actor.ToString()).ToList();
         }
 
-        public CharacterStatusMemento CopyWith(CharacterStatsMemento? stats = null,
+        public CharacterStatusMemento CopyWith(
+            CharacterStatsMemento? stats = null,
             Dictionary<FlagStatType, int>? flagStats = null,
             List<(Id<IEntity> actor, ConditionMemento condition)>? conditions = null)
         {

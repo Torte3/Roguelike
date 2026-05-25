@@ -19,7 +19,10 @@ MonoBehaviour:
     Duration: 8
     RemoveByDamage: 1
     Probability: 0.5
-    RemoveByEnemyNearby: 0
+    RemoveByCharacterNearby: 0
+    CharacterNearbyProbability: 0
+  InflictLog: "\u306F\u660F\u7761\u3057\u305F"
+  DeleteLog: "\u306F\u76EE\u304C\u899A\u3081\u305F"
   references:
     version: 2
     RefIds:

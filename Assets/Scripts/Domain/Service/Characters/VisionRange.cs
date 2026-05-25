@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using Domain.Model.Character;
+using Domain.Model.Evaluation;
 using Domain.Model.Map;
 using R3;
 using UnityEngine;
@@ -12,27 +14,31 @@ namespace Domain.Service.Characters
     {
         private ReadOnlyReactiveProperty<Vector2Int> _position;
         private ReadOnlyReactiveProperty<float> _range;
-        private readonly FlagStat _clairvoyantFlags;
-        private readonly FlagStat _blindFlags;
-        private bool _canThroughWalls;
+        private readonly IFlagStat _clairvoyantFlags;
+        private readonly IFlagStat _blindFlags;
+        private readonly IFlagStat _narrowVisionFlags;
+        private readonly Func<bool> _canThroughWalls;
         public bool IsClairvoyant => _clairvoyantFlags.CurrentValue;
         public bool IsBlind => _blindFlags.CurrentValue;
         private Subject<Unit> _onVisibleAreaChanged = new();
         private readonly IMap _map;
 
         public VisionRange(ReadOnlyReactiveProperty<Vector2Int> position, ReadOnlyReactiveProperty<float> range,
-            FlagStat clairvoyantFlags, FlagStat blindFlags, bool canThroughWalls, IMap map)
+            IFlagStat clairvoyantFlags, IFlagStat blindFlags, IFlagStat narrowVisionFlags, Func<bool> canThroughWalls,
+            IMap map)
         {
             _position = position;
             _range = range;
             _canThroughWalls = canThroughWalls;
             _clairvoyantFlags = clairvoyantFlags;
             _blindFlags = blindFlags;
+            _narrowVisionFlags = narrowVisionFlags;
             Observable.Merge(
                 _position.AsUnitObservable(),
                 _range.AsUnitObservable(),
                 _clairvoyantFlags.Value.AsUnitObservable(),
-                _blindFlags.Value.AsUnitObservable()
+                _blindFlags.Value.AsUnitObservable(),
+                _narrowVisionFlags.Value.AsUnitObservable()
             ).Subscribe(_ =>
             {
                 ChangeVisibleArea();
@@ -55,30 +61,43 @@ namespace Domain.Service.Characters
 
         public bool IsVisible(Vector2Int position)
         {
+            if (_canThroughWalls())
+            {
+                if (IsClairvoyant)
+                    return true;
+                var viewRadius = ResolveVisionRadius(_range.CurrentValue + 0.5f);
+                return (position - _position.CurrentValue).sqrMagnitude <= viewRadius * viewRadius;
+            }
+
             if (IsClairvoyant)
                 return true;
-            if (IsBlind)
-                return _map.IsVisible(_position.CurrentValue, position, 1.5f);
-            return _map.IsVisible(_position.CurrentValue, position, _range.CurrentValue + 0.5f);
+            return _map.IsVisible(_position.CurrentValue, position, ResolveVisionRadius(_range.CurrentValue + 0.5f));
         }
 
         private HashSet<Vector2Int> Calc(Vector2Int position)
         {
             var range = _range.CurrentValue + 0.5f;
-            if (_canThroughWalls)
+            if (_canThroughWalls())
             {
                 if (IsClairvoyant)
                     return _map.GetAllPositions();
-                var viewRadiusSq = IsBlind ? 1.5f * 1.5f : range * range;
+                var viewRadius = ResolveVisionRadius(range);
                 return _map.GetAllPositions().Where(
-                    pos => (position - pos).sqrMagnitude <= viewRadiusSq).ToHashSet();
+                    pos => (position - pos).sqrMagnitude <= viewRadius * viewRadius).ToHashSet();
             }
 
             if (IsClairvoyant)
                 return _map.GetFullVisibleArea();
+            return _map.GetVisibleArea(position, ResolveVisionRadius(range));
+        }
+
+        private float ResolveVisionRadius(float normalRange)
+        {
             if (IsBlind)
-                return _map.GetVisibleArea(position, 1.5f);
-            return _map.GetVisibleArea(position, range);
+                return CommonSenseParameters.BlindVisionRadius;
+            if (_narrowVisionFlags.CurrentValue)
+                return CommonSenseParameters.NarrowVisionRadius;
+            return normalRange;
         }
     }
 }
