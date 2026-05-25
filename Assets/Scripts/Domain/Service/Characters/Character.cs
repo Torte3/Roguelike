@@ -88,9 +88,12 @@ namespace Domain.Service.Characters
 
             AutoIdentify.Subscribe(autoIdentify =>
             {
-                foreach (var item in Inventory.AllItems)
+                if (autoIdentify)
                 {
-                    KnowItem(item, false);
+                    foreach (var item in Inventory.AllItems)
+                    {
+                        KnowItem(item, false);
+                    }
                 }
             });
 
@@ -568,7 +571,7 @@ namespace Domain.Service.Characters
                 );
                 if (result.Result == SkillResult.Success)
                 {
-                    if (!item.IdentifyIfUsed)
+                    if (item.IdentifyIfUsed)
                     {
                         KnowItem(item, true);
                     }

@@ -29,7 +29,7 @@ namespace View
             var animation = ObjectLoader.LoadAnimation(characterTypeName);
 
             _animator = GetComponent<Animator>();
-            _animator.runtimeAnimatorController = Instantiate(animation);
+            _animator.runtimeAnimatorController = animation;
 
             UpdateGroupMarker(isEnemy, isAlly);
         }
