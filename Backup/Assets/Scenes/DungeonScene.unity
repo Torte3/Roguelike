@@ -8977,6 +8977,7 @@ MonoBehaviour:
   _characterDemoDisplay: {fileID: 555876244}
   _content: {fileID: 377030488}
   _choiceButtonPrefab: {fileID: 5797102767202074745, guid: 3a39fb630b9e1304296ec9ea033ca5f6, type: 3}
+  _seManager: {fileID: 1953968009}
   _infoText: {fileID: 962404413}
 --- !u!1 &1437364826
 GameObject:
@@ -11843,6 +11844,7 @@ MonoBehaviour:
   _choiceText: {fileID: 156211233}
   _content: {fileID: 1964048479}
   _choiceButtonPrefab: {fileID: 5797102767202074745, guid: 894d9ff134f522e4da723175197c1c92, type: 3}
+  _seManager: {fileID: 1953968009}
 --- !u!1001 &1975510414
 PrefabInstance:
   m_ObjectHideFlags: 0
