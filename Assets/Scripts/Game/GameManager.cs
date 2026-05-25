@@ -159,7 +159,7 @@ namespace Game
             };
             var index = await _characterSelectReceiver.GetCharacter(
                 players.Select(player => (
-                    player.data.Name,
+                    player.data.name,
                     player.data.CharacterType.SubtypeName(),
                     $"解放条件\n{player.unlockCondition}\n\n{player.data.InfoWithoutName()}",
                     player.usable)).ToList());

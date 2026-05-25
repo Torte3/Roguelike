@@ -1,5 +1,6 @@
 using System;
 using Domain.Model;
+using Domain.Model.Dungeon;
 using Domain.Model.Setting;
 using Game;
 using R3;
@@ -98,7 +99,34 @@ namespace Provider
                         throw new NotImplementedException($"SE {se} is not implemented");
                 }
             });
-            gameManager.OnPlayItemUseSE.Subscribe(seManager.ItemUseSE);
+            gameManager.OnPlayItemUseSE.Subscribe(category =>
+            {
+                switch (category)
+                {
+                    case ItemCategory.Potions:
+                        seManager.ItemUsePotionSE();
+                        break;
+                    case ItemCategory.Scrolls:
+                        seManager.ItemUseScrollSE();
+                        break;
+                    case ItemCategory.Books:
+                        seManager.ItemUseBookSE();
+                        break;
+                    case ItemCategory.Wands:
+                        seManager.ItemUseWandSE();
+                        break;
+                    case ItemCategory.Weapons:
+                        seManager.ItemUseWeaponSE();
+                        break;
+                    case ItemCategory.Artifacts:
+                        break;
+                    case ItemCategory.Others:
+                        seManager.ItemUseOthersSE();
+                        break;
+                    default:
+                        throw new NotImplementedException($"Item category {category} is not implemented");
+                }
+            });
         }
     }
 }

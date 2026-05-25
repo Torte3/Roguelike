@@ -1,4 +1,3 @@
-using Domain.Model.Dungeon;
 using UnityEngine;
 
 namespace View
@@ -118,19 +117,16 @@ namespace View
             PlayOneShotIfNotNull(_trapStepSE);
         }
 
-        public void ItemUseSE(ItemCategory category)
-        {
-            PlayOneShotIfNotNull(category switch
-            {
-                ItemCategory.Potions => _itemUsePotionSE,
-                ItemCategory.Scrolls => _itemUseScrollSE,
-                ItemCategory.Books => _itemUseBookSE,
-                ItemCategory.Wands => _itemUseWandSE,
-                ItemCategory.Weapons => _itemUseWeaponSE,
-                ItemCategory.Artifacts => null,
-                ItemCategory.Others => _itemUseOthersSE,
-                _ => null
-            });
-        }
+        public void ItemUsePotionSE() => PlayOneShotIfNotNull(_itemUsePotionSE);
+
+        public void ItemUseScrollSE() => PlayOneShotIfNotNull(_itemUseScrollSE);
+
+        public void ItemUseBookSE() => PlayOneShotIfNotNull(_itemUseBookSE);
+
+        public void ItemUseWandSE() => PlayOneShotIfNotNull(_itemUseWandSE);
+
+        public void ItemUseWeaponSE() => PlayOneShotIfNotNull(_itemUseWeaponSE);
+
+        public void ItemUseOthersSE() => PlayOneShotIfNotNull(_itemUseOthersSE);
     }
 }

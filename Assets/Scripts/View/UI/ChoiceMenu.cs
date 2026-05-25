@@ -1,13 +1,12 @@
 #nullable enable
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using Domain.Model;
 using R3;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Utilities;
-using VContainer;
+using View;
 
 namespace View.UI
 {
@@ -22,14 +21,8 @@ namespace View.UI
         [SerializeField] private TextMeshProUGUI _choiceText;
         [SerializeField] private RectTransform _content;
         [SerializeField] private ChoiceButton _choiceButtonPrefab;
+        [SerializeField] private SEManager _seManager;
         private readonly List<ChoiceButton> _buttons = new();
-        private IGameManager _gameManager;
-
-        [Inject]
-        public void Construct(IGameManager gameManager)
-        {
-            _gameManager = gameManager;
-        }
 
         public void SetCanCancel(bool canCancel) => _canClose = canCancel;
 
@@ -55,12 +48,12 @@ namespace View.UI
                     true,
                     () =>
                     {
-                        _gameManager.PlaySE(SE.ChoiceCursor);
+                        _seManager.ChoiceCursorSE();
                         _selectedIndex.Value = index;
                     },
                     () =>
                     {
-                        _gameManager.PlaySE(SE.ChoiceConfirm);
+                        _seManager.ChoiceConfirmSE();
                         _choicedIndex.Value = index;
                     });
                 _buttons.Add(button);

@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>BidirectionalMap</id>
+    <version>1.0.0</version>
+    <title>BidirectionalMap</title>
+    <authors>Spencer Farley</authors>
+    <owners>Spencer Farley</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <description>A two-way one-to-one lookup for .NET Standard. Like a dictionary, but indexed both ways.</description>
+    <tags>dotnet dotnet-standard lookup map bidirectional</tags>
+    <repository url="https://github.com/farlee2121/BidirectionalMap" />
+    <dependencies>
+      <group targetFramework=".NETStandard1.6">
+        <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

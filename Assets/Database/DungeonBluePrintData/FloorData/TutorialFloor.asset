@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,18 +13,19 @@ MonoBehaviour:
   m_Name: TutorialFloor
   m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.FloorData
   Field: {fileID: 11400000, guid: 7710638e9c725b641966015b5590bf73, type: 2}
-  ShinyChance: 0
-  SleepChance: 0.75
-  MimicChance: 0
   ShopChance: 0
   MonsterHouseChance: 0
   RestRoomChance: 0
+  ShinyChance: 0
+  ChestChance: 0
+  StatueChance: 0
+  SleepChance: 0.75
+  MimicChance: 0
+  CursedItemChance: 0.05
+  BonfireWeight: 1
+  MagicPotWeight: 1
+  WorkbenchWeight: 1
   ItemCount: 2
   MoneyCount: 1
   MoneyAverage: 100
   CharacterCount: 1
-  ChestChance: 0
-  StatueChance: 0
-  BonfireWeight: 1
-  MagicPotWeight: 1
-  WorkbenchWeight: 1

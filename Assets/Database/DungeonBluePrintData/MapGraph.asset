@@ -1399,7 +1399,6 @@ MonoBehaviour:
   - {fileID: -5074951448736568055}
   - {fileID: 3614882459956434054}
   - {fileID: 5015381014945603743}
-  - {fileID: 3208329525148588595}
 --- !u!114 &132433583354238991
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1553,7 +1552,7 @@ MonoBehaviour:
   m_Name: Start Map
   m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.StartMapNode
   graph: {fileID: 11400000}
-  position: {x: -186.56735, y: -498.025}
+  position: {x: -152, y: -168}
   ports:
     keys:
     - _firstMap
@@ -1570,83 +1569,6 @@ MonoBehaviour:
       _connectionType: 0
       _typeConstraint: 2
       _dynamic: 0
---- !u!114 &3208329525148588595
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fa5fd60aa0d2c24bba053555fad3ebb, type: 3}
-  m_Name: Map
-  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.MapNode
-  graph: {fileID: 11400000}
-  position: {x: 685.31305, y: -300.726}
-  ports:
-    keys:
-    - _teleportOut
-    - _teleportIn
-    - _nextMap
-    - _prevMap
-    values:
-    - _fieldName: _teleportOut
-      _node: {fileID: 3208329525148588595}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
-      connections: []
-      _direction: 1
-      _connectionType: 0
-      _typeConstraint: 2
-      _dynamic: 0
-    - _fieldName: _teleportIn
-      _node: {fileID: 3208329525148588595}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
-      connections: []
-      _direction: 0
-      _connectionType: 0
-      _typeConstraint: 2
-      _dynamic: 0
-    - _fieldName: _nextMap
-      _node: {fileID: 3208329525148588595}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
-      connections: []
-      _direction: 1
-      _connectionType: 0
-      _typeConstraint: 2
-      _dynamic: 0
-    - _fieldName: _prevMap
-      _node: {fileID: 3208329525148588595}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
-      connections: []
-      _direction: 0
-      _connectionType: 0
-      _typeConstraint: 2
-      _dynamic: 0
-  _mapNodeId: 719c7110-0a2f-4d65-820b-e9e5c64a3b93
-  Repeat: 1
-  SectionData: {fileID: 11400000, guid: 19dcd01b9352e254e8c3ea896940d91f, type: 2}
-  FloorData: {fileID: 11400000, guid: 19f7e11c54a2e08499d59577a26f7f57, type: 2}
-  EnemyTable: {fileID: 0}
-  Boss:
-  - {fileID: 11400000, guid: 6fd32df8dbcc9314a8be35ea233b0f3d, type: 2}
-  _bossReward:
-  - _item: {fileID: 0}
-    _directWeapon: {fileID: 11400000, guid: e554e921d09e12641b64a9d7d94e8da5, type: 2}
-    _rangedWeapon: {fileID: 11400000, guid: 55fb5f31afd8c4b41a5c9ed86918e895, type: 2}
-    _artifact: {fileID: 0}
-  - _item: {fileID: 0}
-    _directWeapon: {fileID: 0}
-    _rangedWeapon: {fileID: 0}
-    _artifact: {fileID: 11400000, guid: 7f801f48e2ffbe34498eed3a79b02832, type: 2}
-  - _item: {fileID: 11400000, guid: b1e2f102e80ab044e9cd44e032bb9151, type: 2}
-    _directWeapon: {fileID: 0}
-    _rangedWeapon: {fileID: 0}
-    _artifact: {fileID: 0}
 --- !u!114 &3398057440443913114
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1842,7 +1764,7 @@ MonoBehaviour:
   m_Name: Infinite Map
   m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.InfiniteMapNode
   graph: {fileID: 11400000}
-  position: {x: 24, y: 1720}
+  position: {x: 1768, y: -264}
   ports:
     keys:
     - _teleportIn
@@ -1861,7 +1783,10 @@ MonoBehaviour:
       _node: {fileID: 4272659106180525192}
       _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      connections: []
+      connections:
+      - fieldName: _nextMap
+        node: {fileID: 5015381014945603743}
+        reroutePoints: []
       _direction: 0
       _connectionType: 0
       _typeConstraint: 2
@@ -2032,7 +1957,10 @@ MonoBehaviour:
       _node: {fileID: 5015381014945603743}
       _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      connections: []
+      connections:
+      - fieldName: _prevMap
+        node: {fileID: 4272659106180525192}
+        reroutePoints: []
       _direction: 1
       _connectionType: 0
       _typeConstraint: 2

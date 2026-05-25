@@ -15,12 +15,12 @@ MonoBehaviour:
   Name: Fairy
   CharacterType:
     TextureName: fairy
-  _sprite: {fileID: -2990309890484215505, guid: 9c32e2d83e1f6224db0f33d37b97161d, type: 3}
+  _sprite: {fileID: 0}
   IsBoss: 0
   Hp: 40
   MoveSpeed: 2
   InventoryCapacity: 20
-  Flags: 06000000
+  Flags: 07000000
   IsFlying: 1
   CanThroughWalls: 0
   AttackMultiplier: 1
