@@ -16,15 +16,17 @@ MonoBehaviour:
     rid: 2541219281251860498
   RemovalCondition:
     RemoveByElapsedTurn: 1
-    Duration: 20
+    Duration: 10
     RemoveByDamage: 0
     Probability: 0
     RemoveByCharacterNearby: 0
     CharacterNearbyProbability: 0
+  InflictLog: "\u306F\u731B\u6BD2\u3092\u53D7\u3051\u305F"
+  DeleteLog: "\u306E\u731B\u6BD2\u306F\u629C\u3051\u305F"
   references:
     version: 2
     RefIds:
     - rid: 2541219281251860498
       type: {class: Poisoned, ns: Domain.Service.Characters.Conditions, asm: Domain.Service}
       data:
-        Power: 2
+        Power: 1

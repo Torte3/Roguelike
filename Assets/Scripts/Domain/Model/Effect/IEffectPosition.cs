@@ -1,12 +1,11 @@
 using System.Collections.Generic;
-using Domain.Model.Item;
 using Domain.Model.Map;
 using UnityEngine;
 using Utilities;
 
 namespace Domain.Model.Effect
 {
-    public interface IEffectPosition : IHasInfo, IHasUpgrades
+    public interface IEffectPosition : IHasInfo
     {
         public bool IsDirectional { get; }
 
@@ -14,6 +13,5 @@ namespace Domain.Model.Effect
             IMap map);
 
         public float EvaluateHitProbability();
-        public string UpgradePathName { get; }
     }
 }

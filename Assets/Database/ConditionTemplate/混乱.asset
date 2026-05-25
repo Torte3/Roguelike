@@ -13,16 +13,21 @@ MonoBehaviour:
   m_Name: "\u6DF7\u4E71"
   m_EditorClassIdentifier: 
   Condition:
-    rid: 2541219281251860521
+    rid: 3119344245011382283
   RemovalCondition:
     RemoveByElapsedTurn: 1
     Duration: 8
     RemoveByDamage: 0
     Probability: 0
-    RemoveByEnemyNearby: 0
+    RemoveByCharacterNearby: 0
+    CharacterNearbyProbability: 0
+  InflictLog: "\u306F\u6DF7\u4E71\u3057\u305F"
+  DeleteLog: "\u306E\u6DF7\u4E71\u306F\u6CBB\u3063\u305F"
   references:
     version: 2
     RefIds:
-    - rid: 2541219281251860521
-      type: {class: Confused, ns: Domain.Service.Characters.Conditions, asm: Domain.Service}
-      data: 
+    - rid: 3119344245011382283
+      type: {class: FlagCondition, ns: Domain.Service.Characters.Conditions, asm: Domain.Service}
+      data:
+        _flagStatType:
+          stringValue: Confused

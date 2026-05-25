@@ -16,8 +16,9 @@ MonoBehaviour:
   Group: 0
   CharacterType:
     rid: 861543580450947072
+  _sprite: {fileID: 1996816407, guid: 16a4cf2300c3f0840a4a116846e4d7d1, type: 3}
   IsBoss: 0
-  Hp: 25
+  Hp: 30
   Aggression: 3
   Behavior:
     wanderAround: 1
@@ -34,12 +35,18 @@ MonoBehaviour:
     PrioritizeEnemiesOverLeaders: 1
     ChaseLeader: 1
   MoveSpeed: 2
-  IsHard: 0
-  IsHeavy: 0
+  Flags: 
   IsFlying: 0
   CanThroughWalls: 0
+  CanMimic: 0
+  MimicWeights:
+    ItemRevealOnPickUp: 1
+    ItemRevealOnUse: 1
+    Money: 1
+    Stairs: 1
   CanPickUp: 0
   CanUseItem: 1
+  CanReceivePlayerGift: 1
   Skills:
   - Skill:
       <Position>k__BackingField:
@@ -49,11 +56,14 @@ MonoBehaviour:
       <Effects>k__BackingField:
       - rid: 2541219281251860488
       <Repeats>k__BackingField: 1
+      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
       <RushDistance>k__BackingField: 0
       <BackStepDistance>k__BackingField: 0
-      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <ChargeTurn>k__BackingField: 0
+      <CoolTime>k__BackingField: 0
       <Log>k__BackingField: "\u306F\u77E2\u3092\u653E\u3063\u305F\u3002"
-    CoolTime: 0
+    Priority: 0
   HasLastSkill: 0
   LastSkill:
     <Position>k__BackingField:
@@ -63,10 +73,16 @@ MonoBehaviour:
     <Effects>k__BackingField:
     - rid: -2
     <Repeats>k__BackingField: 1
+    <ProbabilityOfSuccess>k__BackingField: 1
+    <Cost>k__BackingField: 0
     <RushDistance>k__BackingField: 0
     <BackStepDistance>k__BackingField: 0
-    <ProbabilityOfSuccess>k__BackingField: 1
+    <ChargeTurn>k__BackingField: 0
+    <CoolTime>k__BackingField: 0
     <Log>k__BackingField: 
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
   ElementDamageRateMultiplier:
     data: []
   ConditionResistance:
@@ -92,6 +108,7 @@ MonoBehaviour:
         Icon:
           _name: icons_full_16_539
         CanHitLayer: 01000000
+        IsPiercing: 0
     - rid: 2541219281251860488
       type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:
@@ -99,3 +116,4 @@ MonoBehaviour:
         - _element: 0
           _power: 5
         _criticalRate: 0
+        _isWeaponAttack: 0

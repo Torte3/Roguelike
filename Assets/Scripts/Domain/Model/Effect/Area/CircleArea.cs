@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Domain.Model.Entity;
 using Domain.Model.Evaluation;
@@ -42,28 +42,9 @@ namespace Domain.Model.Effect.Area
             return CommonSenseParameters.CircleAreaEvaluate(CanIgnoreWalls, Radius);
         }
 
-        public string UpgradePathName => "円";
-
-        public List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>
-            {
-                new(
-                    "半径+1",
-                    () => Radius += 1,
-                    () => Radius -= 1
-                )
-            };
-        }
-
-        public Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
-        }
-
         public string Info()
         {
-            var info = $"半径{Radius}マスの円内部";
+            var info = $"周囲{ItemDescriptionRichText.RichSpatialCells(Radius)}";
             if (ContainsSelf) info += "(中心含む)";
             if (CanIgnoreWalls) info += "(壁無視)";
             return info;

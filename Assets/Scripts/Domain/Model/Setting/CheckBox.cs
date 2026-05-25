@@ -1,23 +1,28 @@
-﻿using R3;
+﻿#nullable enable
+using R3;
 
 namespace Domain.Model.Setting
 {
     public record CheckBox : IOptionInput
     {
         public readonly string Name;
+        public readonly ReadOnlyReactiveProperty<bool> IsEnabled;
+        private readonly bool _defaultValue;
 
-        public CheckBox(string name, bool defaultValue)
+        public CheckBox(string name, bool defaultValue, ReactiveProperty<bool>? isEnabled = null)
         {
             Name = name;
-            OnValueChanged = new ReactiveProperty<bool>(defaultValue);
+            Value = new ReactiveProperty<bool>(defaultValue);
+            IsEnabled = isEnabled ?? new ReactiveProperty<bool>(true);
+            _defaultValue = defaultValue;
         }
 
-        public bool Value => OnValueChanged.Value;
-        public ReactiveProperty<bool> OnValueChanged { get; }
-
-        public void SetValue(bool value)
+        public void Reset()
         {
-            OnValueChanged.Value = value;
+            Value.Value = _defaultValue;
         }
+
+        public readonly ReactiveProperty<bool> Value;
+        public bool CurrentValue => Value.CurrentValue;
     }
 }

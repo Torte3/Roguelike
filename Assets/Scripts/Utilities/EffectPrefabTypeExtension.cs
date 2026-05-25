@@ -4,11 +4,6 @@ namespace Utilities
 {
     public static class EffectPrefabTypeExtension
     {
-        public static string GetPath(this ParticleType particleType)
-        {
-            return $"EffectPrefabs/{particleType.GetFileName()}.prefab";
-        }
-
         public static string GetFileName(this ParticleType particleType)
         {
             return particleType switch

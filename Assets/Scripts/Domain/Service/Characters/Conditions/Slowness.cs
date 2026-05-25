@@ -1,4 +1,3 @@
-using Cysharp.Threading.Tasks;
 using Domain.Model.Character.Status;
 using Domain.Model.Condition;
 using Domain.Model.Effect;
@@ -13,22 +12,15 @@ namespace Domain.Service.Characters.Conditions
         public string Name => "鈍足";
         public ParticleType ParticleType => ParticleType.SlowDown;
         public Impact Impact => Impact.Harmful;
-        public string InflictLog => "は足が遅くなった";
-        public string DeleteLog => "は元の速度に戻った";
 
         public void Inflict(IHasCondition hasCondition, Id<IEntity> actor)
         {
-            hasCondition.Status.DivideStat(StatType.MaxWaitTime, 0.5f);
-        }
-
-        public UniTask Persist(IHasCondition hasCondition)
-        {
-            return UniTask.CompletedTask;
+            hasCondition.Status.GetStat(StatType.MaxWaitTime).Divide(0.5f);
         }
 
         public void Delete(IHasCondition hasCondition, Id<IEntity> actor)
         {
-            hasCondition.Status.MultiplyStat(StatType.MaxWaitTime, 0.5f);
+            hasCondition.Status.GetStat(StatType.MaxWaitTime).Multiply(0.5f);
         }
 
         public float Evaluate(ITargetOfEffect target)

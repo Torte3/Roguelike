@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8d1e2f3a4b5476980a1b2c3d4e5f607, type: 3}
+  m_Name: Infinite
+  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.EnemyTableData
+  Enemies:
+    items:
+    - Item: {fileID: 11400000, guid: bc9bf32090a2f4c4eb49a6e310c3e03d, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: a161c346f3914d24bb7aeca7ae4b5b89, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: 121481700a3ebe542bfcf96979f3e16f, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: 370a911dfe8b2484db63c6e8f34f5c99, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: 9a8d4fcb820b16b49a9fd6f06102a63d, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: e9c4afc157185444ca463a93304707ad, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: 1943eb38ef7e8374f9efa8c0a88298f2, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: 31dc3254afcbf984db6ea1f251aca18f, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: 622befc93c7f49c48b2ac306ae37e27f, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: e4d902dfd521c9541b7660eb1ebde543, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: 3eefc4cf587b776428b3c75029dc2ca0, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: 1b6ce8ad8b4310e489667928dba8865c, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: 471e3b95a5fbf354780047c377f69258, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: ab82fa010f8c60149be4a61bc4245395, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: 3831e82ab7874294585c6db96d086f07, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: 4cfaab94f7ea2fc4ba44cebebc00eeeb, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: c8de623b779810f44b355e462d3c723c, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: 49636f57d2c813c4aaf27ffb5f12a170, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: f9c1c6dab8d4383489f2ffc917b9e043, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: 1fb769ab5eaa40b42b49cdcc3dc9b863, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: cdff4c525ad265948ac59aa15feb2930, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: e08657120f363c443a261f9a6b69cbcf, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: ef8e43e4f4f3c9f479b2ece22a300dd0, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: 3c61678395244794aaa00392f7fa8473, type: 2}
+      Weight: 1
+    - Item: {fileID: 11400000, guid: 372bda9724d39bc4a823ed7793b389de, type: 2}
+      Weight: 1

@@ -34,7 +34,7 @@ namespace Domain.Service.Effect
         {
             if (target.Status.IsFlagStat(FlagStatType.SecureHold))
             {
-                GameLog.Add($"{target.GetName(map.Player)}はアイテムを落とさなかった");
+                GameLog.Add(target.IsVisible, $"{target.GetName(map.Player)}はアイテムを落とさなかった");
                 return UniTask.CompletedTask;
             }
 
@@ -45,16 +45,16 @@ namespace Domain.Service.Effect
                 {
                     var item = items.GetAtRandom();
                     var index = target.Inventory.GetItemIndex(item);
-                    target.DropItem(index, -1, map, true);
+                    target.ForceDropItem(index.Value, map);
                 }
                 else
                 {
-                    GameLog.Add($"{target.GetName(map.Player)}はアイテムを落とさなかった");
+                    GameLog.Add(target.IsVisible, $"{target.GetName(map.Player)}はアイテムを落とさなかった");
                 }
             }
             else
             {
-                GameLog.Add($"{target.GetName(map.Player)}はアイテムを持っていない");
+                GameLog.Add(target.IsVisible, $"{target.GetName(map.Player)}はアイテムを持っていない");
             }
 
             return UniTask.CompletedTask;
@@ -68,18 +68,6 @@ namespace Domain.Service.Effect
         public override float EvaluatePrice()
         {
             return 50;
-        }
-
-        public override string UpgradePathName => "アイテム弾き";
-
-        public override List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>();
-        }
-
-        public override Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
         }
 
         public override string Info()

@@ -1,22 +1,25 @@
-﻿#nullable enable
+#nullable enable
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Character.Status;
+using Domain.Model.Dungeon;
 using Domain.Model.Entity;
 using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
 using Domain.Model.Setting;
 using Domain.Service.Action;
-using Domain.Service.Items;
+using Domain.Service.Events;
+using Domain.Service.Logs;
 using R3;
 using Unity.Logging;
-using UnityEngine;
 using Utilities;
+using Utilities.Serialize.Option;
 
 namespace Domain.Service.Characters.Behavior
 {
@@ -24,34 +27,39 @@ namespace Domain.Service.Characters.Behavior
     {
         private readonly IntelligentDashController _intelligentDashController = new();
         private readonly CharacterControlInputReceiver _receiver;
+        private readonly IGameManager _gameManager;
         public BehaviorData BehaviorData => new();
-        private readonly Subject<OnItemSelectMessage> _onItemSelect = new();
-        public Observable<OnItemSelectMessage> OnItemSelect => _onItemSelect;
-        private (Location, Vector2Int)? _homePosition;
+        private readonly Subject<OnStartItemSelectMessage> _onStartItemSelect = new();
+        public Observable<OnStartItemSelectMessage> OnStartItemSelect => _onStartItemSelect;
+        private readonly Subject<Unit> _onSelectedItemSelect = new();
+        public Observable<Unit> OnSelectedItemSelect => _onSelectedItemSelect;
+        private Option<Location> _homeLocation;
 
         private enum InputType
         {
             Move,
+            FaceNearestCharacter,
             UseItem,
             ThrowItem,
-            DropItem,
+            SwapItem,
             DoNothing,
             RenameItem
         }
 
-        public PlayerBehavior(CharacterControlInputReceiver receiver)
+        public PlayerBehavior(CharacterControlInputReceiver receiver, IGameManager gameManager)
         {
             _receiver = receiver;
+            _gameManager = gameManager;
         }
 
         public BehaviorMemento Serialize()
         {
-            return new BehaviorMemento(BehaviorData, _homePosition, null, null);
+            return new BehaviorMemento(BehaviorData, _homeLocation, Option<BehaviorState>.None, Option<Location>.None);
         }
 
         public static BehaviorMemento Build()
         {
-            return new BehaviorMemento(new BehaviorData(), null, null, null);
+            return new BehaviorMemento(new BehaviorData(), Option<Location>.None, Option<BehaviorState>.None, Option<Location>.None);
         }
 
         public bool WanderAround => true;
@@ -74,94 +82,154 @@ namespace Domain.Service.Characters.Behavior
                         var (move, started) = result.move!.Value;
 
                         var destination = character.Entity.CurrentPosition + move.Direction.Vector();
-                        var playerEventEntities = map.PlayerEventEntities.At(destination).On(EntityLayer.Middle);
-
-                        if (input.IsNoMove() || character.Status.IsFlagStat(FlagStatType.CannotMove))
+                        var playerEventEntity = map
+                            .GetPlayerEventEntitiesFastAt(destination, EntityLayer.Middle, EntityLayer.Floor,
+                                EntityLayer.Bottom)
+                            .FirstOrDefault();
+                        if (input.IsNoMove() ||
+                            (input.IsDiagonalOnly() && !move.Direction.IsDiagonal()) ||
+                            character.Status.IsFlagStat(FlagStatType.CannotMove))
                         {
                             character.Turn(move.Direction);
-                            if (playerEventEntities.Any() &&
-                            playerEventEntities.All(e => e.Event.CanExecuteEvent(map.Player)))
+                            var (eventAction, _) = await TryGetPlayerEventAction(character, gameManager, map, playerEventEntity, new Swap(move.Direction));
+                            if (eventAction != null)
+                                return eventAction;
+                            if (character.Status.IsFlagStat(FlagStatType.CannotMove))
                             {
-                                foreach (var eventEntity in playerEventEntities)
-                                {
-                                    var eventAction = await eventEntity.Event.DoAction(map.Player, gameManager, map, new Swap(move.Direction));
-                                    if (eventAction != null && eventAction.Doable(character, map))
-                                        return eventAction;
-                                    break;
-                                }
+                                return new DoNothing();
                             }
-                            break;
                         }
-
-                        if (Settings.IntelligentDash.Value)
-                            move = _intelligentDashController.Filter(move, character, started, map, input);
-                        var swap = new Swap(move.Direction);
-                        destination = character.Entity.CurrentPosition + move.Direction.Vector();
-
-                        character.Turn(move.Direction);
-                        if (move.Doable(character, map))
-                            return move;
-                        else if (playerEventEntities.Any() &&
-                            playerEventEntities.All(e => e.Event.CanExecuteEvent(map.Player)))
+                        else
                         {
-                            foreach (var eventEntity in playerEventEntities)
-                            {
-                                var eventAction = await eventEntity.Event.DoAction(map.Player, gameManager, map, swap);
-                                if (eventAction != null && eventAction.Doable(character, map))
-                                    return eventAction;
-                                break;
-                            }
+                            if (Settings.GlobalSettings.IntelligentDash.CurrentValue)
+                                move = _intelligentDashController.Filter(move, character, started, map, input);
+                            var swap = new Swap(move.Direction);
+
+                            character.Turn(move.Direction);
+                            if (move.Doable(character, map))
+                                return move;
+                            var (eventAction, anyEventCanExecute) = await TryGetPlayerEventAction(character, gameManager, map, playerEventEntity, swap);
+                            if (eventAction != null)
+                                return eventAction;
+                            if (!anyEventCanExecute && swap.Doable(character, map))
+                                return swap;
                         }
-                        else if (swap.Doable(character, map))
-                            return swap;
+                        break;
+                    case InputType.FaceNearestCharacter:
+                        character.FaceNearestCharacter(map);
                         break;
                     case InputType.UseItem:
                         var focus = result.focus!;
-                        var item = focus.GetItem(character.Inventory, map);
+                        var focusItem = focus.GetItem(character.Inventory, map);
                         IAction action;
 
-                        if (item == null)
-                            action = new UseSkill(character.Skills[0], character.CurrentDirection);
+                        if (focusItem == null)
+                            action = new UseSkill(character.Skills[0].Skill, character.CurrentDirection);
                         else
-                            action = new UseItem(item, character.CurrentDirection);
+                            action = new UseItem(focusItem, character.CurrentDirection);
 
                         if (action.Doable(character, map)) return action;
                         break;
                     case InputType.ThrowItem:
                         focus = result.focus!;
-                        item = focus.GetItem(character.Inventory, map);
-                        if (item != null)
+                        if (focus.IsOnItem(character.Inventory, map, out focusItem))
                         {
-                            action = new ThrowItem(item, character.CurrentDirection);
+                            action = new ThrowItem(focusItem, character.CurrentDirection);
+                            if (action.Doable(character, map)) return action;
+                            LogIfCursedBlocksThrowAfterDoableFailed(character, map, focusItem);
+                        }
+
+                        break;
+                    case InputType.SwapItem:
+                        focus = result.focus!;
+                        if (focus.IsOnEmpty)
+                        {
+                            break;
+                        }
+                        if (focus.IsOnGroundItem)
+                        {
+                            action = new PickUpItem();
                             if (action.Doable(character, map)) return action;
                         }
-
-                        break;
-                    case InputType.DropItem:
-                        focus = result.focus!;
-                        if (focus.isEmpty)
-                            break;
-                        if (focus.isGroundItem)
+                        var focus2 = await SelectItem("入れ替え先を選択してください", new ItemFocus[] { focus });
+                        if (focus2.IsOnEmpty)
                         {
-                            if (character.TryPickUpItem(map, true))
-                                return new DoNothing();
                             break;
                         }
 
-                        action = new DropItem(focus.index, focus.subIndex);
-                        if (action.Doable(character, map)) return action;
-                        break;
+                        var item1 = focus.GetItem(character.Inventory, map);
+                        var item2 = focus2.GetItem(character.Inventory, map);
+                        if (focus.IsOnGroundItem)
+                        {
+                            action = new DropItem(item2);
+                            if (action.Doable(character, map)) return action;
+                            LogIfCursedBlocksDropAfterDoableFailed(character, map, item2);
+                        }
+                        else if (focus2.IsOnGroundItem)
+                        {
+                            action = new DropItem(item1);
+                            if (action.Doable(character, map)) return action;
+                            LogIfCursedBlocksDropAfterDoableFailed(character, map, item1);
+                        }
+                        else
+                        {
+                            if (!character.Inventory.CanSwap(focus.Index, focus2.Index))
+                            {
+                                throw new Exception($"Can't swap item from inventory: focus: {focus}, focus2: {focus2}");
+                            }
+                            character.Inventory.Swap(focus.Index, focus2.Index);
+                        }
+                        return new DoNothing();
                     case InputType.DoNothing:
                         await UniTask.Yield();
                         return new DoNothing();
                     case InputType.RenameItem:
                         focus = result.focus!;
-                        item = focus.GetItem(character.Inventory, map);
-                        if (item != null)
-                        {
-                            map.ItemPlaceholders.Rename(item.BaseName, await gameManager.GetTextInput());
-                        }
+                        focusItem = focus.GetItem(character.Inventory, map);
+                        if (focusItem == null)
+                            break;
 
+                        var choices = new List<string>();
+                        if (!focusItem.IsInfoIdentified(map.Player))
+                        {
+                            choices.Add("このアイテムの種類に名前をつける");
+                        }
+                        if (focusItem.CustomName.IsSome())
+                        {
+                            choices.Add("このアイテム単体の名前を変える");
+                            choices.Add("このアイテム単体の名前をデフォルトに戻す");
+                        }
+                        else
+                        {
+                            choices.Add("このアイテム単体に名前をつける");
+                        }
+                        var cancelChoiceIndex = choices.Count;
+                        choices.Add("やめる");
+
+                        var choiceIndex = await gameManager.GetChoice(null, cancelChoiceIndex, choices.ToArray());
+                        if (choiceIndex == cancelChoiceIndex)
+                            break;
+
+                        switch (choices[choiceIndex])
+                        {
+                            case "このアイテムの種類に名前をつける":
+                            {
+                                var typeName = await gameManager.GetTextInput(canCancel: true);
+                                if (typeName != null)
+                                    map.ItemPlaceholders.Rename(focusItem.BaseName, typeName);
+                                break;
+                            }
+                            case "このアイテム単体に名前をつける":
+                            {
+                                var itemName = await gameManager.GetTextInput(canCancel: true);
+                                if (itemName != null)
+                                    focusItem.Rename(itemName);
+                                break;
+                            }
+                            case "このアイテム単体の名前をデフォルトに戻す":
+                                focusItem.RevertToDefaultName();
+                                break;
+                        }
                         break;
                     default:
                         throw new IndexOutOfRangeException();
@@ -171,50 +239,108 @@ namespace Domain.Service.Characters.Behavior
             }
         }
 
+        private static async UniTask<(IAction? action, bool anyEventCanExecute)> TryGetPlayerEventAction(IHasBehavior character, IGameManager gameManager, IMap map, IHasPlayerEvent? playerEventEntity, Swap swap)
+        {
+            if (playerEventEntity == null || !playerEventEntity.Events.Any(e => e.CanExecuteEvent(map.Player, map)))
+                return (null, false);
+            var eventAction = await playerEventEntity.Events.DoAction(map.Player, gameManager, map, swap);
+            if (eventAction != null && eventAction.Doable(character, map))
+                return (eventAction, true);
+            return (null, true);
+        }
+
         private async UniTask<(InputType type, (Move action, bool isStarted)? move, ItemFocus? focus)> InitializeTasks()
         {
             var cancellationToken = new CancellationTokenSource();
             UniTask<(Move action, bool isStarted)> moveTask =
                 _receiver.OnMoveInputReceived.WaitAsync(cancellationToken.Token);
+            var faceNearestTask = _receiver.OnFaceNearestCharacterActionReceived.WaitAsync(cancellationToken.Token);
             var useItemTask = _receiver.OnUseItemActionReceived.WaitAsync(cancellationToken.Token);
             var throwItemTask = _receiver.OnThrowItemActionReceived.WaitAsync(cancellationToken.Token);
-            var dropItemTask = _receiver.OnDropItemActionReceived.WaitAsync(cancellationToken.Token);
+            var swapItemTask = _receiver.OnSwapItemActionReceived.WaitAsync(cancellationToken.Token);
             var doNothingTask = _receiver.OnDoNothingActionReceived.WaitAsync(cancellationToken.Token);
             var renameItemTask = _receiver.OnRenameItemActionReceived.WaitAsync(cancellationToken.Token);
 
-            var tasks = await UniTask.WhenAny(moveTask, useItemTask, throwItemTask, dropItemTask, doNothingTask,
+            var tasks = await UniTask.WhenAny(moveTask, faceNearestTask, useItemTask, throwItemTask, swapItemTask, doNothingTask,
                 renameItemTask);
             cancellationToken.Cancel();
             return tasks.winArgumentIndex switch
             {
                 0 => (InputType.Move, tasks.result1, null),
-                1 => (InputType.UseItem, null, tasks.result2),
-                2 => (InputType.ThrowItem, null, tasks.result3),
-                3 => (InputType.DropItem, null, tasks.result4),
-                4 => (InputType.DoNothing, null, null),
-                5 => (InputType.RenameItem, null, tasks.result6),
+                1 => (InputType.FaceNearestCharacter, null, null),
+                2 => (InputType.UseItem, null, tasks.result3),
+                3 => (InputType.ThrowItem, null, tasks.result4),
+                4 => (InputType.SwapItem, null, tasks.result5),
+                5 => (InputType.DoNothing, null, null),
+                6 => (InputType.RenameItem, null, tasks.result7),
                 _ => throw new IndexOutOfRangeException()
             };
         }
 
-        public void KnowLocationOf(Vector2Int position)
+        public void KnowLocationOf(Location location)
         {
         }
 
-        public async UniTask<IItem?> SelectItem(IInventory inventory, IMap map, params int[] disabledItemIds)
+        public async UniTask<ItemFocus> SelectItem(string text, params ItemFocus[] disabledItemIndexes)
         {
-            _onItemSelect.OnNext(new OnItemSelectMessage(true, disabledItemIds));
+            _onStartItemSelect.OnNext(new OnStartItemSelectMessage(text, disabledItemIndexes));
+            ItemFocus? focus;
+            do
+            {
+                focus = await _receiver.OnItemSelectConfirmReceived.WaitAsync();
+            } while (!focus.IsOnEmpty && disabledItemIndexes.Contains(focus));
+
+            _gameManager.PlaySE(SE.ItemSelectConfirm);
+            _onSelectedItemSelect.OnNext(Unit.Default);
+            return focus;
+        }
+
+        public async UniTask<ItemFocus> SelectItemWithPreview(
+            string text,
+            ItemFocus[] disabledItemIndexes,
+            ItemSelectPreview[] previews,
+            ItemSelectPreview? defaultPreview,
+            string previewTitle)
+        {
+            _onStartItemSelect.OnNext(new OnStartItemSelectMessage(text, disabledItemIndexes, previews, defaultPreview, previewTitle));
 
             ItemFocus? focus;
             do
             {
-                focus = await _receiver.OnUseItemActionReceived.WaitAsync();
-            } while (!focus.isEmpty && disabledItemIds.Contains(focus.index));
+                focus = await _receiver.OnItemSelectConfirmReceived.WaitAsync();
+            } while (!focus.IsOnEmpty && disabledItemIndexes.Contains(focus));
 
-            _onItemSelect.OnNext(new OnItemSelectMessage(false, new int[0]));
-            if (focus.isEmpty)
-                return null;
-            return focus.GetItem(inventory, map);
+            _gameManager.PlaySE(SE.ItemSelectConfirm);
+            _onSelectedItemSelect.OnNext(Unit.Default);
+            return focus;
         }
+
+        private static void LogIfCursedBlocksThrowAfterDoableFailed(IHasBehavior character, IMap map, IItem item)
+        {
+            if (character.Status.IsFlagStat(FlagStatType.CannotAct))
+                return;
+            if (!IsItemAccessibleForThrow(character, map, item))
+                return;
+            if (!item.IsDiscardBlocked)
+                return;
+            GameLog.Add(character.Entity.IsVisible,
+                $"{item.GetName(map.Player, map.ItemPlaceholders)}は呪われていて投げられない");
+        }
+
+        private static void LogIfCursedBlocksDropAfterDoableFailed(IHasBehavior character, IMap map, IItem? item)
+        {
+            if (item == null || character.Status.IsFlagStat(FlagStatType.CannotAct))
+                return;
+            if (!character.Inventory.CanRemove(item))
+                return;
+            if (!item.IsDiscardBlocked)
+                return;
+            GameLog.Add(character.Entity.IsVisible,
+                $"{item.GetName(map.Player, map.ItemPlaceholders)}は呪われていて捨てられない");
+        }
+
+        private static bool IsItemAccessibleForThrow(IHasBehavior character, IMap map, IItem item) =>
+            character.Inventory.CanRemove(item)
+            || map.Items.At(character.Entity.CurrentPosition).FirstOrDefault()?.Item == item;
     }
 }

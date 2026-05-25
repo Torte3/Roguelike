@@ -2,7 +2,7 @@ using R3;
 
 namespace Utilities.Stats
 {
-    public class FlagStat
+    public class FlagStat : IFlagStat
     {
         private readonly ReactiveProperty<int> _flags;
         private readonly ReactiveProperty<bool> _value;
@@ -18,13 +18,13 @@ namespace Utilities.Stats
         public ReadOnlyReactiveProperty<bool> Value => _value;
         public ReadOnlyReactiveProperty<int> Flags => _flags;
 
-        public void AddFlags()
+        public void Add()
         {
             _flags.Value++;
             _value.Value = _flags.Value > 0;
         }
 
-        public void RemoveFlags()
+        public void Remove()
         {
             _flags.Value--;
             _value.Value = _flags.Value > 0;

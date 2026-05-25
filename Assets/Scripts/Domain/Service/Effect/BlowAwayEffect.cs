@@ -59,25 +59,6 @@ namespace Domain.Service.Effect
             return CommonSenseParameters.BlowAwayPrice(_distance);
         }
 
-        public override string UpgradePathName => "吹き飛ばし";
-
-        public override List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>
-            {
-                new(
-                    "吹き飛ばし距離+1",
-                    () => _distance += 1,
-                    () => _distance -= 1
-                )
-            };
-        }
-
-        public override Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
-        }
-
         public override string Info()
         {
             return $"{_distance}マス吹き飛ばす\n";

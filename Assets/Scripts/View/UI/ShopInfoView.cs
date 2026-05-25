@@ -5,7 +5,6 @@ namespace View.UI
 {
     public class ShopInfoView : MonoBehaviour
     {
-        [SerializeField] private TMP_Text _moneyText;
         [SerializeField] private TMP_Text _purchaseText;
         [SerializeField] private TMP_Text _saleText;
 
@@ -14,9 +13,8 @@ namespace View.UI
             gameObject.SetActive(isVisible);
         }
 
-        public void SetInfo(int money, int purchase, int sell)
+        public void SetInfo(int purchase, int sell)
         {
-            _moneyText.text = $"所持金　: {money}G";
             _purchaseText.text = $"購入金額: {purchase}G";
             _saleText.text = $"売却金額: {sell}G";
         }

@@ -7,6 +7,8 @@ namespace View.UI
 {
     public class TextInputMenu : MonoBehaviour, IMenu
     {
+        private bool _canCancel;
+        public bool CanClose => _canCancel;
         [SerializeField] private TMP_InputField _inputField;
         private readonly AsyncReactiveProperty<string> _text = new("");
         public IReadOnlyAsyncReactiveProperty<string> Text => _text;
@@ -15,6 +17,8 @@ namespace View.UI
         {
             _inputField.onEndEdit.AddListener(text => _text.Value = text);
         }
+
+        public void SetCanCancel(bool canCancel) => _canCancel = canCancel;
 
         public void Show()
         {

@@ -1,7 +1,5 @@
 #nullable enable
 
-using System.Collections.Generic;
-using Domain.Model.Effect;
 using Sirenix.OdinInspector;
 using UnityEngine;
 #if UNITY_EDITOR
@@ -18,9 +16,10 @@ namespace Domain.Model.Item
         [SerializeField] private Rarity _rarity;
         public Rarity Rarity => _rarity;
         [MinValue(0)] public float PowerMagnification = 1;
+        [MinValue(0)] public int FeatureLimitAdditional = 0;
         [MinValue(0)] public float UsageLimitMagnification = 1;
         public int AdditionalUpgradeLimit;
-        [SerializeReference] public List<IEffect> AdditionalEffects = new();
+        public bool IsCursed;
 #if UNITY_EDITOR
         private void OnValidate()
         {

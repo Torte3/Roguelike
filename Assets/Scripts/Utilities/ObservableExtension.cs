@@ -9,12 +9,22 @@ namespace Utilities
 {
     public static class ObservableExtension
     {
+        public static Observable<T> SkipLatestValueOnSubscribe<T>(this ReadOnlyReactiveProperty<T> source)
+        {
+            return source.Skip(1);
+        }
+
         public static IDisposable RelayTo<T>(this Observable<T> source, Observer<T> target)
         {
             return source.Subscribe(item => target.OnNext(item));
         }
 
-        public static IDisposable SubscribeToAllObservables<T, TMessage>(this IObservableCollection<T> list,
+        public static Observable<T> WhereNotNull<T>(this Observable<T?> source) where T : struct
+        {
+            return source.Where(item => item != null).Select(item => item.Value);
+        }
+
+        public static IDisposable SubscribeIncludingCurrentObservables<T, TMessage>(this IObservableCollection<T> list,
             Func<T, Observable<TMessage>> selector, Action<T, TMessage> action)
         {
             var disposables = new Dictionary<T, IDisposable>();
@@ -46,8 +56,8 @@ namespace Utilities
             return allDisposable;
         }
 
-        public static IDisposable SubscribeToAllItems<T>(this IObservableCollection<T> list, Action<T> addAction,
-            Action<T> removeAction = null)
+        public static IDisposable SubscribeIncludingCurrentItems<T>(this IObservableCollection<T> list, Action<T> addAction,
+            Action<T>? removeAction = null)
         {
             foreach (var item in list)
             {
@@ -71,7 +81,7 @@ namespace Utilities
             };
         }
 
-        public static IDisposable SubscribeToAllItems<T>(this ReadOnlyReactiveProperty<T> property, Action<T> addAction,
+        public static IDisposable SubscribeIncludingCurrentValue<T>(this ReadOnlyReactiveProperty<T> property, Action<T> addAction,
             Action<T>? removeAction = null) where T : notnull
         {
             addAction(property.CurrentValue);
@@ -84,7 +94,7 @@ namespace Utilities
                 });
         }
 
-        public static IDisposable SubscribeToAllItemsIgnoreNull<T>(this ReadOnlyReactiveProperty<T?> property,
+        public static IDisposable SubscribeIncludingCurrentValueIgnoreNull<T>(this ReadOnlyReactiveProperty<T?> property,
             Action<T> addAction,
             Action<T>? removeAction = null)
         {
@@ -101,14 +111,12 @@ namespace Utilities
         public static void SynchronizeWith<T>(this ObservableHashSet<T> collectionA, IEnumerable<T> collectionB)
             where T : notnull
         {
-            // コレクションAの要素のうち、コレクションBに存在しないものを削除する
             var itemsToRemove = collectionA.Except(collectionB).ToList();
             foreach (var item in itemsToRemove)
             {
                 collectionA.Remove(item);
             }
 
-            // コレクションBの要素のうち、コレクションAに存在しないものを追加する
             var itemsToAdd = collectionB.Except(collectionA).ToList();
             foreach (var item in itemsToAdd)
             {
@@ -121,7 +129,7 @@ namespace Utilities
         {
             collectionA.SynchronizeWith(collectionB);
 
-            return collectionB.SubscribeToAllItems(add => collectionA.Add(add), remove => collectionA.Remove(remove));
+            return collectionB.SubscribeIncludingCurrentItems(add => collectionA.Add(add), remove => collectionA.Remove(remove));
         }
 
         public static IDisposable AddWith<T, U>(this ObservableList<U> collectionA,
@@ -133,7 +141,7 @@ namespace Utilities
         public static IDisposable AddWith<T, U>(this ObservableList<U> collectionA,
             IObservableCollection<T> collectionB, Func<T, U> selector) where T : notnull
         {
-            return collectionB.SubscribeToAllItems(
+            return collectionB.SubscribeIncludingCurrentItems(
                 add => collectionA.Add(selector(add)),
                 remove => collectionA.Remove(selector(remove))
             );
@@ -144,7 +152,7 @@ namespace Utilities
         {
             collectionA.SynchronizeWith(collectionB);
 
-            return collectionB.SubscribeToAllItems(add => collectionA.Add(add), remove => collectionA.Remove(remove));
+            return collectionB.SubscribeIncludingCurrentItems(add => collectionA.Add(add), remove => collectionA.Remove(remove));
         }
     }
 }

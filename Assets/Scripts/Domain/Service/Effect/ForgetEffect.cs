@@ -33,21 +33,9 @@ namespace Domain.Service.Effect
             return 100;
         }
 
-        public override string UpgradePathName => "忘却";
-
-        public override List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>();
-        }
-
-        public override Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
-        }
-
         public override string Info()
         {
-            return "対象の知識を消去する\n";
+            return "知識を消去\n";
         }
     }
 }

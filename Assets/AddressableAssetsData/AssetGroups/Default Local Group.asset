@@ -13,102 +13,20 @@ MonoBehaviour:
   m_Name: Default Local Group
   m_EditorClassIdentifier: 
   m_GroupName: Default Local Group
-  m_Data:
-    m_SerializedData: []
   m_GUID: 5256d31568c849647891e08873e62a54
   m_SerializeEntries:
-  - m_GUID: 7a2e00bce7432144b8739bdf62027095
-    m_Address: Assets/Images
+  - m_GUID: 0ff0bbc95fb260f419eac6217e9c2857
+    m_Address: Assets/Database/WeaponPrefix
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 96bed517236927e419a3bea79f14d12a
-    m_Address: Assets/Prefabs
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: d2ea27916f2f2d142b880595a662262e
-    m_Address: Assets/Database
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 302c528a578b9c14c97457e979f8c689
-    m_Address: Assets/Animations
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 7f7f62857ee08504787094917aa4edfb
-    m_Address: EffectPrefabs
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: cd3c5d70a8f2cb947a8a88a4e292befe
-    m_Address: Assets/kyouma0220/RandomDungeonWithBluePrint/BluePrints
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 932d0297d5f408141b20c2891b6c4b22
-    m_Address: MapChip
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a670071d25a609f47867e236cc8a1526
-    m_Address: Assets/Database/ItemData
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 95fda9077916e264598251505583fb60
-    m_Address: Assets/Database/ItemData
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 7d1f0b6ff23756349a5b376ec8b2a637
-    m_Address: Assets/Database/ItemData
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: dbb100f1d67630d48b4402827cbd257b
-    m_Address: Assets/Database/ItemData
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: ea3f0d2ca36c0184c95aa60b767b5a92
+  - m_GUID: 1385b74094a42e5458fe2fce880b5b23
     m_Address: Assets/Database/EnemyData
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 2f9eacf138db96944a43fe95523ed093
+  - m_GUID: 15994f4e20931d2489e9dc0170b8b975
     m_Address: Assets/Database/EnemyData
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: e9e3c0dc1c99c0541acfad4909ca107b
-    m_Address: "Assets/Database/ItemData/\u85AC\u8349.asset"
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: f5954a8ba66a98444ace7667d7ee2362
-    m_Address: "Assets/Database/ItemData/\u6B6A\u3093\u3060\u61D0\u4E2D\u6642\u8A08.asset"
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: ab896f166b55d994eabf88b66b1bbf29
-    m_Address: "Assets/Database/ItemData/\u30BD\u30A6\u30EB\u30A4\u30FC\u30BF\u30FC.asset"
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 4a599c8ec1f87e14086877f004975218
-    m_Address: Assets/Database/EnemyData
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a187ca85d27774241b40182313223557
-    m_Address: Assets/Database/ItemData
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 31360beba4097894fbbf286fca4c056b
-    m_Address: Assets/Database/ConditionTemplate
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -117,13 +35,88 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: bde9c16c688e22946b37fd7a4b676ea1
-    m_Address: Assets/Database/FieldBluePrint
+  - m_GUID: 16dc036fb54374a438b6bf86d3e13a57
+    m_Address: Assets/Database/ItemData
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 0ff0bbc95fb260f419eac6217e9c2857
-    m_Address: Assets/Database/WeaponPrefix
+  - m_GUID: 19dcd01b9352e254e8c3ea896940d91f
+    m_Address: Assets/Database/DungeonBluePrintData/SectionData/Cave.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2000a3006e285254492d1c3c65068164
+    m_Address: Assets/Database/SectionData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2f9eacf138db96944a43fe95523ed093
+    m_Address: Assets/Database/EnemyData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2fba4840818d9ca418627f99a5668fa1
+    m_Address: Assets/Database/EnemyData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 302c528a578b9c14c97457e979f8c689
+    m_Address: Assets/Animations
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 31360beba4097894fbbf286fca4c056b
+    m_Address: Assets/Database/ConditionTemplate
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 415db10414617474c956567d209756f9
+    m_Address: Assets/Database/ItemData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4a599c8ec1f87e14086877f004975218
+    m_Address: Assets/Database/EnemyData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 751ada207877dc843b986e894dfa571c
+    m_Address: Assets/Database/ItemData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 76eb644b089d9dc4c8555ea197df4414
+    m_Address: Assets/Database/EnemyData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7a2e00bce7432144b8739bdf62027095
+    m_Address: Assets/Images
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7d1f0b6ff23756349a5b376ec8b2a637
+    m_Address: Assets/Database/ItemData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7f7f62857ee08504787094917aa4edfb
+    m_Address: EffectPrefabs
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 909c95ceec635e748a38fd5a7c96ccad
+    m_Address: Assets/Database/ItemData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 932d0297d5f408141b20c2891b6c4b22
+    m_Address: MapChip
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 95fda9077916e264598251505583fb60
+    m_Address: Assets/Database/ItemData
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -132,7 +125,52 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 909c95ceec635e748a38fd5a7c96ccad
+  - m_GUID: 96bed517236927e419a3bea79f14d12a
+    m_Address: Assets/Prefabs
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a187ca85d27774241b40182313223557
+    m_Address: Assets/Database/ItemData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a2071e703efb07f46b37dd57313404a7
+    m_Address: Assets/Database/EnemyData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a670071d25a609f47867e236cc8a1526
+    m_Address: Assets/Database/ItemData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a7e9cd6ea47fbe44e98b33935eb5ad41
+    m_Address: Assets/Database/PlayerData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bce174c3e834b0142803afc072c4bfae
+    m_Address: Assets/Database/EnemyData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bde9c16c688e22946b37fd7a4b676ea1
+    m_Address: Assets/Database/FieldBluePrint
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d2ea27916f2f2d142b880595a662262e
+    m_Address: Assets/Database
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d75da651337916a4b9dc86e6d71bdc09
+    m_Address: Assets/Database/EnemyData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dbb100f1d67630d48b4402827cbd257b
     m_Address: Assets/Database/ItemData
     m_ReadOnly: 0
     m_SerializedLabels: []
@@ -142,7 +180,17 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 386dd33a8a267a6458bb70c3b7388de9
+  - m_GUID: ea3f0d2ca36c0184c95aa60b767b5a92
+    m_Address: Assets/Database/EnemyData
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f5954a8ba66a98444ace7667d7ee2362
+    m_Address: "Assets/Database/ItemData/\u6B6A\u3093\u3060\u61D0\u4E2D\u6642\u8A08.asset"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fc240ef5bace91a40b772e5ad835dce5
     m_Address: Assets/Database/ItemData
     m_ReadOnly: 0
     m_SerializedLabels: []
@@ -151,5 +199,5 @@ MonoBehaviour:
   m_Settings: {fileID: 11400000, guid: fd84a6b010ca1364aaa4a4310d8e8d74, type: 2}
   m_SchemaSet:
     m_Schemas:
-    - {fileID: 11400000, guid: 200e0d331ed24fa4aa4d3ceb9533cae4, type: 2}
     - {fileID: 11400000, guid: de77e3d8e088cea48bbdac7d2146c775, type: 2}
+    - {fileID: 11400000, guid: 200e0d331ed24fa4aa4d3ceb9533cae4, type: 2}

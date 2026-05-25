@@ -1,60 +1,119 @@
 #nullable enable
+using System.Collections.Generic;
+using Domain.Model;
+using Domain.Model.Map;
 using Domain.Model.Memento;
-using Domain.Model.Setting;
 using Unity.Logging;
 using UnityEngine;
-using Utilities.Serialize;
+using Utilities;
 
 namespace Game
 {
+    public record GlobalSaveData(
+        GlobalStatisticsMemento GlobalStatistics,
+        Dictionary<string, int> GlobalSettings);
+    public record SaveData(
+        WorldMemento World,
+        Dictionary<Id<IMap>, MapMemento> Maps,
+        StatisticsMemento Statistics,
+        Dictionary<string, int> Settings,
+        float TurnWaitTime,
+        bool IsRollbacked,
+        BGM Bgm);
     public class SaveDataManager
     {
         private SQLiteDatabase db;
+        private int _saveDataSlot;
 
-        public SaveDataManager()
+        public SaveDataManager(int id)
         {
             db = new SQLiteDatabase();
+            _saveDataSlot = id;
         }
 
-        public void Save(int id, World world)
+        public void SetSaveDataSlot(int id)
         {
-            Log.Debug("[Save]Start Save");
-            var saveData = world.Serialize();
-            var maps = world.SerializeUpdatedMaps();
-            db.Save(id, JsonUtility.ToJson(saveData));
-            foreach (var map in maps)
+            _saveDataSlot = id;
+        }
+
+        public bool IsExistSave()
+        {
+            return db.ExistSave(_saveDataSlot);
+        }
+
+        public void SaveLight(int turn)
+        {
+            Log.Debug("[Save]Start Save Light");
+            db.SaveTurn(_saveDataSlot, turn);
+            Log.Debug("[Save]End Save Light");
+        }
+
+        public void SaveFull(GlobalSaveData globalSaveData, SaveData saveData)
+        {
+            Log.Debug("[Save]Start Save"); 
+            db.SaveGlobalStatistics(JsonUtility.ToJson(globalSaveData.GlobalStatistics));
+            db.SaveGlobalSettings(globalSaveData.GlobalSettings);
+
+            db.Save(_saveDataSlot, JsonUtility.ToJson(saveData.World), saveData.TurnWaitTime, (int)saveData.Bgm);
+            db.SaveTurn(_saveDataSlot, saveData.Statistics.Turn);
+            foreach (var map in saveData.Maps)
             {
-                Log.Debug($"[Save]Save map: {map.Id}");
-                db.SaveMap(map.Id.ToString(), JsonUtility.ToJson(map));
+                db.SaveMap(_saveDataSlot, map.Key.ToString(), JsonUtility.ToJson(map.Value));
             }
-            db.SaveSettings(Settings.GetValues().ToSerializable());
+            db.SaveStatistics(_saveDataSlot, JsonUtility.ToJson(saveData.Statistics));
+            db.SaveSettings(_saveDataSlot, saveData.Settings);
 
             Log.Debug("[Save]End Save");
         }
 
-        public WorldMemento? Load(int id)
+        public GlobalSaveData? LoadGlobal()
         {
-            Log.Debug("[Save]Start Load");
-            WorldMemento? world = null;
-            var saveData = db.Load(id);
-            if (saveData != null)
+            if (!IsExistSave())
             {
-                world = JsonUtility.FromJson<WorldMemento>(saveData);
+                return null;
             }
-            var settings = db.LoadSettings();
-            if (settings != null)
-            {
-                Settings.SetValues(settings);
-            }
-
-            Log.Debug("[Save]End Load");
-            return world;
+            Log.Debug("[Save]Start Load Global");
+            var globalStatisticsData = db.LoadGlobalStatistics();
+            var globalStatistics = JsonUtility.FromJson<GlobalStatisticsMemento>(globalStatisticsData);
+            var globalSettings = db.LoadGlobalSettings();
+            Log.Debug("[Save]End Load Global");
+            return new GlobalSaveData(globalStatistics, globalSettings);
         }
 
-        public MapMemento? LoadMap(string mapId)
+        public SaveData? Load()
         {
-            var mapData = db.LoadMap(mapId);
-            return mapData != null ? JsonUtility.FromJson<MapMemento>(mapData) : null;
+            if (!IsExistSave())
+            {
+                return null;
+            }
+            Log.Debug("[Save]Start Load");
+            var (worldData, turnWaitTime, bgm) = db.Load(_saveDataSlot);
+            var world = JsonUtility.FromJson<WorldMemento>(worldData);
+            Dictionary<Id<IMap>, MapMemento> maps = new();
+            foreach (var mapId in world.MapIds)
+            {
+                var mapData = db.LoadMap(_saveDataSlot, mapId.ToString());
+                maps.Add(mapId, JsonUtility.FromJson<MapMemento>(mapData));
+            }
+            var statisticsData = db.LoadStatistics(_saveDataSlot);
+            var statistics = JsonUtility.FromJson<StatisticsMemento>(statisticsData);
+
+            var settings = db.LoadSettings();
+
+            var latestTurn = LoadLatestTurn();
+            var isRollbacked = latestTurn != statistics.Turn;
+
+            Log.Debug("[Save]End Load");
+            return new SaveData(world, maps, statistics, settings, turnWaitTime, isRollbacked, (BGM)bgm);
+        }
+
+        private int LoadLatestTurn()
+        {
+            if (!db.ExistSave(_saveDataSlot))
+            {
+                return 0;
+            }
+            return db.LoadLatestTurn(_saveDataSlot);
         }
 
         public void ClearSave()

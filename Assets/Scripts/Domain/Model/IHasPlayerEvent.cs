@@ -1,7 +1,9 @@
-﻿namespace Domain.Model
+﻿using System.Collections.Generic;
+
+namespace Domain.Model
 {
     public interface IHasPlayerEvent
     {
-        public IPlayerEvent Event { get; }
+        public IReadOnlyList<IPlayerEvent> Events { get; }
     }
 }

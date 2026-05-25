@@ -20,20 +20,25 @@ namespace View
         public void SetVisibility(bool visible)
         {
             _isVisible = visible;
-            GetComponent<SpriteRenderer>().enabled = visible;
+            UpdateVisibility();
+        }
+
+        public void UpdateVisibility()
+        {
+            GetComponent<SpriteRenderer>().enabled = _isVisible;
             foreach (var child in transform.GetComponentsInChildren<SpriteRenderer>())
             {
-                child.enabled = visible;
+                child.enabled = _isVisible;
             }
 
             foreach (var child in transform.GetComponentsInChildren<MeshRenderer>())
             {
-                child.enabled = visible;
+                child.enabled = _isVisible;
             }
 
             foreach (var child in transform.GetComponentsInChildren<ParticleSystemRenderer>())
             {
-                child.enabled = visible;
+                child.enabled = _isVisible;
             }
         }
     }

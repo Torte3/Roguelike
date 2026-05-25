@@ -1,17 +1,15 @@
 #nullable enable
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Character.Status;
-using Domain.Model.Condition;
 using Domain.Model.Entity;
 using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
-using Domain.Service.Characters.Conditions;
+using Domain.Service.Events;
 using Domain.Service.Items;
 using Domain.Service.Logs;
 using R3;
@@ -20,49 +18,46 @@ using Utilities;
 
 namespace Domain.Service.Rooms
 {
-    public class Shop : Room<ShopMemento>, IShop, IDisposable
+    public class Shop : Room<ShopMemento>, IShop
     {
-        public readonly Clerk Clerk;
-
+        private readonly ICharacter _clerk;
         private record ShopItemCache(Id<IItem> Id, int Price);
 
         private HashSet<ShopItemCache> _shopItems = new();
         private ReactiveProperty<bool> _isStolen = new(false);
         public ReadOnlyReactiveProperty<bool> IsStolen => _isStolen;
 
-        public Shop(ShopMemento data, ICharacter clerk, IMap map) : base(data.Room,
+        public Shop(ShopMemento data, ICharacter clerk, IGameManager gameManager, IMap map) : base(data.Room,
             map.Player.Character.Entity.CurrentPosition)
         {
-            Clerk = new Clerk(
-                clerk,
-                player => CanExecute && (GetSalePrice(map) > 0 || GetPurchasePrice(map) > 0),
-                (_, map) =>
+            _clerk = clerk;
+            clerk.AddEvent(new PlayerEvent(
+                null,
+                new List<PlayerChoiceEvent>
                 {
-                    Purchase(map);
-                    return UniTask.CompletedTask;
+                    new(
+                        "代金を支払う",
+                        (player, map) => CanExecute && (GetSalePrice(map) > 0 || GetPurchasePrice(map) > 0),
+                        (gameManager, map) =>
+                        {
+                            Purchase(gameManager, map);
+                            return UniTask.CompletedTask;
+                        }
+                    )
                 }
-            );
+            ));
 
+            _shopItems = data.Items.Select(item => new ShopItemCache(item.Id, item.Price)).ToHashSet();
             if (data.IsStolen)
             {
-                Stolen(map);
-                return;
+                _isStolen.Value = true;
+                CanExecute = false;
+                MarkItemsAsStolen(map);
+                gameManager.PlayBGM(BGM.Stolen);
             }
-
-            _shopItems = data.Items.Select(item => new ShopItemCache(new Id<IItem>(item.Id), item.Price)).ToHashSet();
         }
 
-        public void Dispose()
-        {
-            Clerk.Dispose();
-        }
-
-        ~Shop()
-        {
-            Dispose();
-        }
-
-        public static ShopMemento Build(RectInt rect, Id<IEntity> clerkId, List<ItemEntityMemento> items)
+        public static ShopMemento Build(RectInt rect, Id<IEntity> clerkId, List<ItemEntityMemento> items, ItemMarketPriceTable market)
         {
             return new ShopMemento
             (
@@ -73,11 +68,15 @@ namespace Domain.Service.Rooms
                     false
                 ),
                 clerkId,
-                items.Select(item => new ShopItemMemento
-                (
-                    item.Item.Id,
-                    new Item(item.Item).Price
-                )).ToList(),
+                items.Select(itemMemento =>
+                {
+                    var item = itemMemento.Item.Deserialize();
+                    return new ShopItemMemento
+                    (
+                        item.Id,
+                        item.GetPrice(market)
+                    );
+                }).ToList(),
                 false
             );
         }
@@ -92,10 +91,10 @@ namespace Domain.Service.Rooms
                     hasEntered,
                     hasEverEntered
                 ),
-                Clerk.Entity.Id,
+                _clerk.Entity.Id,
                 _shopItems.Select(item => new ShopItemMemento
                 (
-                    item.Id.ToString(),
+                    item.Id,
                     item.Price
                 )).ToList(),
                 _isStolen.Value
@@ -107,9 +106,9 @@ namespace Domain.Service.Rooms
             return map.Items.In(Rect.RectRange()).Select(item => item.Item);
         }
 
-        private void SetShopItems(IEnumerable<IItem> items)
+        private void SetShopItems(IMap map, IEnumerable<IItem> items)
         {
-            _shopItems = items.Select(item => new ShopItemCache(item.Id, item.Price)).ToHashSet();
+            _shopItems = items.Select(item => new ShopItemCache(item.Id, item.GetPrice(map.MarketPriceTable))).ToHashSet();
             foreach (var item in items)
             {
                 item.SetState(ItemState.ShopItem);
@@ -135,14 +134,14 @@ namespace Domain.Service.Rooms
         private IEnumerable<ShopItemCache> GetMissingItems(IMap map)
         {
             var itemsInRoom = GetItemsInRoom(map).Where(item => item.State == ItemState.ShopItem);
-            var purchaseItems = _shopItems.Except(itemsInRoom.Select(item => new ShopItemCache(item.Id, item.Price)));
+            var purchaseItems = _shopItems.Except(itemsInRoom.Select(item => new ShopItemCache(item.Id, item.GetPrice(map.MarketPriceTable))));
             return purchaseItems;
         }
 
         public int GetPurchasePrice(IMap map)
         {
             var purchaseItems = GetMissingItems(map);
-            if (map.Player.Character.Status.IsFlagStat(FlagStatType.Haggle))
+            if (map.Player.Character.Status.IsFlagStat(FlagStatType.Negotiator))
             {
                 return Mathf.RoundToInt(purchaseItems.Sum(item => item.Price) / 2f);
             }
@@ -153,7 +152,7 @@ namespace Domain.Service.Rooms
         private IEnumerable<ShopItemCache> GetAddedItems(IMap map)
         {
             var saleItems = GetItemsInRoom(map).Where(item => item.State != ItemState.ShopItem);
-            return saleItems.Select(item => new ShopItemCache(item.Id, item.Price));
+            return saleItems.Select(item => new ShopItemCache(item.Id, item.GetPrice(map.MarketPriceTable)));
         }
 
         public int GetSalePrice(IMap map)
@@ -162,35 +161,59 @@ namespace Domain.Service.Rooms
             return Mathf.RoundToInt(saleItems.Sum(item => item.Price) / 2f);
         }
 
-        public void Purchase(IMap map)
+        public void Purchase(IGameManager gameManager, IMap map)
         {
-            if (map.Player.Money + GetSalePrice(map) >= GetPurchasePrice(map))
+            if (map.Player.Money.CurrentValue + GetSalePrice(map) >= GetPurchasePrice(map))
             {
-                GameLog.Add(
-                    $"{map.Player.Character.GetName(map.Player)}は<color=green>{GetSalePrice(map)}G</color>受け取った");
-                map.Player.AddMoney(GetSalePrice(map));
-                GameLog.Add(
-                    $"{map.Player.Character.GetName(map.Player)}は<color=yellow>{GetPurchasePrice(map)}G</color>支払った");
-                map.Player.ReduceMoney(GetPurchasePrice(map));
+                if (GetSalePrice(map) > 0)
+                {
+                    GameLog.AddIgnoreVisibility(
+                        $"{map.Player.Character.GetName(map.Player)}は<color=green>{GetSalePrice(map)}G</color>受け取った");
+                    map.Player.AddMoney(GetSalePrice(map));
+                }
+                if (GetPurchasePrice(map) > 0)
+                {
+                    GameLog.AddIgnoreVisibility(
+                        $"{map.Player.Character.GetName(map.Player)}は<color=yellow>{GetPurchasePrice(map)}G</color>支払った");
+                    map.Player.ReduceMoney(GetPurchasePrice(map));
+                }
                 var purchaseItems = GetMissingItems(map);
                 RemoveMark(map, purchaseItems);
-                SetShopItems(GetItemsInRoom(map));
+                SetShopItems(map, GetItemsInRoom(map));
+                gameManager.PlaySE(SE.ShopCheckout);
             }
             else
             {
-                GameLog.Add(
+                GameLog.AddIgnoreVisibility(
                     $"{map.Player.Character.GetName(map.Player)}は<color=yellow>{GetPurchasePrice(map) - GetSalePrice(map)}G</color>持っていなかった");
             }
         }
 
-        public void Stolen(IMap map)
+        public void Stolen(IGameManager gameManager, IMap map)
         {
-            GameLog.Add("<color=red>どろぼう！</color>");
-            Clerk.OpposingThief(map.Player.Character);
-            Clerk.Character.AddCondition(Id<IEntity>.Empty, new Clairvoyant(), new RemovalConditionData());
+            map.Player.RecordSteal();
+            GameLog.AddIgnoreVisibility("<color=red>どろぼう！</color>");
+            _clerk.Affiliation.AddForceAffiliation(map.Player.Character.Entity.Id, AffiliationType.Enemy);
+            _clerk.AddCondition(
+                Id<IEntity>.Empty,
+                ObjectLoader.Load<ConditionTemplate>("店員の怒り")
+            );
             MarkItemsAsStolen(map);
             CanExecute = false;
             _isStolen.Value = true;
+            gameManager.PlayBGM(BGM.Stolen);
+        }
+
+        protected override UniTask EveryTimeEnter(IGameManager gameManager, IMap map)
+        {
+            gameManager.PlayBGM(BGM.Shop);
+            return UniTask.CompletedTask;
+        }
+
+        protected override UniTask EveryTimeExit(IGameManager gameManager, IMap map)
+        {
+            gameManager.PlayBGM(BGM.Normal);
+            return UniTask.CompletedTask;
         }
 
         protected override async UniTask UpdateTurnIfNotInside(IGameManager gameManager, IMap map)
@@ -198,7 +221,7 @@ namespace Domain.Service.Rooms
             var missingItems = GetMissingItems(map);
             if (missingItems.Any())
             {
-                Stolen(map);
+                Stolen(gameManager, map);
                 await UniTask.Delay(1000);
             }
         }

@@ -1,15 +1,21 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using Utilities;
 
 namespace View
 {
+    [RequireComponent(typeof(SpriteView))]
     public class ParticleController : MonoBehaviour
     {
         private Dictionary<ParticleType, int> _particleCounter = new();
         private Dictionary<ParticleType, GameObject> _particles = new();
-        [HideInInspector] [SerializeField] private int _sortingLayerID;
+        [HideInInspector][SerializeField] private int _sortingLayerID;
+        private SpriteView _spriteView;
+
+        private void Awake()
+        {
+            _spriteView = GetComponent<SpriteView>();
+        }
 
         public void Add(ParticleType particleType)
         {
@@ -22,7 +28,7 @@ namespace View
             }
             else
             {
-                var EffectPrefab = Addressables.LoadAssetAsync<GameObject>(particleType.GetPath()).WaitForCompletion();
+                var EffectPrefab = ObjectLoader.LoadParticle(particleType.GetFileName());
                 var particle = Instantiate(EffectPrefab, transform);
                 foreach (var particleSystem in particle.GetComponentsInChildren<ParticleSystem>())
                 {
@@ -33,6 +39,7 @@ namespace View
                 _particles.Add(particleType, particle);
                 _particleCounter.Add(particleType, 1);
             }
+            _spriteView.UpdateVisibility();
         }
 
         public void Remove(ParticleType particleType)
@@ -50,6 +57,7 @@ namespace View
                 _particles.Remove(particleType);
                 _particleCounter.Remove(particleType);
             }
+            _spriteView.UpdateVisibility();
         }
 
         public void Clear()

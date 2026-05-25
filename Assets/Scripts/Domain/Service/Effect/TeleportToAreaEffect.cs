@@ -47,21 +47,9 @@ namespace Domain.Service.Effect
             return 50f;
         }
 
-        public override string UpgradePathName => "テレポート";
-
-        public override List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>();
-        }
-
-        public override Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
-        }
-
         public override string Info()
         {
-            return "対象に向かってテレポートする\n";
+            return "対象に向かってテレポート\n";
         }
     }
 }

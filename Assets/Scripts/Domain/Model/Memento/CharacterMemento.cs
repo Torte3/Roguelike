@@ -18,7 +18,7 @@ namespace Domain.Model.Memento
         [field: SerializeField] public CharacterStatusMemento Status { get; private set; }
         [field: SerializeField] public EntityMemento Entity { get; private set; }
         [field: SerializeField] public Direction8 Direction { get; private set; }
-        [field: SerializeField] public List<CharacterSkillMemento> Skills { get; private set; }
+        [field: SerializeField] public List<CharacterSkillWithRuleMemento> Skills { get; private set; }
         [field: SerializeField] public Option<SpawnEffectSkillMemento> LastSkill { get; private set; }
         [field: SerializeField] public StorageMemento Inventory { get; private set; }
         [field: SerializeField] public List<string> KnownItemNames { get; private set; }
@@ -31,6 +31,7 @@ namespace Domain.Model.Memento
         [field: SerializeField] public bool CanThroughWalls { get; private set; }
         [field: SerializeField] public bool CanPickUp { get; private set; }
         [field: SerializeField] public bool CanUseItem { get; private set; }
+        [field: SerializeField] public bool CanReceivePlayerGift { get; private set; }
 
         public CharacterMemento(
             string name,
@@ -39,7 +40,7 @@ namespace Domain.Model.Memento
             CharacterStatusMemento status,
             EntityMemento entity,
             Direction8 direction,
-            List<CharacterSkillMemento> skills,
+            List<CharacterSkillWithRuleMemento> skills,
             Option<SpawnEffectSkillMemento> lastSkill,
             StorageMemento inventory,
             List<string> knownItemNames,
@@ -51,7 +52,8 @@ namespace Domain.Model.Memento
             bool isFlying,
             bool canThroughWalls,
             bool canPickUp,
-            bool canUseItem
+            bool canUseItem,
+            bool canReceivePlayerGift
         )
         {
             Name = name;
@@ -73,6 +75,7 @@ namespace Domain.Model.Memento
             CanThroughWalls = canThroughWalls;
             CanPickUp = canPickUp;
             CanUseItem = canUseItem;
+            CanReceivePlayerGift = canReceivePlayerGift;
         }
 
         public CharacterMemento CopyWith(
@@ -82,7 +85,7 @@ namespace Domain.Model.Memento
             CharacterStatusMemento? status = null,
             EntityMemento? entity = null,
             Direction8? direction = null,
-            List<CharacterSkillMemento>? skills = null,
+            List<CharacterSkillWithRuleMemento>? skills = null,
             Option<SpawnEffectSkillMemento>? lastSkill = null,
             StorageMemento? inventory = null,
             List<string>? knownItemNames = null,
@@ -94,7 +97,8 @@ namespace Domain.Model.Memento
             bool? isFlying = null,
             bool? canThroughWalls = null,
             bool? canPickUp = null,
-            bool? canUseItem = null
+            bool? canUseItem = null,
+            bool? canReceivePlayerGift = null
         )
         {
             return new CharacterMemento(
@@ -116,7 +120,8 @@ namespace Domain.Model.Memento
                 isFlying ?? IsFlying,
                 canThroughWalls ?? CanThroughWalls,
                 canPickUp ?? CanPickUp,
-                canUseItem ?? CanUseItem
+                canUseItem ?? CanUseItem,
+                canReceivePlayerGift ?? CanReceivePlayerGift
             );
         }
 

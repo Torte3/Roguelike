@@ -13,16 +13,21 @@ MonoBehaviour:
   m_Name: "\u5343\u91CC\u773C"
   m_EditorClassIdentifier: 
   Condition:
-    rid: 2541219281251860519
+    rid: 3119344245011382281
   RemovalCondition:
     RemoveByElapsedTurn: 1
     Duration: 50
     RemoveByDamage: 0
     Probability: 0
-    RemoveByEnemyNearby: 0
+    RemoveByCharacterNearby: 0
+    CharacterNearbyProbability: 0
+  InflictLog: "\u306F\u3088\u304F\u898B\u3048\u308B\u3088\u3046\u306B\u306A\u3063\u305F"
+  DeleteLog: "\u306E\u8996\u754C\u306F\u3082\u3068\u306B\u623B\u3063\u305F"
   references:
     version: 2
     RefIds:
-    - rid: 2541219281251860519
-      type: {class: Clairvoyant, ns: Domain.Service.Characters.Conditions, asm: Domain.Service}
-      data: 
+    - rid: 3119344245011382281
+      type: {class: FlagCondition, ns: Domain.Service.Characters.Conditions, asm: Domain.Service}
+      data:
+        _flagStatType:
+          stringValue: Clairvoyant

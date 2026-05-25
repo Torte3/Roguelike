@@ -13,6 +13,7 @@ namespace Domain.Model.Memento
     {
         [field: SerializeField] public ResourceData Hp { get; private set; }
         [field: SerializeField] public StatData HpNaturalRecoveryAmount { get; private set; }
+        [field: SerializeField] public StatData AttackMultiplier { get; private set; }
         [SerializeField] private SerializableDictionary<Element, StatData> _elementAttackMultiplier;
         public Dictionary<Element, StatData> ElementAttackMultiplier => _elementAttackMultiplier;
         [SerializeField] private SerializableDictionary<Element, StatData> _elementDamageRateMultiplier;
@@ -22,13 +23,19 @@ namespace Domain.Model.Memento
         [field: SerializeField] public StatData ViewRange { get; private set; }
         [field: SerializeField] public ResourceData WaitTime { get; private set; }
 
-        public CharacterStatsMemento(ResourceData hp, StatData hpNaturalRecovery,
+        public CharacterStatsMemento(
+            ResourceData hp,
+            StatData hpNaturalRecovery,
+            StatData attackMultiplier,
             Dictionary<Element, StatData> elementAttackMultiplier,
-            Dictionary<Element, StatData> elementDamageRateMultiplier, Dictionary<string, StatData> conditionResistance,
-            StatData viewRange, ResourceData waitTime)
+            Dictionary<Element, StatData> elementDamageRateMultiplier,
+            Dictionary<string, StatData> conditionResistance,
+            StatData viewRange,
+            ResourceData waitTime)
         {
             Hp = hp;
             HpNaturalRecoveryAmount = hpNaturalRecovery;
+            AttackMultiplier = attackMultiplier;
             _elementAttackMultiplier = elementAttackMultiplier.ToSerializable();
             _elementDamageRateMultiplier = elementDamageRateMultiplier.ToSerializable();
             _conditionResistance = conditionResistance.ToSerializable();
@@ -36,13 +43,21 @@ namespace Domain.Model.Memento
             WaitTime = waitTime;
         }
 
-        public CharacterStatsMemento CopyWith(ResourceData? hp = null, StatData? hpNaturalRecovery = null,
+        public CharacterStatsMemento CopyWith(
+            ResourceData? hp = null,
+            StatData? hpNaturalRecovery = null,
+            StatData? attackMultiplier = null,
             Dictionary<Element, StatData>? elementAttackMultiplier = null,
             Dictionary<Element, StatData>? elementDamageRateMultiplier = null,
-            Dictionary<string, StatData>? conditionResistance = null, StatData? viewRange = null,
+            Dictionary<string, StatData>? conditionResistance = null,
+            StatData? viewRange = null,
             ResourceData? waitTime = null)
         {
-            return new CharacterStatsMemento(hp ?? Hp, hpNaturalRecovery ?? HpNaturalRecoveryAmount, elementAttackMultiplier ?? ElementAttackMultiplier, elementDamageRateMultiplier ?? ElementDamageRateMultiplier, conditionResistance ?? ConditionResistance, viewRange ?? ViewRange, waitTime ?? WaitTime);
+            return new CharacterStatsMemento(hp ?? Hp, hpNaturalRecovery ?? HpNaturalRecoveryAmount,
+                attackMultiplier ?? AttackMultiplier,
+                elementAttackMultiplier ?? ElementAttackMultiplier,
+                elementDamageRateMultiplier ?? ElementDamageRateMultiplier, conditionResistance ?? ConditionResistance,
+                viewRange ?? ViewRange, waitTime ?? WaitTime);
         }
     }
 }

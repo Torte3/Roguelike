@@ -17,11 +17,6 @@ namespace Utilities.Messages
             _events.Clear();
         }
 
-        ~GroupEvents()
-        {
-            Dispose();
-        }
-
         public void Add<TMessage>(TSender sender, Observable<TMessage> observable) where TMessage : notnull
         {
             if (!_disposable.ContainsKey(sender))

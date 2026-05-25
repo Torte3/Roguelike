@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Domain.Model.Character;
@@ -54,13 +54,13 @@ namespace Domain.Service.Effect
         {
             if (RandUtils.IsLessThanProbability(_probabilityOfSuccess))
             {
-                if (RandUtils.IsGreaterThanProbability(target.GetConditionResistance(_condition.Value)))
+                if (RandUtils.IsGreaterThanProbability(target.Status.GetConditionResistance(_condition.Value)))
                 {
-                    target.AddCondition(actorId, _condition.Value.Condition, _condition.Value.RemovalCondition);
+                    target.AddCondition(actorId, _condition.Value);
                 }
                 else
                 {
-                    GameLog.Add($"{target.GetName(map.Player)}は{_condition.Value.name}に耐性があるようだ");
+                    GameLog.Add(target.IsVisible, $"{target.GetName(map.Player)}は{_condition.Value.name}に耐性がある");
                 }
             }
 
@@ -102,21 +102,11 @@ namespace Domain.Service.Effect
             return _condition.Value.EvaluateDamage() * _probabilityOfSuccess;
         }
 
-        public string UpgradePathName => "状態付与";
-
-        public List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>();
-        }
-
-        public Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
-        }
-
         public string Info()
         {
-            return $"{_probabilityOfSuccess:P0}の確率で{_condition.Value.name}状態を付与する\n";
+            var name = ItemDescriptionRichText.RichBracketedConditionName(_condition.Value.name, Impact);
+            var prob = ItemDescriptionRichText.ColorPercentagesInPlainText($"（{_probabilityOfSuccess:P0}）");
+            return $"{name}を付与{prob}\n";
         }
     }
 }

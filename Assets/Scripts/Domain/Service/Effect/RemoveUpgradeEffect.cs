@@ -31,18 +31,18 @@ namespace Domain.Service.Effect
 #endif
         public override UniTask Apply(ITargetOfEffect target, Vector2Int position, IMap map)
         {
-            var upgradedItems = target.Inventory.AllItems.Where(item => item.AppliedUpgrades > 0).ToArray();
+            var upgradedItems = target.Inventory.AllItems.Where(item => item.CanDowngrade()).ToArray();
             if (upgradedItems.Any())
             {
                 var item = upgradedItems.GetAtRandom();
                 if (RandUtils.IsLessThanProbability(_probabilityOfSuccess))
-                    item.Downgrade(map.Player, map.ItemPlaceholders);
+                    item.Downgrade(map.Player, target, map.ItemPlaceholders);
                 else
-                    GameLog.Add($"{item.GetName(map.Player, map.ItemPlaceholders)}の強化は消えなかった");
+                    GameLog.Add(target.IsVisible, $"{item.GetName(map.Player, map.ItemPlaceholders)}の強化は消えなかった");
             }
             else
             {
-                GameLog.Add($"{target.GetName(map.Player)}は強化されたアイテムを持っていない");
+                GameLog.Add(target.IsVisible, $"{target.GetName(map.Player)}は強化されたアイテムを持っていない");
             }
 
             return UniTask.CompletedTask;
@@ -58,21 +58,9 @@ namespace Domain.Service.Effect
             return 100;
         }
 
-        public override string UpgradePathName => "強化解除";
-
-        public override List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>();
-        }
-
-        public override Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
-        }
-
         public override string Info()
         {
-            return "対象の持つアイテムの強化を解除する\n";
+            return "対象の持つアイテムの強化を解除\n";
         }
     }
 }

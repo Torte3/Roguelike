@@ -1,10 +1,16 @@
-﻿#nullable enable
+#nullable enable
+using System.Linq;
+using Cysharp.Threading.Tasks;
+using Domain.Model.Setting;
 using Domain.Service.Characters.Behavior;
 using Domain.Service.Events;
-using Domain.Service.Items;
 using Game;
 using IngameDebugConsole;
+using Provider.Input;
 using R3;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using Utilities;
 using VContainer;
 using View;
@@ -16,67 +22,119 @@ namespace Provider
     {
         [Inject]
         public InputPresenter(InputReceiver receiver, GameInput input, CharacterControlInputReceiver actionReceiver,
-            ChoiceReceiver choiceReceiver, TextInputReceiver textInputReceiver, GameManager gameManager, World world,
-            MenuController menuController,
-            InventoryView inventoryView)
+            ChoiceReceiver choiceReceiver, CharacterSelectReceiver characterSelectReceiver, TextInputReceiver textInputReceiver, World world,
+            MenuController menuController, InventoryView inventoryView)
         {
-            Observable.EveryValueChanged(DebugLogManager.Instance, x => x.IsLogWindowVisible)
-                .Subscribe(x =>
+            var logWindowVisible = Observable.EveryValueChanged(DebugLogManager.Instance, x => x.IsLogWindowVisible).ToReadOnlyReactiveProperty();
+            var textInputShown = new ReactiveProperty<bool>(false);
+            Observable.CombineLatest(logWindowVisible, actionReceiver.IsEnabled.SkipLatestValueOnSubscribe(), textInputShown)
+                .Subscribe(states =>
                 {
-                    if (x)
+                    var isInputBlocked = states[0] || states[2];
+                    var isActionEnabled = states[1];
+
+                    if (isInputBlocked || !isActionEnabled)
                         receiver.Disable();
                     else
                         receiver.Enable();
+
+                    var asset = EventSystem.current?.GetComponent<InputSystemUIInputModule>()?.actionsAsset;
+                    if (isInputBlocked)
+                        asset?.Disable();
+                    else
+                        asset?.Enable();
                 });
+
             receiver.OnMovePerformed
-                .Select(vector => DirectionMethods.FromVector(vector))
-                .Where(direction => direction != null)
-                .Subscribe(direction => actionReceiver.SetMoveInput(direction!.Value, true));
+                .Select(vector => DirectionMethods.NearestDirectionFromVector(vector))
+                .WhereNotNull()
+                .Subscribe(direction => actionReceiver.SetMoveInput(direction, true));
             actionReceiver.OnActionRead
                 .Select(_ => receiver.MoveVector)
-                .Select(vector => DirectionMethods.FromVector(vector))
-                .Where(direction => direction != null)
-                .Subscribe(direction => actionReceiver.SetMoveInput(direction!.Value, false));
+                .Select(vector => DirectionMethods.NearestDirectionFromVector(vector))
+                .WhereNotNull()
+                .Subscribe(direction => actionReceiver.SetMoveInput(direction, false));
+
+            inventoryView.Focus.Subscribe(focus =>
+                actionReceiver.SetItemFocus(focus.ToItemFocus()));
             receiver.OnAttackPerformed.Subscribe(_ => actionReceiver.SetAttackInput());
+            receiver.OnSubmitPerformed
+                .Subscribe(_ => actionReceiver.SetItemSelectConfirmInput());
             receiver.OnThrowPerformed.Subscribe(_ => actionReceiver.SetThrowInput());
-            receiver.OnDropPerformed.Subscribe(_ => actionReceiver.SetDropInput());
+            receiver.OnSwapItemPerformed.Subscribe(_ => actionReceiver.SetDropInput());
             receiver.OnDoNothingPerformed.Subscribe(_ => actionReceiver.SetDoNothingInput());
             actionReceiver.OnActionRead
                 .Where(_ => receiver.IsDoNothingPerformed)
                 .Subscribe(_ => actionReceiver.SetDoNothingInput());
             receiver.OnRenamePerformed.Subscribe(_ => actionReceiver.SetRenameInput());
 
-            receiver.IsDash.Subscribe(isDash => input.SetDash(isDash));
-            receiver.IsNoMove.Subscribe(isNoMove => input.SetNoMove(isNoMove));
+            input.Bind(
+                () => receiver.IsDashPressed,
+                () => receiver.IsNoMovePressed,
+                () => receiver.IsDiagonalOnlyPressed);
+            
+            receiver.IsNoMove
+                .DistinctUntilChanged()
+                .Where(isNoMove => isNoMove)
+                .Where(_ => receiver.MoveVector == Vector2.zero)
+                .Subscribe(_ => actionReceiver.SetFaceNearestCharacterInput());
 
-            var disposable = new SerialDisposable();
-            world.ActiveMap.SubscribeToAllItemsIgnoreNull(
-                map => disposable.Disposable = receiver.IsNoMove.Subscribe(isNoMove =>
-                {
-                    if (isNoMove)
-                    {
-                        map.Player.Character.FaceNearestCharacter(map);
-                    }
-                })
-            );
+            receiver.OnMainMenuOpening.Subscribe(_ => menuController.OpenMeinMenu());
+            receiver.OnMenuCanceling.Subscribe(_ => menuController.CloseMenu());
+            receiver.OnMenuClosing.Subscribe(_ => menuController.CloseAllMenus());
 
-            inventoryView.OnFocusChanged.Subscribe(focus =>
-                actionReceiver.SetItemFocus(new ItemFocus(focus.index, focus.subIndex, focus.isGroundItem, focus.isEmpty)));
-
-            choiceReceiver.OnShownChoice.Subscribe(async message =>
+            ApplySwapAfterEventSystemInitialized(receiver);
+    
+            menuController.MenuState.Subscribe(menuState =>
             {
-                var index = await menuController.GetChoice(message.text, message.choices);
+                switch (menuState)
+                {
+                    case MenuType.Field:
+                        receiver.SwitchField();
+                        break;
+                    case MenuType.Menu:
+                        receiver.SwitchMenu();
+                        break;
+                }
+            });
+
+            choiceReceiver.OnShownChoiceWithInfo.Subscribe(async message =>
+            {
+                var index = message.cancelChoiceIndex is { } cancelIndex
+                    ? await menuController.GetChoiceWithInfo(message.text, cancelIndex, message.choices)
+                    : await menuController.GetChoiceWithInfo(message.text, message.choices);
                 choiceReceiver.SetChoicedIndex(index);
             });
 
-            textInputReceiver.OnShownTextInput.Subscribe(async _ =>
+            choiceReceiver.OnShownChoice.Subscribe(async message =>
             {
-                var text = await menuController.GetTextInput();
-                textInputReceiver.SetTextInput(text);
+                var index = message.cancelChoiceIndex is { } cancelIndex
+                    ? await menuController.GetChoice(message.text, cancelIndex, message.choices)
+                    : await menuController.GetChoice(message.text, message.choices);
+                choiceReceiver.SetChoicedIndex(index);
             });
 
-            receiver.OnQuickSave.Subscribe(_ => gameManager.Save());
-            receiver.OnQuickLoad.Subscribe(_ => gameManager.LoadAndStart());
+            characterSelectReceiver.OnShownChoice.Subscribe(async message =>
+            {
+                var index = await menuController.GetCharacter(message);
+                characterSelectReceiver.SetChoicedIndex(index);
+            });
+
+            textInputReceiver.OnShownTextInput.Subscribe(async canCancel =>
+            {
+                textInputShown.Value = true;
+                var text = await menuController.GetTextInput(canCancel);
+                textInputReceiver.SetTextInput(text);
+                textInputShown.Value = false;
+            });
+        }
+
+        private async UniTaskVoid ApplySwapAfterEventSystemInitialized(InputReceiver receiver)
+        {
+            await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
+
+            Settings.GlobalSettings.SwapABXY.Value
+                .SubscribeIncludingCurrentValue(receiver.ApplyFaceButtonSwap);
         }
     }
 }

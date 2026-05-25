@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Domain.Model.Effect.Area;
 using Domain.Model.Effect.Position;
 using Domain.Model.Evaluation;
+using Domain.Model.Item;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Utilities;
@@ -28,26 +29,57 @@ namespace Domain.Model.Effect
         [field: MinValue(1)]
         public int Repeats { get; private set; } = 1;
 
-        [field: SerializeField] public int RushDistance { get; private set; }
-
-        [field: SerializeField] public int BackStepDistance { get; private set; }
-
         [field: SerializeField]
         [field: Range(0, 1)]
         public float ProbabilityOfSuccess { get; private set; } = CommonSenseParameters.SkillOnUseProbabilityOfSuccess;
 
         [field: SerializeField]
+        [field: MinValue(0)]
+        public int Cost { get; private set; }
+
+        [field: SerializeField]
+        [field: MinValue(0)]
+        public int RushDistance { get; private set; }
+
+        [field: SerializeField]
+        [field: MinValue(0)]
+        public int BackStepDistance { get; private set; }
+
+        [field: SerializeField]
+        [field: MinValue(0)]
+        public int ChargeTurn { get; private set; }
+
+        [field: SerializeField]
+        [field: MinValue(0)]
+        public int CoolTime { get; private set; }
+
+        [field: SerializeField]
         [field: Required]
         public string Log { get; private set; } = "は行動した";
 
-        public SkillData(IEffectPosition position, IArea area, List<IEffect> effects, int rushDistance,
-            int backStepDistance, string log)
+        public SkillData(
+            IEffectPosition position,
+            IArea area,
+            List<IEffect> effects,
+            int repeats,
+            float probabilityOfSuccess,
+            int cost,
+            int rushDistance,
+            int backStepDistance,
+            int chargeTurn,
+            int coolTime,
+            string log)
         {
             Position = position;
             Area = area;
             Effects = effects;
+            Repeats = repeats;
+            ProbabilityOfSuccess = probabilityOfSuccess;
+            Cost = cost;
             RushDistance = rushDistance;
             BackStepDistance = backStepDistance;
+            ChargeTurn = chargeTurn;
+            CoolTime = coolTime;
             Log = log;
         }
 
@@ -69,20 +101,32 @@ namespace Domain.Model.Effect
         public string Info()
         {
             var info = "";
-            if (Repeats > 1)
-                info += $"発動回数: {Repeats}回\n";
+
+            if (Cost > 0)
+                info += $"消費HP: {ItemDescriptionRichText.RichHpCost(Cost)}\n";
+
+            if (RushDistance > 0)
+                info += $"最初に{ItemDescriptionRichText.RichSpatialCells(RushDistance)}前に進む\n";
+
+            var positionInfo = Position.Info();
+            var areaInfo = Area.Info();
+            info += EffectTargetDescription.OnUse(positionInfo, areaInfo, useOrThrowCombinedTargets: false) + "\n";
             foreach (var (effect, index) in Effects.Index())
             {
-                info += $"効果{index + 1}: {effect.Info()}\n";
+                info += ItemDescriptionRichText.StyleEffectInfo(effect, effect.Info());
             }
+            if (Repeats > 1)
+                info += $"効果は{ItemDescriptionRichText.RichMeta(Repeats)}回発動する\n";
+            info += ItemDescriptionRichText.ColorPercentagesInPlainText($"成功率：{ProbabilityOfSuccess:P0}\n");
 
-            info += $"発動位置: {Position.Info()}\n";
-            info += $"範囲: {Area.Info()}\n";
-            info += $"発動確率: {ProbabilityOfSuccess:P0}";
-            if (RushDistance > 0)
-                info += $"\n突進距離: {RushDistance}";
             if (BackStepDistance > 0)
-                info += $"\n後退距離: {BackStepDistance}";
+                info += $"最後に{ItemDescriptionRichText.RichSpatialCells(BackStepDistance)}後ろに下がる\n";
+
+            if (ChargeTurn > 0)
+                info += $"発動には{ItemDescriptionRichText.RichTurns(ChargeTurn)}ターンかかる\n";
+
+            if (CoolTime > 0)
+                info += $"発動後に{ItemDescriptionRichText.RichTurns(CoolTime)}ターンは再使用不能\n";
             return info;
         }
     }

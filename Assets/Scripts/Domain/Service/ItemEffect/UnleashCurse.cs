@@ -1,5 +1,6 @@
 using Domain.Model.Character;
 using Domain.Model.Dungeon;
+using Domain.Model.Entity;
 using Domain.Model.Item;
 
 namespace Domain.Service.ItemEffect
@@ -11,9 +12,9 @@ namespace Domain.Service.ItemEffect
             return item.IsCursed || (!player.Character.IsKnownItem(item) && !item.IsCurseIdentified);
         }
 
-        public void Apply(IPlayer player, IItem item, ItemPlaceholders itemPlaceholders)
+        public void Apply(IPlayer player, IItem item, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
         {
-            item.SetCursed(player, itemPlaceholders, false);
+            item.SetCursed(player, itemHolder, itemPlaceholders, false);
         }
 
         public float EvaluatePrice()

@@ -1,6 +1,5 @@
 #nullable enable
 using System;
-using Domain.Model.Condition;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Utilities.Serialize;
@@ -13,11 +12,9 @@ namespace Domain.Model.Character
         [Required] public ScriptableObjectSerializable<ConditionTemplate> Condition;
         [Range(0, 1)] public float Probability;
 
-        public AdditionalConditionData(IConditionData condition, RemovalConditionData removalCondition,
-            float probability)
+        public AdditionalConditionData(ConditionTemplate condition, float probability)
         {
-            Condition = new ScriptableObjectSerializable<ConditionTemplate>(
-                new ConditionTemplate(condition, removalCondition));
+            Condition = new ScriptableObjectSerializable<ConditionTemplate>(condition);
             Probability = probability;
         }
 

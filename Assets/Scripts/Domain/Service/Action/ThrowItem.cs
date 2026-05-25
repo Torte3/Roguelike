@@ -1,4 +1,6 @@
-﻿using Cysharp.Threading.Tasks;
+﻿#nullable enable
+using System.Linq;
+using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Character.Status;
@@ -12,7 +14,21 @@ namespace Domain.Service.Action
     {
         public bool Doable(IActor actor, IMap map)
         {
-            return !actor.Status.IsFlagStat(FlagStatType.CannotAct);
+            if (actor.Status.IsFlagStat(FlagStatType.CannotAct))
+            {
+                return false;
+            }
+
+            if (!actor.Inventory.CanRemove(Item)
+                && map.Items.At(actor.Entity.CurrentPosition).FirstOrDefault()?.Item != Item)
+            {
+                return false;
+            }
+
+            if (!Item.CanAttemptThrow)
+                return false;
+
+            return true;
         }
 
         public async UniTask Do(IActor actor, IMap map, IInput input)
@@ -22,7 +38,9 @@ namespace Domain.Service.Action
 
         public float Evaluate(IActor actor, IMap map)
         {
-            return actor.EvaluateThrow(Item, Direction, map);
+            if (Item.RemainingUses.CurrentValue > 0)
+                return actor.EvaluateThrow(Item, Direction, map) / Item.RemainingUses.CurrentValue;
+            return 0;
         }
 
         public string Info()

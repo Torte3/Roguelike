@@ -15,7 +15,11 @@ MonoBehaviour:
   Category: 3
   Icon: {fileID: -913573336, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
   IsShiny: 0
-  _rarity: 1
+  _rarity: 3
+  _useCustomBasePrice: 0
+  CustomBasePrice: 0
+  AdditionalPrice: 0
+  MultiplyPrice: 1
   EffectType: 1
   UseOnDeath: 0
   SpawnEffectsOnUse: 1
@@ -31,6 +35,11 @@ MonoBehaviour:
     - rid: 5486256561133191169
     <Repeats>k__BackingField: 1
     <ProbabilityOfSuccess>k__BackingField: 0.95
+    <Cost>k__BackingField: 0
+    <RushDistance>k__BackingField: 0
+    <BackStepDistance>k__BackingField: 0
+    <ChargeTurn>k__BackingField: 0
+    <CoolTime>k__BackingField: 0
   SkillOnThrow:
     <Area>k__BackingField:
       rid: -2
@@ -39,9 +48,12 @@ MonoBehaviour:
     <ProbabilityOfSuccess>k__BackingField: 0.9
   ItemEffect:
     rid: -2
+  InventoryEffect:
+    rid: -2
   UsageLimit: 5
   UpgradeLimit: 3
   PassiveConditions: []
+  _featuresToMergeWeapon: []
   references:
     version: 2
     RefIds:
@@ -53,10 +65,11 @@ MonoBehaviour:
         Icon:
           _name: icons_full_16_138
         CanHitLayer: 01000000
+        IsPiercing: 0
     - rid: 5486256292201496579
       type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
       data: 
     - rid: 5486256561133191169
       type: {class: PercentageDamageEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:
-        _damageRate: 0.5
+        _damageRate: 0.25

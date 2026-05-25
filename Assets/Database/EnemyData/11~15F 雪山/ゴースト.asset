@@ -16,6 +16,7 @@ MonoBehaviour:
   Group: 1
   CharacterType:
     rid: 2541219246146060290
+  _sprite: {fileID: 21300000, guid: 5b26aeaaf6a67bb48adfdc41de102f0a, type: 3}
   IsBoss: 0
   Hp: 7
   Aggression: 4
@@ -31,15 +32,21 @@ MonoBehaviour:
     distanceBottomBound: 3
     lessThanBottomBound: 1
     PrioritizeMovementWhenDistanceLessThanBottomBound: 0
-    PrioritizeEnemiesOverLeaders: 0
+    PrioritizeEnemiesOverLeaders: 1
     ChaseLeader: 1
   MoveSpeed: 2
-  IsHard: 0
-  IsHeavy: 0
+  Flags: 
   IsFlying: 1
   CanThroughWalls: 1
+  CanMimic: 0
+  MimicWeights:
+    ItemRevealOnPickUp: 1
+    ItemRevealOnUse: 1
+    Money: 1
+    Stairs: 1
   CanPickUp: 0
   CanUseItem: 0
+  CanReceivePlayerGift: 0
   Skills:
   - Skill:
       <Position>k__BackingField:
@@ -47,13 +54,16 @@ MonoBehaviour:
       <Area>k__BackingField:
         rid: 5486256464210165764
       <Effects>k__BackingField:
-      - rid: 5486256464210165765
+      - rid: 2790137613772128354
       <Repeats>k__BackingField: 1
+      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
       <RushDistance>k__BackingField: 0
       <BackStepDistance>k__BackingField: 0
-      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <ChargeTurn>k__BackingField: 0
+      <CoolTime>k__BackingField: 0
       <Log>k__BackingField: "\u306E\u653B\u6483"
-    CoolTime: 0
+    Priority: 0
   HasLastSkill: 0
   LastSkill:
     <Position>k__BackingField:
@@ -63,10 +73,16 @@ MonoBehaviour:
     <Effects>k__BackingField:
     - rid: -2
     <Repeats>k__BackingField: 1
+    <ProbabilityOfSuccess>k__BackingField: 1
+    <Cost>k__BackingField: 0
     <RushDistance>k__BackingField: 0
     <BackStepDistance>k__BackingField: 0
-    <ProbabilityOfSuccess>k__BackingField: 1
+    <ChargeTurn>k__BackingField: 0
+    <CoolTime>k__BackingField: 0
     <Log>k__BackingField: 
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
   ElementDamageRateMultiplier:
     data: []
   ConditionResistance:
@@ -83,6 +99,14 @@ MonoBehaviour:
       type: {class: Ghast, ns: Domain.Model.Character.Type, asm: Domain.Model}
       data:
         Type: 0
+    - rid: 2790137613772128354
+      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _elementPowers:
+        - _element: 5
+          _power: 4
+        _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 5486256464210165763
       type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data: 
@@ -92,10 +116,3 @@ MonoBehaviour:
         ContainsSelf: 0
         CanIgnoreWalls: 0
         Length: 1
-    - rid: 5486256464210165765
-      type: {class: AbsorbsEffect, ns: Domain.Service.Effect, asm: Domain.Service}
-      data:
-        _elementPowers:
-        - _element: 5
-          _power: 6
-        _rate: 0.5

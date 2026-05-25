@@ -50,9 +50,6 @@ namespace Domain.Model.Effect
         public abstract float Evaluate(IActorOfEffect actor, IEnumerable<Vector2Int> positions);
         public abstract float EvaluatePrice();
 
-        public abstract string UpgradePathName { get; }
-        public abstract List<UpgradeData> GetUpgrades();
-        public abstract Dictionary<string, IHasUpgrades> GetChildren();
         public abstract string Info();
     }
 }

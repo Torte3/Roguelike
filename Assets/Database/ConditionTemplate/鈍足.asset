@@ -20,6 +20,9 @@ MonoBehaviour:
     RemoveByDamage: 0
     Probability: 0
     RemoveByCharacterNearby: 0
+    CharacterNearbyProbability: 0
+  InflictLog: "\u306F\u8DB3\u304C\u9045\u304F\u306A\u3063\u305F"
+  DeleteLog: "\u306E\u901F\u5EA6\u306F\u3082\u3068\u306B\u623B\u3063\u305F"
   references:
     version: 2
     RefIds:

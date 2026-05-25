@@ -41,28 +41,9 @@ namespace Domain.Model.Effect.Area
             return Mathf.Sqrt(Length);
         }
 
-        public string UpgradePathName => "直線";
-
-        public List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>
-            {
-                new(
-                    "長さ+1",
-                    () => Length += 1,
-                    () => Length -= 1
-                )
-            };
-        }
-
-        public Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
-        }
-
         public string Info()
         {
-            var info = $"前{Length}マス";
+            var info = $"前{ItemDescriptionRichText.RichSpatialCells(Length)}";
             if (ContainsSelf) info += "(原点含む)";
             if (CanIgnoreWalls) info += "(壁無視)";
             return info;

@@ -4,6 +4,7 @@ namespace Domain.Model.Entity
     {
         Bottom,
         Middle,
-        Top
+        Top,
+        Floor
     }
 }

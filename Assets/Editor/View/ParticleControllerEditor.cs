@@ -2,8 +2,9 @@ using UnityEngine;
 using UnityEditor;
 using Utilities;
 using Sirenix.OdinInspector.Editor;
+using View;
 
-namespace View
+namespace Editor
 {
 #if UNITY_EDITOR
     [CustomEditor(typeof(ParticleController))]

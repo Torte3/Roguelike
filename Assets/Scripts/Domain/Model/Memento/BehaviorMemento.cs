@@ -1,7 +1,10 @@
 #nullable enable
 using System;
 using Domain.Model.Character;
+using Domain.Model.Dungeon;
+using Domain.Model.Map;
 using UnityEngine;
+using Utilities;
 using Utilities.Serialize.Option;
 
 namespace Domain.Model.Memento
@@ -10,27 +13,21 @@ namespace Domain.Model.Memento
     public class BehaviorMemento
     {
         [field: SerializeField] public BehaviorData Behavior { get; private set; }
-        [SerializeField] private Option<Location> _homeLocation;
-        [SerializeField] private Option<Vector2Int> _homePosition;
-
-        public (Location, Vector2Int)? HomePosition =>
-            _homeLocation.HasValue ? (_homeLocation.Value!, _homePosition.Value!) : null;
-
+        [field: SerializeField] public Option<Location> HomeLocation { get; private set; }
         [field: SerializeField] public Option<BehaviorState> PreviousState { get; private set; }
-        [field: SerializeField] public Option<Vector2Int> PreviousTargetPosition { get; private set; }
+        [field: SerializeField] public Option<Location> PreviousTargetLocation { get; private set; }
 
         public BehaviorMemento(
             BehaviorData behavior,
-            (Location, Vector2Int)? homePosition,
-            BehaviorState? previousState,
-            Vector2Int? previousTargetPosition
+            Option<Location> homeLocation,
+            Option<BehaviorState> previousState,
+            Option<Location> previousTargetLocation
         )
         {
             Behavior = behavior;
-            _homeLocation = (homePosition?.Item1).ToOption();
-            _homePosition = (homePosition?.Item2).ToOption();
-            PreviousState = previousState.ToOption();
-            PreviousTargetPosition = previousTargetPosition.ToOption();
+            HomeLocation = homeLocation;
+            PreviousState = previousState;
+            PreviousTargetLocation = previousTargetLocation;
         }
     }
 }

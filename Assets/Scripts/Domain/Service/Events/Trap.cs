@@ -1,11 +1,11 @@
 using Cysharp.Threading.Tasks;
 using Domain.Model;
+using Domain.Model.Character;
 using Domain.Model.Character.Status;
 using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Map;
 using Domain.Model.Memento;
-using Domain.Service.Characters;
 using Domain.Service.Effect;
 using Domain.Service.Logs;
 using UnityEngine;
@@ -13,27 +13,33 @@ using Utilities;
 
 namespace Domain.Service.Events
 {
-    public class Trap : ISerializable<TrapMemento>, IEventEntity
+    public class Trap : ISerializable<TrapMemento>, IEntityEventEntity
     {
         public readonly string Name;
         public EntityBase Entity { get; init; }
-        private readonly SpawnEffectSkill _skill;
+        public bool IsGrounded => true;
+        private readonly SpawnActorlessEffectSkill _skill;
         private readonly float _probabilityOfBreaking;
 
         public Trap(TrapMemento memento)
         {
             Name = memento.Name;
             Entity = new EntityBase(memento.Entity);
-            _skill = new SpawnEffectSkill(memento.Skill);
+            _skill = new SpawnActorlessEffectSkill(memento.Skill);
             _probabilityOfBreaking = memento.ProbabilityOfBreaking;
-            var characterSkill = new CharacterSkill(CharacterSkill.Build(_skill.Serialize(), 0));
-            Event = new CharacterEvent(
-                character => character.Status.IsFlagStat(FlagStatType.IsAffectedByTrap),
-                async (character, gameManager, map) => { await Execute(map, character); }
+            Event = new EntityEvent(
+                entity => entity.IsGrounded ||
+                          (entity is ICharacter character &&
+                           character.Status.IsFlagStat(FlagStatType.IsAffectedByTrap)),
+                async (_, gameManager, map) =>
+                {
+                    gameManager.PlaySE(SE.TrapStep);
+                    await Execute(map);
+                }
             );
         }
 
-        public ICharacterEvent Event { get; init; }
+        public IEntityEvent Event { get; init; }
 
         public UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)
         {
@@ -52,18 +58,18 @@ namespace Domain.Service.Events
 
         public static TrapMemento Build(TrapData trap, Vector2Int position)
         {
-            return new TrapMemento(trap.name, EntityBase.Build(position, EntityLayer.Bottom),
-                SpawnEffectSkill.Build(trap.Skill), trap.ProbabilityOfBreaking);
+            return new TrapMemento(trap.name, EntityBase.Build(position, EntityLayer.Floor),
+                SpawnActorlessEffectSkill.Build(trap.Skill), trap.ProbabilityOfBreaking);
         }
 
-        public async UniTask Execute(IMap map, IActorOfEffect actor)
+        public async UniTask Execute(IMap map)
         {
-            GameLog.Add($"{Name}が起動した");
-            await _skill.Use(actor, Entity.CurrentPosition, DirectionMethods.AllDirections.GetAtRandom(), map);
+            GameLog.Add(Entity.IsVisible, $"<color=red>{Name}</color>が起動した");
+            await _skill.Use(Name, Entity.CurrentPosition, map, Entity.Id);
             if (Random.value < _probabilityOfBreaking)
             {
-                GameLog.Add($"{Name}は壊れた");
-                Entity.Destroy();
+                GameLog.Add(Entity.IsVisible, $"<color=red>{Name}</color>は壊れた");
+                Entity.Destroy("は壊れた");
             }
         }
     }

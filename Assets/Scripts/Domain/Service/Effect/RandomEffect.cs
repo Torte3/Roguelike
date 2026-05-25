@@ -20,7 +20,7 @@ namespace Domain.Service.Effect
 
         public Color Color => _index == -1 ? Colors.White : Effects[_index].Color;
 
-        public Impact Impact => Impact.Harmful;
+        public Impact Impact => Impact.Neutral;
 
         public UniTask Apply(IActorOfEffect actor, ITargetOfEffect target, Vector2Int position, IMap map)
         {
@@ -75,7 +75,7 @@ namespace Domain.Service.Effect
 
         public float Evaluate(IActorOfEffect actor, IEnumerable<Vector2Int> positions)
         {
-            return Effects.Average(effect => ImpactValue(effect.Impact) * effect.Evaluate(actor, positions));
+            return Effects.Average(e => e.Evaluate(actor, positions));
         }
 
         public float EvaluatePrice()
@@ -83,21 +83,9 @@ namespace Domain.Service.Effect
             return Effects.Average(effect => effect.EvaluatePrice());
         }
 
-        public string UpgradePathName => "ランダム";
-
-        public List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>();
-        }
-
-        public Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
-        }
-
         public string Info()
         {
-            return "何らかの効果を発動する\n";
+            return "何らかの効果を発動\n";
         }
     }
 }

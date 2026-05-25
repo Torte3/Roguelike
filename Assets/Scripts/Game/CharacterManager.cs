@@ -1,11 +1,13 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.Setting;
 using Domain.Service.Characters;
 using Domain.Service.Characters.Behavior;
 using Domain.Service.Rooms;
@@ -19,24 +21,26 @@ namespace Game
     public sealed class CharacterManager : IDisposable
     {
         private readonly ObservableList<ICharacter> _characters = new();
-        private readonly CharacterFactory _factory = new();
         private HashSet<Vector2Int> _allCharacterPositions = new();
 
-        public CharacterManager(PlayerMemento playerData, CharacterControlInputReceiver receiver, IMap map)
+        public CharacterManager(PlayerMemento playerData, CharacterControlInputReceiver receiver, IGameManager gameManager, IMap map)
         {
             _characters.ObserveCountChanged().Subscribe(_ => SetAllCharacterPosition());
-            _characters.SubscribeToAllObservables(
+            _characters.SubscribeIncludingCurrentObservables(
                 character => character.Entity.Position,
                 (character, _) => SetAllCharacterPosition()
             );
-            _characters.SubscribeToAllObservables(
+            _characters.SubscribeIncludingCurrentObservables(
                 character => character.Entity.OnDestroyed,
-                (character, _) => RemoveCharacter(character)
+                (character, _) =>
+                {
+                    RemoveCharacter(character);
+                }
             );
 
-            Player = _factory.CreatePlayer(playerData, receiver, map);
+            Player = CharacterFactory.CreatePlayer(playerData, receiver, gameManager, map);
 
-            if (Player.Character.CurrentHp > 0)
+            if (!Player.Character.IsDead)
             {
                 AddCharacter(Player.Character);
             }
@@ -51,11 +55,6 @@ namespace Game
             _characters.ForEach(character => character.Dispose());
         }
 
-        ~CharacterManager()
-        {
-            Dispose();
-        }
-
         public void AddCharacter(ICharacter character)
         {
             _characters.Add(character);
@@ -66,19 +65,20 @@ namespace Game
             _characters.Remove(character);
         }
 
-        public ICharacter SpawnCharacter(CharacterMemento data, IMap map)
+        public ICharacter SpawnCharacter(CharacterMemento data, IGameManager gameManager, IMap map)
         {
-            var character = _factory.CreateCharacter(data, new EnemyBehavior(data.Behavior, map.Location), map);
+            var character = CharacterFactory.CreateCharacter(data, new EnemyBehavior(data.Behavior, map.Id), gameManager, map);
             AddCharacter(character);
             return character;
         }
 
-        public Ally SpawnAlly(CharacterMemento data, IMap map)
+        public ICharacter SpawnAlly(CharacterMemento data, IGameManager gameManager, IMap map)
         {
-            var behavior = new EnemyBehavior(data.Behavior, map.Location);
-            var character = _factory.CreateCharacter(data, behavior, map);
+            var behavior = new EnemyBehavior(data.Behavior, map.Id);
+            var character = CharacterFactory.CreateCharacter(data, behavior, gameManager, map);
             AddCharacter(character);
-            return new Ally(character, behavior, map);
+            character.AddEvent(new Ally(character, behavior));
+            return character;
         }
 
         public HashSet<Vector2Int> GetAllCharacterPositions()

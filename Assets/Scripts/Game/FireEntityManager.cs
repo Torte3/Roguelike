@@ -23,7 +23,7 @@ namespace Game
                 Add(new Fire(fireMemento));
             }
 
-            _fireEntities.SubscribeToAllObservables(
+            _fireEntities.SubscribeIncludingCurrentObservables(
                 entity => entity.Entity.OnDestroyed,
                 (entity, destroyed) => Remove(entity)
             );
@@ -80,7 +80,7 @@ namespace Game
 
             foreach (var fire in destroyedFires)
             {
-                fire.Entity.Destroy();
+                fire.Entity.Destroy("は自然に消えた");
             }
 
             foreach (var fire in addedFires)
@@ -93,9 +93,9 @@ namespace Game
         {
             var value = 1 / 64f;
             if (map.IsGrass(position))
-                value += 1 / 16f;
+                value += 1 / 8f;
             if (map.Entities.At(position).Any())
-                value += 1 / 32f;
+                value += 1 / 16f;
             return value;
         }
     }

@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42c9d6e8f38cdc547ad116f2420ef50e, type: 3}
+  m_Name: "\u6975\u5149\u306E\u9B54\u6CD5\u66F8"
+  m_EditorClassIdentifier: 
+  Category: 2
+  Icon: {fileID: 1780397024, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
+  IsShiny: 0
+  _rarity: 1
+  _useCustomBasePrice: 0
+  CustomBasePrice: 0
+  AdditionalPrice: 0
+  MultiplyPrice: 1
+  EffectType: 1
+  UseOnDeath: 0
+  SpawnEffectsOnUse: 1
+  SpawnEffectsOnThrow: 0
+  IsSameEffect: 0
+  IsSameSkill: 0
+  SkillOnUse:
+    <Position>k__BackingField:
+      rid: 861543310686683136
+    <Area>k__BackingField:
+      rid: 861543310686683137
+    <Effects>k__BackingField:
+    - rid: 4425517220030054409
+    <Repeats>k__BackingField: 1
+    <ProbabilityOfSuccess>k__BackingField: 0.95
+    <Cost>k__BackingField: 0
+    <RushDistance>k__BackingField: 0
+    <BackStepDistance>k__BackingField: 0
+    <ChargeTurn>k__BackingField: 1
+    <CoolTime>k__BackingField: 3
+  SkillOnThrow:
+    <Area>k__BackingField:
+      rid: -2
+    <Effects>k__BackingField:
+    - rid: -2
+    <ProbabilityOfSuccess>k__BackingField: 0.9
+  ItemEffect:
+    rid: -2
+  InventoryEffect:
+    rid: -2
+  UsageLimit: 9
+  UpgradeLimit: 3
+  PassiveConditions: []
+  _featuresToMergeWeapon: []
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 861543310686683136
+      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data: 
+    - rid: 861543310686683137
+      type: {class: LineArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data:
+        ContainsSelf: 0
+        CanIgnoreWalls: 1
+        Length: 15
+    - rid: 4425517220030054409
+      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _elementPowers:
+        - _element: 4
+          _power: 25
+        _criticalRate: 0
+        _isWeaponAttack: 0

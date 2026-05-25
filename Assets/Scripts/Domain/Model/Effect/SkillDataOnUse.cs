@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Domain.Model.Effect.Area;
 using Domain.Model.Evaluation;
@@ -27,22 +27,55 @@ namespace Domain.Model.Effect
         [field: MinValue(1)]
         public int Repeats { get; private set; } = 1;
 
-        public int RushDistance => 0;
-
-        public int BackStepDistance => 0;
-
         [field: SerializeField]
         [field: Range(0, 1)]
         public float ProbabilityOfSuccess { get; private set; } = CommonSenseParameters.SkillOnUseProbabilityOfSuccess;
 
+        [field: SerializeField]
+        [field: MinValue(0)]
+        public int Cost { get; private set; } = 0;
+
+        [field: SerializeField]
+        [field: MinValue(0)]
+        public int RushDistance { get; private set; } = 0;
+
+        [field: SerializeField]
+        [field: MinValue(0)]
+        public int BackStepDistance { get; private set; } = 0;
+
+        [field: SerializeField]
+        [field: MinValue(0)]
+        public int ChargeTurn { get; private set; } = 0;
+
+
+        [field: SerializeField]
+        [field: MinValue(0)]
+        public int CoolTime { get; private set; } = 0;
+
         public string Log => "";
 
-        public SkillDataOnUse(IEffectPosition position, IArea area, List<IEffect> effects, float probabilityOfSuccess)
+        public SkillDataOnUse(
+            IEffectPosition position,
+            IArea area,
+            List<IEffect> effects,
+            int repeats,
+            float probabilityOfSuccess,
+            int cost,
+            int rushDistance,
+            int backStepDistance,
+            int chargeTurn,
+            int coolTime)
         {
             Position = position;
             Area = area;
             Effects = effects;
+            Repeats = repeats;
             ProbabilityOfSuccess = probabilityOfSuccess;
+            Cost = cost;
+            RushDistance = rushDistance;
+            BackStepDistance = backStepDistance;
+            ChargeTurn = chargeTurn;
+            CoolTime = coolTime;
         }
 
 #if UNITY_EDITOR
@@ -63,6 +96,8 @@ namespace Domain.Model.Effect
         public string Info()
         {
             var info = "";
+            if (Cost > 0)
+                info += $"消費HP: {Cost}\n";
             if (Repeats > 1)
                 info += $"発動回数: {Repeats}回\n";
             foreach (var (effect, index) in Effects.Index())
@@ -73,6 +108,14 @@ namespace Domain.Model.Effect
             info += $"発動位置: {Position.Info()}\n";
             info += $"範囲: {Area.Info()}\n";
             info += $"発動確率: {ProbabilityOfSuccess:P0}";
+            if (RushDistance > 0)
+                info += $"最初に{RushDistance}マス前に進む\n";
+            if (BackStepDistance > 0)
+                info += $"最後に{BackStepDistance}マス後ろに下がる\n";
+            if (ChargeTurn > 0)
+                info += $"発動には{ChargeTurn + 1}ターンかかる\n";
+            if (CoolTime > 0)
+                info += $"発動後に{CoolTime}ターンは再使用不能\n";
             return info;
         }
     }

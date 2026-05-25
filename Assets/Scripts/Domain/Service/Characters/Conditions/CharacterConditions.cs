@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using Domain.Model.Character;
 using Domain.Model.Condition;
 using Domain.Model.Entity;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Service.Logs;
 using ObservableCollections;
 using R3;
 using Utilities;
@@ -29,10 +31,33 @@ namespace Domain.Service.Characters.Conditions
             }
 
             _conditions.ObserveAdd()
-                .Subscribe(add => add.Value.Inflict(hasCondition, _inflicterMap[add.Value], map.Player))
+                .Subscribe(add =>
+                {
+                    if (!_conditions.Any(condition =>
+                            !ReferenceEquals(condition, add.Value) && condition.IsEqualCondition(add.Value)))
+                    {
+                        var inflictLog = add.Value.GetInflictLog(hasCondition, map.Player);
+                        if (inflictLog != null)
+                        {
+                            GameLog.Add(hasCondition.IsVisible, inflictLog);
+                        }
+                    }
+                    add.Value.Inflict(hasCondition, _inflicterMap[add.Value]);
+                })
                 .AddTo(_disposables);
             _conditions.ObserveRemove()
-                .Subscribe(remove => remove.Value.Delete(hasCondition, _inflicterMap[remove.Value], map.Player))
+                .Subscribe(remove =>
+                {
+                    if (!_conditions.Any(condition => condition.IsEqualCondition(remove.Value)))
+                    {
+                        var deleteLog = remove.Value.GetDeleteLog(hasCondition, map.Player);
+                        if (deleteLog != null)
+                        {
+                            GameLog.Add(hasCondition.IsVisible, deleteLog);
+                        }
+                    }
+                    remove.Value.Delete(hasCondition, _inflicterMap[remove.Value]);
+                })
                 .AddTo(_disposables);
         }
 
@@ -46,9 +71,9 @@ namespace Domain.Service.Characters.Conditions
             _disposables.Dispose();
         }
 
-        public void Add(Id<IEntity> actor, IConditionData conditionData, RemovalConditionData removalCondition)
+        public void Add(Id<IEntity> actor, ConditionTemplate conditionData)
         {
-            var condition = new Condition(Condition.Build(conditionData, removalCondition));
+            var condition = new Condition(Condition.Build(conditionData));
             _inflicterMap.Add(condition, actor);
             _conditions.Add(condition);
         }
@@ -73,10 +98,18 @@ namespace Domain.Service.Characters.Conditions
             }
         }
 
-        public void UpdateTurn(IHasCondition hasCondition, bool characterVisible)
+        public void UpdateTurn(bool characterVisible)
         {
-            _conditions.RemoveRange(_conditions.Where(condition => condition.ShouldDelete(characterVisible)).ToList());
-            _conditions.ForEach(condition => condition.UpdateTurn(hasCondition));
+            var removedConditions = _conditions.Where(condition => condition.ShouldDelete(characterVisible)).ToList();
+            foreach (var condition in removedConditions)
+            {
+                _conditions.Remove(condition);
+                _inflicterMap.Remove(condition);
+            }
+            foreach (var condition in _conditions)
+            {
+                condition.UpdateTurn();
+            }
         }
 
         public void WasAttacked()

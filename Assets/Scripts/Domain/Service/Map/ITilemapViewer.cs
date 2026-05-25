@@ -11,6 +11,7 @@ namespace Domain.Service.Map
     public interface ITilemapViewer : ISerializable<TilemapMemento>
     {
         public Observable<IEnumerable<(Vector2Int Position, TileData Tile)>> OnTilesChanged { get; }
+        public Observable<IEnumerable<(Vector2Int Position, TileData Tile)>> OnTilesLoaded { get; }
 
         public Observable<IEnumerable<(Vector2Int Position, OverlayTileCategory? Category)>> OnOverlayTilesChanged
         {
@@ -18,7 +19,7 @@ namespace Domain.Service.Map
         }
 
         public Observable<IEnumerable<(Vector2Int Position, bool IsKnown)>> OnTilesKnownChanged { get; }
-        public RectInt Rect { get; }
+        public ReadOnlyReactiveProperty<RectInt> Rect { get; }
         public bool IsWalkable(Vector2Int position);
         public bool IsPassable(Vector2Int position);
         public bool IsTransparent(Vector2Int position);

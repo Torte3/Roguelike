@@ -1,13 +1,14 @@
 #nullable enable
 using System;
 using Domain.Model.Character;
-using UnityEngine;
+using Domain.Model.Dungeon;
+using Utilities.Serialize.Option;
 
 namespace Domain.Service.Characters.Behavior
 {
     internal record BehaviorResult(
         BehaviorState State,
-        Vector2Int? TargetPosition
+        Option<Location> TargetLocation
     )
     {
         public bool IsDiscoveringCharacter()

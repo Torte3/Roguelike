@@ -46,6 +46,28 @@ namespace Utilities
             return visited;
         }
 
+        public static HashSet<Vector2Int> FieldOfView(Vector2Int position, int viewDistance,
+            Func<Vector2Int, bool> funcTileBlocked)
+        {
+            Log.Debug($"[View]Calculate fieldOfView from {position}");
+            HashSet<Vector2Int> visited = new()
+            {
+                position
+            };
+
+            var minExtentX = viewDistance;
+            var maxExtentX = viewDistance;
+            var minExtentY = viewDistance;
+            var maxExtentY = viewDistance;
+
+            __checkQuadrant(visited, position, 1, 1, maxExtentX, maxExtentY, funcTileBlocked);
+            __checkQuadrant(visited, position, 1, -1, maxExtentX, minExtentY, funcTileBlocked);
+            __checkQuadrant(visited, position, -1, -1, minExtentX, minExtentY, funcTileBlocked);
+            __checkQuadrant(visited, position, -1, 1, minExtentX, maxExtentY, funcTileBlocked);
+
+            return visited;
+        }
+
         [Serializable]
         public class __Line
         {
@@ -96,6 +118,11 @@ namespace Utilities
             {
                 return dy * (xf - x) - dx * (yf - y);
             }
+
+            public __Line DeepCopy()
+            {
+                return new __Line(xi, yi, xf, yf);
+            }
         }
 
         [Serializable]
@@ -109,6 +136,11 @@ namespace Utilities
                 this.x = x;
                 this.y = y;
                 this.parent = parent;
+            }
+
+            public __ViewBump DeepCopy()
+            {
+                return new __ViewBump(x, y, parent?.DeepCopy());
             }
         }
 
@@ -124,6 +156,15 @@ namespace Utilities
                 this.steepLine = steepLine;
                 shallowBump = null;
                 steepBump = null;
+            }
+
+            public __View DeepCopy()
+            {
+                return new __View(shallowLine.DeepCopy(), steepLine.DeepCopy())
+                {
+                    shallowBump = shallowBump?.DeepCopy(),
+                    steepBump = steepBump?.DeepCopy()
+                };
             }
         }
 

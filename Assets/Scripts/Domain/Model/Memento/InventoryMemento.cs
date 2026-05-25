@@ -1,19 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
-using Utilities.Serialize.Option;
 
 namespace Domain.Model.Memento
 {
     [Serializable]
     public class StorageMemento
     {
-        [field: SerializeField] public Option<ItemMemento>[] Items { get; private set; }
-        [field: SerializeField] public bool CanAddItemsWithStorage { get; private set; }
+        [field: SerializeField] public int Capacity { get; private set; }
+        [field: SerializeReference] public List<IItemMemento> Items { get; private set; }
+        [field: SerializeField] public bool CanAddItem { get; private set; }
+        [field: SerializeField] public bool CanRemoveItem { get; private set; }
 
-        public StorageMemento(Option<ItemMemento>[] items, bool canAddItemsWithStorage)
+        public StorageMemento(int capacity, List<IItemMemento> items, bool canAddItem, bool canRemoveItem)
         {
+            Capacity = capacity;
             Items = items;
-            CanAddItemsWithStorage = canAddItemsWithStorage;
+            CanAddItem = canAddItem;
+            CanRemoveItem = canRemoveItem;
         }
     }
 }

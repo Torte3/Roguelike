@@ -16,5 +16,16 @@ namespace Domain.Model.Character.Status
                 _ => throw new ArgumentException("Invalid MoveSpeed")
             };
         }
+        public static string GetName(this MoveSpeed moveSpeed)
+        {
+            return moveSpeed switch
+            {
+                MoveSpeed.Quarter => "超鈍足",
+                MoveSpeed.Half => "鈍足",
+                MoveSpeed.Normal => "通常",
+                MoveSpeed.Double => "倍速",
+                MoveSpeed.Quadruple => "4倍速",
+            };
+        }
     }
 }

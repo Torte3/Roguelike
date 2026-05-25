@@ -1,0 +1,159 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8ad2ba14d6a7844c9e89791070d4735, type: 3}
+  m_Name: "\u6CE5\u3060\u307E\u308A"
+  m_EditorClassIdentifier: 
+  Name: "\u6CE5\u3060\u307E\u308A"
+  Group: 1
+  CharacterType:
+    rid: 5486256507571666951
+  _sprite: {fileID: 21300000, guid: ca3c52ed9dbcf8e4580ec35f680c220b, type: 3}
+  IsBoss: 0
+  Hp: 6
+  Aggression: 1
+  Behavior:
+    wanderAround: 0
+    Default: 0
+    PrioritizeMovement: 0
+    UseTopBound: 0
+    greaterThanTopBound: 1
+    distanceTopBound: 6
+    PrioritizeMovementWhenDistanceGreaterThanTopBound: 0
+    UseBottomBound: 0
+    distanceBottomBound: 3
+    lessThanBottomBound: 1
+    PrioritizeMovementWhenDistanceLessThanBottomBound: 0
+    PrioritizeEnemiesOverLeaders: 1
+    ChaseLeader: 1
+  MoveSpeed: 2
+  Flags: 
+  IsFlying: 0
+  CanThroughWalls: 0
+  CanMimic: 0
+  MimicWeights:
+    ItemRevealOnPickUp: 1
+    ItemRevealOnUse: 1
+    Money: 1
+    Stairs: 1
+  CanPickUp: 0
+  CanUseItem: 0
+  CanReceivePlayerGift: 0
+  Skills:
+  - Skill:
+      <Position>k__BackingField:
+        rid: 2541219281251860495
+      <Area>k__BackingField:
+        rid: 2541219281251860492
+      <Effects>k__BackingField:
+      - rid: 2541219281251860493
+      - rid: 5486256623760965634
+      <Repeats>k__BackingField: 1
+      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
+      <RushDistance>k__BackingField: 0
+      <BackStepDistance>k__BackingField: 0
+      <ChargeTurn>k__BackingField: 0
+      <CoolTime>k__BackingField: 2
+      <Log>k__BackingField: "\u306F\u565B\u307F\u3064\u3044\u305F\u3002"
+    Priority: 0
+  - Skill:
+      <Position>k__BackingField:
+        rid: 5486256507571666954
+      <Area>k__BackingField:
+        rid: 5486256507571666953
+      <Effects>k__BackingField:
+      - rid: 5486256507571666952
+      <Repeats>k__BackingField: 1
+      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
+      <RushDistance>k__BackingField: 0
+      <BackStepDistance>k__BackingField: 0
+      <ChargeTurn>k__BackingField: 0
+      <CoolTime>k__BackingField: 1
+      <Log>k__BackingField: "\u306F\u5CA9\u3092\u98DB\u3070\u3057\u305F"
+    Priority: 0
+  HasLastSkill: 0
+  LastSkill:
+    <Position>k__BackingField:
+      rid: -2
+    <Area>k__BackingField:
+      rid: -2
+    <Effects>k__BackingField:
+    - rid: -2
+    <Repeats>k__BackingField: 1
+    <ProbabilityOfSuccess>k__BackingField: 1
+    <Cost>k__BackingField: 0
+    <RushDistance>k__BackingField: 0
+    <BackStepDistance>k__BackingField: 0
+    <ChargeTurn>k__BackingField: 0
+    <CoolTime>k__BackingField: 0
+    <Log>k__BackingField: 
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
+  ElementDamageRateMultiplier:
+    data: []
+  ConditionResistance:
+    data: []
+  DropItemRate: 0
+  DropItemTable:
+    items: []
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 2541219281251860492
+      type: {class: LineArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data:
+        ContainsSelf: 0
+        CanIgnoreWalls: 0
+        Length: 1
+    - rid: 2541219281251860493
+      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _elementPowers:
+        - _element: 0
+          _power: 3
+        _criticalRate: 0
+        _isWeaponAttack: 0
+    - rid: 2541219281251860495
+      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data: 
+    - rid: 5486256507571666951
+      type: {class: Puddle, ns: Domain.Model.Character.Type, asm: Domain.Model}
+      data:
+        Type: 2
+    - rid: 5486256507571666952
+      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _elementPowers:
+        - _element: 0
+          _power: 2
+        _criticalRate: 0
+        _isWeaponAttack: 0
+    - rid: 5486256507571666953
+      type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data: 
+    - rid: 5486256507571666954
+      type: {class: ProjectileImpact, ns: Domain.Model.Effect.Position, asm: Domain.Model}
+      data:
+        Icon:
+          _name: icons_full_16_170
+        CanHitLayer: 01000000
+        IsPiercing: 0
+    - rid: 5486256623760965634
+      type: {class: AddConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
+      data:
+        _condition:
+          _name: "\u920D\u8DB3"
+        _probabilityOfSuccess: 0.1

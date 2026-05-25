@@ -31,18 +31,6 @@ namespace Domain.Service.Effect
             return 15f;
         }
 
-        public override string UpgradePathName => "壁堀り";
-
-        public override List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>();
-        }
-
-        public override Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
-        }
-
         public override string Info()
         {
             return "壁を掘る\n";

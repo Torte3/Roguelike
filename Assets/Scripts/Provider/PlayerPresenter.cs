@@ -1,9 +1,8 @@
-﻿#nullable enable
+#nullable enable
 using Domain.Model.Setting;
 using Game;
 using R3;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using Utilities;
 using VContainer;
 using View;
@@ -14,43 +13,59 @@ namespace Provider
     public class PlayerPresenter
     {
         [Inject]
-        public PlayerPresenter(World world, SynchronizedCharacterView characters, SynchronizedItemView _,
-            StatLine statLine)
+        public PlayerPresenter(World world, SynchronizedCharacterView characters,
+            StatView statView)
         {
-            CompositeDisposable _disposable = new();
-            world.ActiveMap.SubscribeToAllItemsIgnoreNull(map =>
+            CompositeDisposable _disposables = new();
+            world.OnActiveMapChanged.Subscribe(mapChanged =>
                 {
-                    if (map.Player.Character.CurrentHp <= 0)
+                    var player = mapChanged.Map.Player;
+                    if (player.Character.IsDead)
                     {
                         return;
                     }
 
-                    var playerView = characters.Get(map.Player.Character);
+                    var playerView = characters.Get(player.Character);
 
-                    var arrowPrefab = Addressables.LoadAssetAsync<GameObject>("Assets/Prefabs/Arrow.prefab")
-                        .WaitForCompletion();
+                    var arrowPrefab = ObjectLoader.LoadPrefab("Arrow");
                     var arrow = Object.Instantiate(arrowPrefab, playerView.transform);
                     arrow.GetComponent<CharacterArrow>().SetCharacter(playerView);
 
-                    _disposable.Add(Observable
-                        .Merge(map.Player.Character.Status.Stats.HpValue, map.Player.Character.Status.Stats.MaxHp)
+                    _disposables.Add(player.Money.Subscribe(money =>
+                    {
+                        statView.SetMoney(money);
+                    }));
+
+                    _disposables.Add(
+                        Observable.Merge(
+                            player.Character.Inventory.CurrentItemCount.AsUnitObservable(),
+                            player.Character.Inventory.Capacity.AsUnitObservable()
+                        ).Subscribe(_ =>
+                    {
+                        var currentItems = player.Character.Inventory.CurrentItemCount.CurrentValue;
+                        var capacity = player.Character.Inventory.Capacity.CurrentValue;
+                        statView.SetInventory(currentItems, capacity);
+                    }));
+
+                    _disposables.Add(Observable
+                        .Merge(player.Character.Status.HpValue, player.Character.Status.MaxHp)
                         .Subscribe(_ =>
                         {
-                            var hpPercentageFromMaxHp = map.Player.Character.Status.Stats.HpValue.CurrentValue * 100 /
-                                                        map.Player.Character.Status.Stats.MaxHp.CurrentValue;
-                            statLine.SetValue(map.Player.Character.Status.Stats.MaxHp.CurrentValue,
-                                map.Player.Character.Status.Stats.HpValue.CurrentValue);
-                            if (hpPercentageFromMaxHp < Settings.LowHpThresholdPercentage.Value)
+                            var hpPercentageFromMaxHp = player.Character.CurrentHp * 100 /
+                                                        player.Character.CurrentMaxHp;
+                            statView.SetHp(player.Character.CurrentMaxHp,
+                                player.Character.CurrentHp);
+                            if (hpPercentageFromMaxHp < Settings.GlobalSettings.LowHpThresholdPercentage.CurrentValue)
                             {
-                                statLine.SetTextColor(Color.red);
+                                statView.SetTextColor(Color.red);
                             }
                             else
                             {
-                                statLine.SetTextColor(Color.white);
+                                statView.SetTextColor(Color.white);
                             }
                         }));
                 },
-                map => { _disposable.Clear(); });
+                map => { _disposables.Clear(); });
         }
     }
 }

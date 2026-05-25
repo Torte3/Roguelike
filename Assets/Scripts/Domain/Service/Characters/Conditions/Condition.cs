@@ -3,81 +3,91 @@ using Domain.Model.Character;
 using Domain.Model.Condition;
 using Domain.Model.Entity;
 using Domain.Model.Memento;
-using Domain.Service.Logs;
 using Utilities;
 
 namespace Domain.Service.Characters.Conditions
 {
     internal class Condition : ICondition
     {
-        private readonly IConditionData _condition;
-        private readonly RemovalConditionData _removalCondition;
+        public ConditionTemplate _condition { get; init; }
         private int _elapsedTurn;
 
         public Condition(ConditionMemento memento)
         {
             _elapsedTurn = memento.ElapsedTurns;
             _condition = memento.Condition;
-            _removalCondition = memento.RemovalCondition;
         }
 
-        public ParticleType ParticleType => _condition.ParticleType;
+        public bool IsEqualCondition(ICondition condition)
+        {
+            if (condition is Condition otherCondition)
+            {
+                return _condition.name == otherCondition._condition.name;
+            }
+            return false;
+        }
+
+        public ParticleType ParticleType => _condition.Condition.ParticleType;
 
         public ConditionMemento Serialize()
         {
             return new ConditionMemento
             (
                 _condition,
-                _removalCondition,
                 _elapsedTurn
             );
         }
 
-        public ConditionMemento Build(IConditionData condition, RemovalConditionData removalCondition,
-            int elapsedTurn = 0)
+        public ConditionMemento Build(ConditionTemplate condition, int elapsedTurn = 0)
         {
             return new ConditionMemento
             (
                 condition,
-                removalCondition,
                 elapsedTurn
             );
         }
 
-        public void Inflict(IHasCondition hasCondition, Id<IEntity> actor, IPlayer player)
+        public string? GetInflictLog(IHasCondition hasCondition, IPlayer player)
         {
-            if (_condition.InflictLog != "")
+            if (string.IsNullOrEmpty(_condition.InflictLog))
             {
-                GameLog.Add($"{hasCondition.GetName(player)}{_condition.InflictLog}");
+                return null;
             }
-
-            _condition.Inflict(hasCondition, actor);
+            return $"{hasCondition.GetName(player)}{_condition.InflictLog}";
         }
 
-        public void Delete(IHasCondition hasCondition, Id<IEntity> actor, IPlayer player)
+        public string? GetDeleteLog(IHasCondition hasCondition, IPlayer player)
         {
-            if (_condition.DeleteLog != "")
+            if (string.IsNullOrEmpty(_condition.DeleteLog))
             {
-                GameLog.Add($"{hasCondition.GetName(player)}{_condition.DeleteLog}");
+                return null;
             }
-
-            _condition.Delete(hasCondition, actor);
+            return $"{hasCondition.GetName(player)}{_condition.DeleteLog}";
         }
 
-        public void UpdateTurn(IHasCondition hasCondition)
+        public void Inflict(IHasCondition hasCondition, Id<IEntity> actor)
+        {
+            _condition.Condition.Inflict(hasCondition, actor);
+        }
+
+        public void Delete(IHasCondition hasCondition, Id<IEntity> actor)
+        {
+            _condition.Condition.Delete(hasCondition, actor);
+        }
+
+        public void UpdateTurn()
         {
             _elapsedTurn += 1;
-            _condition.Persist(hasCondition);
         }
 
         public bool ShouldDelete(bool characterVisible)
         {
-            return _removalCondition.IsFinished(_elapsedTurn, characterVisible);
+            return _condition.RemovalCondition.IsFinished(_elapsedTurn, characterVisible);
         }
 
         public bool ShouldDeleteByDamage()
         {
-            return _removalCondition.IsFinishedByDamage();
+            return _condition.RemovalCondition.IsFinishedByDamage();
         }
 
         public bool EqualsConditionType(Type conditionType)
@@ -85,14 +95,18 @@ namespace Domain.Service.Characters.Conditions
             return _condition.GetType() == conditionType;
         }
 
-        public static ConditionMemento Build(IConditionData condition, RemovalConditionData removalCondition)
+        public static ConditionMemento Build(ConditionTemplate condition)
         {
             return new ConditionMemento
             (
                 condition,
-                removalCondition,
                 0
             );
+        }
+
+        public string Info()
+        {
+            return $"{_condition.Info(_elapsedTurn)}";
         }
     }
 }

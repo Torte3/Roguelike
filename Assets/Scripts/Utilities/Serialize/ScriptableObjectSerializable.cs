@@ -2,17 +2,20 @@
 using System;
 using Sirenix.OdinInspector;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 
 namespace Utilities.Serialize
 {
     [Serializable]
     public class ScriptableObjectSerializable<T> where T : ScriptableObject
     {
-        [ShowInInspector] [OnValueChanged("OnValidate")]
+        [ShowInInspector]
+        [OnValueChanged(nameof(OnValidate))]
+        [OnInspectorInit(nameof(OnInspectorInit))]
         private T _value;
 
-        [ReadOnly] [SerializeField] private string _name;
+        [HideInInspector]
+        [SerializeField]
+        private string _name;
 
         public T Value
         {
@@ -20,8 +23,7 @@ namespace Utilities.Serialize
             {
                 if (_value == null)
                 {
-                    _value = Addressables.LoadAssetAsync<T>($"Assets/Database/{typeof(T).Name}/{_name}.asset")
-                        .WaitForCompletion();
+                    _value = ObjectLoader.Load<T>(_name);
                 }
 
                 return _value;
@@ -37,6 +39,14 @@ namespace Utilities.Serialize
         private void OnValidate()
         {
             _name = _value.name;
+        }
+
+        private void OnInspectorInit()
+        {
+            if (_value == null)
+            {
+                _value = ObjectLoader.Load<T>(_name);
+            }
         }
     }
 }

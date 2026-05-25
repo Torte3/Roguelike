@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Domain.Model.Effect;
@@ -12,37 +12,33 @@ using Utilities;
 namespace Domain.Service.Effect
 {
     [Serializable]
-    public class HealEffect : EntityTargetEffect
+    public class HealEffect : ActorlessEntityTargetEffect
     {
-        [MinValue(1)] [SerializeField] private int _power;
+        [MinValue(1)][SerializeField] private int _power;
 
         public override Color Color => Colors.Green;
 
         public override Impact Impact => Impact.Beneficial;
 
-        public override UniTask Apply(IActorOfEffect actor, ITargetOfEffect target, Vector2Int position, IMap map)
+        public override UniTask Apply(ITargetOfEffect target, Vector2Int position, IMap map)
         {
             var value = Formula.CalcHeal(_power);
-            GameLog.Add($"{target.GetName(map.Player)}は{value}回復");
+            GameLog.Add(target.IsVisible, $"{target.GetName(map.Player)}は{value}回復");
             target.GainHp(value);
             return UniTask.CompletedTask;
         }
 
         public override float Evaluate(IActorOfEffect actor, ITargetOfEffect target)
         {
-            var lostRatio = (float)(target.CurrentMaxHp - target.CurrentHp) / target.CurrentMaxHp;
-            var healRatio = (float)Formula.CalcHeal(_power) / target.CurrentMaxHp;
-            if (lostRatio >= healRatio)
-            {
-                return healRatio;
-            }
+            if (target.CurrentMaxHp <= 0)
+                return 0;
 
-            if (lostRatio > 0.5f)
-            {
-                return lostRatio;
-            }
+            var missingHp = target.CurrentMaxHp - target.CurrentHp;
+            if (missingHp <= 0)
+                return 0;
 
-            return 0;
+            var actualHeal = Mathf.Min(Formula.CalcHeal(_power), missingHp);
+            return (float)actualHeal / target.CurrentMaxHp;
         }
 
         public override float EvaluatePrice()
@@ -50,28 +46,7 @@ namespace Domain.Service.Effect
             return Formula.EvaluateHeal(_power);
         }
 
-        public override string UpgradePathName => "回復";
-
-        public override List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>
-            {
-                new(
-                    "回復量+3",
-                    () => _power += 3,
-                    () => _power -= 3
-                )
-            };
-        }
-
-        public override Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
-        }
-
-        public override string Info()
-        {
-            return $"威力{_power}の回復を行う\n";
-        }
+        public override string Info() =>
+            $"{ItemDescriptionRichText.RichHealAmount(_power)}HP回復\n";
     }
 }

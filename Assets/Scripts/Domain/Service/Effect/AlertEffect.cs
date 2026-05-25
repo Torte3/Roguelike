@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using Domain.Model.Dungeon;
 using Domain.Model.Effect;
 using Domain.Model.Item;
 using Domain.Model.Map;
@@ -18,7 +19,7 @@ namespace Domain.Service.Effect
 
         public override UniTask Apply(ITargetOfEffect target, Vector2Int position, IMap map)
         {
-            target.ListenToAlert(position);
+            target.ListenToAlert(new Location(map.Id, position));
 
             return UniTask.CompletedTask;
         }
@@ -31,18 +32,6 @@ namespace Domain.Service.Effect
         public override float EvaluatePrice()
         {
             return 20;
-        }
-
-        public override string UpgradePathName => "警報";
-
-        public override List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>();
-        }
-
-        public override Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
         }
 
         public override string Info()

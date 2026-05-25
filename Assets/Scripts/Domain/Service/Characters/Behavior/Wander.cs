@@ -3,7 +3,6 @@ using System.Linq;
 using Domain.Model.Character;
 using Domain.Model.Map;
 using Domain.Service.Action;
-using UnityEngine;
 using Utilities;
 
 namespace Domain.Service.Characters.Behavior

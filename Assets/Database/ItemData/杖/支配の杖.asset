@@ -16,6 +16,10 @@ MonoBehaviour:
   Icon: {fileID: -913573336, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
   IsShiny: 0
   _rarity: 2
+  _useCustomBasePrice: 0
+  CustomBasePrice: 0
+  AdditionalPrice: 0
+  MultiplyPrice: 1
   EffectType: 1
   UseOnDeath: 0
   SpawnEffectsOnUse: 1
@@ -31,6 +35,11 @@ MonoBehaviour:
     - rid: 861543420369829892
     <Repeats>k__BackingField: 1
     <ProbabilityOfSuccess>k__BackingField: 0.95
+    <Cost>k__BackingField: 0
+    <RushDistance>k__BackingField: 0
+    <BackStepDistance>k__BackingField: 0
+    <ChargeTurn>k__BackingField: 0
+    <CoolTime>k__BackingField: 0
   SkillOnThrow:
     <Area>k__BackingField:
       rid: -2
@@ -39,10 +48,12 @@ MonoBehaviour:
     <ProbabilityOfSuccess>k__BackingField: 0.9
   ItemEffect:
     rid: -2
-  StorageCapacity: 0
+  InventoryEffect:
+    rid: -2
   UsageLimit: 3
   UpgradeLimit: 3
   PassiveConditions: []
+  _featuresToMergeWeapon: []
   references:
     version: 2
     RefIds:
@@ -63,3 +74,4 @@ MonoBehaviour:
         Icon:
           _name: icons_full_16_138
         CanHitLayer: 01000000
+        IsPiercing: 0

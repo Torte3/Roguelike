@@ -13,12 +13,8 @@ namespace Domain.Model.Character
     {
         [Required] [SerializeReference] public IConditionData Condition;
         [Required] public RemovalConditionData RemovalCondition;
-
-        public ConditionTemplate(IConditionData condition, RemovalConditionData removalCondition)
-        {
-            Condition = condition;
-            RemovalCondition = removalCondition;
-        }
+        public string InflictLog;
+        public string DeleteLog;
 
         public float Evaluate(ITargetOfEffect target)
         {
@@ -28,6 +24,14 @@ namespace Domain.Model.Character
         public float EvaluateDamage()
         {
             return Condition.EvaluatePrice() * RemovalCondition.EvaluateTurn();
+        }
+
+        public string Info(int elapsedTurn)
+        {
+            var info = "";
+            info += $"{name}\n";
+            info += $"{RemovalCondition.Info(elapsedTurn)}\n";
+            return info;
         }
     }
 }

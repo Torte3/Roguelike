@@ -27,7 +27,9 @@ namespace Domain.Model.Memento
             .Select((x, i) => (new Id<IEntity>(_forcedAffiliationTargets[i]), _forcedAffiliationTypes[i],
                 new FlagStat(x))).ToDictionary(x => (x.Item1, x.Item2), x => x.Item3);
 
-        public AffiliationMemento(CharacterGroup group, Dictionary<Id<IEntity>, float> affiliations,
+        public AffiliationMemento(
+            CharacterGroup group,
+            Dictionary<Id<IEntity>, float> affiliations,
             Dictionary<(Id<IEntity>, AffiliationType), FlagStat> forcedAffiliationFlags)
         {
             Group = group;

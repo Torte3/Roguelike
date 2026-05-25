@@ -1,31 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Domain.Model.Character;
+using Domain.Model.Map;
 using Sirenix.OdinInspector;
 using UnityEngine;
-using Utilities.Table;
 
 namespace Domain.Model.Dungeon
 {
-    [Serializable]
-    public class SectionData
+    [CreateAssetMenu(fileName = "Section", menuName = "ScriptableObject/Section")]
+    public class SectionData : ScriptableObject
     {
-        public int Depth => Floors.Sum(floor => floor.Depth);
-        public SectionType Type;
+        public MapType Type;
         public bool RoundRoomCorner;
         public bool CaveInOneRoom;
         [Range(0, 1)] public float WaterChance;
-        [RequiredListLength(1, null)] public List<FloorData> Floors;
-        private bool _existChest => Floors.Any(floor => floor.ChestChance > 0);
-
-        [ShowIf("@_existChest")] [Range(0, 1)] [Required]
-        public float WeaponChanceInChest;
-
-        private bool _existMimic => Floors.Any(floor => floor.MimicChance > 0);
-        [ShowIf("@_existMimic")] [Required] public EnemyData Mimic;
-        private bool _existShop => Floors.Any(floor => floor.ShopChance > 0);
-        [ShowIf("@_existShop")] [Required] public EnemyData Clerk;
-        public Table<EnemyData> Enemies;
+        [Range(0, 1)] public float GrassChance = 0.3f;
+        [Range(0, 1)] public float LakeChance = 0.1f;
+        [MinValue(0)] public float TrapCount = 0.5f;
+        [Required] public EnemyData Mimic;
+        [Required] public EnemyData Clerk;
     }
 }

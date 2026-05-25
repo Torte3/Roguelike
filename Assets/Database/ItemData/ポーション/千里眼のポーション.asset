@@ -13,9 +13,13 @@ MonoBehaviour:
   m_Name: "\u5343\u91CC\u773C\u306E\u30DD\u30FC\u30B7\u30E7\u30F3"
   m_EditorClassIdentifier: 
   Category: 0
-  Icon: {fileID: -85694764, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
+  Icon: {fileID: 187119880, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
   IsShiny: 0
   _rarity: 2
+  _useCustomBasePrice: 0
+  CustomBasePrice: 0
+  AdditionalPrice: 0
+  MultiplyPrice: 1
   EffectType: 1
   UseOnDeath: 0
   SpawnEffectsOnUse: 1
@@ -31,6 +35,11 @@ MonoBehaviour:
     - rid: 4425516923575599144
     <Repeats>k__BackingField: 1
     <ProbabilityOfSuccess>k__BackingField: 0.95
+    <Cost>k__BackingField: 0
+    <RushDistance>k__BackingField: 0
+    <BackStepDistance>k__BackingField: 0
+    <ChargeTurn>k__BackingField: 0
+    <CoolTime>k__BackingField: 0
   SkillOnThrow:
     <Area>k__BackingField:
       rid: 4425516923575599143
@@ -39,10 +48,12 @@ MonoBehaviour:
     <ProbabilityOfSuccess>k__BackingField: 0.9
   ItemEffect:
     rid: -2
-  StorageCapacity: 0
+  InventoryEffect:
+    rid: -2
   UsageLimit: 1
   UpgradeLimit: 3
   PassiveConditions: []
+  _featuresToMergeWeapon: []
   references:
     version: 2
     RefIds:

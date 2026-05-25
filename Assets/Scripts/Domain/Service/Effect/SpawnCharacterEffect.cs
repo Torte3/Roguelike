@@ -33,15 +33,15 @@ namespace Domain.Service.Effect
             var canSpawnCount = Mathf.Min(placeablePositions.Count(), _count);
             foreach (var position in placeablePositions.GetAtRandom(canSpawnCount))
             {
-                map.SpawnEnemy(
+                map.SpawnEnemyIgnoreMimic(
                     _character.Value,
                     position,
-                    actor.Affiliation,
-                    false,
-                    _inheritsShiny ? actor.IsShiny : null
+                    doActImmediately: true,
+                    affiliation: actor.Affiliation,
+                    isSlept: false,
+                    isShiny: _inheritsShiny ? actor.IsShiny : null
                 );
             }
-
 
             return UniTask.CompletedTask;
         }
@@ -54,9 +54,10 @@ namespace Domain.Service.Effect
             {
                 foreach (var position in placeablePositions.GetAtRandom(_count))
                 {
-                    map.SpawnEnemy(
+                    map.SpawnEnemyIgnoreMimic(
                         _character.Value,
-                        position
+                        position,
+                        doActImmediately: true
                     );
                 }
             }
@@ -74,21 +75,9 @@ namespace Domain.Service.Effect
             return 50f;
         }
 
-        public override string UpgradePathName => "召喚";
-
-        public override List<UpgradeData> GetUpgrades()
-        {
-            return new List<UpgradeData>();
-        }
-
-        public override Dictionary<string, IHasUpgrades> GetChildren()
-        {
-            return new Dictionary<string, IHasUpgrades>();
-        }
-
         public override string Info()
         {
-            return $"{_character.Value.Name}を{_count}体召喚する\n";
+            return $"{_character.Value.Name}を{_count}体召喚\n";
         }
     }
 }

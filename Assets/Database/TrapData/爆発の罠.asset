@@ -23,7 +23,7 @@ MonoBehaviour:
     - rid: 3794997653850030132
     <Repeats>k__BackingField: 1
     <ProbabilityOfSuccess>k__BackingField: 0.85
-  <ProbabilityOfBreaking>k__BackingField: 0.1
+  <ProbabilityOfBreaking>k__BackingField: 1
   references:
     version: 2
     RefIds:
@@ -48,6 +48,7 @@ MonoBehaviour:
         ApplyToMoney: 1
         ApplyToTrap: 1
         ApplyToChest: 1
+        ApplyToStatue: 0
     - rid: 3794997653850030133
       type: {class: DigEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data: 

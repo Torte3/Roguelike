@@ -1,8 +1,5 @@
 #nullable enable
 
-#if UNITY_EDITOR
-#endif
-
 namespace Domain.Model.Item
 {
     public enum Rarity

@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using Cysharp.Threading.Tasks;
 using Domain.Model.Character;
 using Domain.Model.Effect;
@@ -6,26 +6,35 @@ using Domain.Model.Entity;
 using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
-using R3;
 using UnityEngine;
 using Utilities;
 
 namespace Domain.Service.Items
 {
-    internal class ItemEntity : IItemEntity
+    public class ItemEntity : IItemEntity
     {
         public EntityBase Entity { get; init; }
+        public bool IsGrounded => true;
 
         public ItemEntity(ItemEntityMemento item)
         {
-            Item = new Item(item.Item);
+            Item = item.Item.Deserialize();
             Entity = new EntityBase(item.Entity);
         }
 
         public IItem Item { get; init; }
 
         public Sprite Icon => Item.Icon;
-        public Observable<Unit> OnDisabled => Item.RemainingUses.Where(value => value <= 0).AsUnitObservable();
+
+        public bool ShouldRevealMimic(IMap map)
+        {
+            if (Item.ShouldRevealMimic(map.Player.Character, Entity.CurrentPosition, map))
+            {
+                Entity.Destroy("モンスターが正体を表した");
+                return true;
+            }
+            return false;
+        }
 
         public void Dispose()
         {
@@ -41,28 +50,14 @@ namespace Domain.Service.Items
             );
         }
 
+        public static ItemEntityMemento Build(Vector2Int position, IItemMemento item)
+        {
+            return new ItemEntityMemento(item, EntityBase.Build(position, EntityLayer.Bottom));
+        }
+
         public static Vector2Int GetThrowDestination(Vector2Int position, Direction8 direction, int distance, IMap map)
         {
-            var result = position;
-
-            for (var i = 0; i < distance; i++)
-            {
-                if (map.At(result + direction.Vector()).CanPlace(true, false, false, EntityLayer.Middle))
-                {
-                    result += direction.Vector();
-                }
-                else
-                {
-                    if (map.At(result + direction.Vector()).CanPlace(true, false, true, EntityLayer.Middle))
-                    {
-                        result += direction.Vector();
-                    }
-
-                    break;
-                }
-            }
-
-            return result;
+            return map.GetThrowDestination(position, direction, distance, EntityLayer.Middle);
         }
 
         public static float EvaluateThrow(IItem item, Vector2Int position, IActor actor, Direction8 direction,
@@ -79,25 +74,18 @@ namespace Domain.Service.Items
         public async UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)
         {
             var destination = GetThrowDestination(Entity.CurrentPosition, direction, distance, map);
-            if (Entity.Visibility.CurrentValue && destination != Entity.CurrentPosition)
+            if (Entity.IsVisible && destination != Entity.CurrentPosition)
             {
                 Entity.SetVisibility(false);
-                await map.ShowThrowAnimation(Icon, Entity.CurrentPosition, direction, distance, EntityLayer.Middle);
+                await map.ShowThrowAnimation(Icon, Entity.CurrentPosition, direction, distance, false, EntityLayer.Middle);
                 Entity.Teleport(map.FindBlankPositionFrom(destination,
                     position => map.At(position).IsBlankAndStandable(EntityLayer.Bottom)));
             }
-
-            await map.ExecuteTrapAt(destination, actor as ICharacter);
 
             if (Item.CanActivateWhenThrown)
             {
                 var result = await Item.UseWhenThrown(actor, destination, direction, map);
             }
-        }
-
-        ~ItemEntity()
-        {
-            Dispose();
         }
     }
 }

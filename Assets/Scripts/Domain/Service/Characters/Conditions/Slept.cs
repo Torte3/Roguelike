@@ -1,4 +1,3 @@
-using Cysharp.Threading.Tasks;
 using Domain.Model.Character.Status;
 using Domain.Model.Condition;
 using Domain.Model.Effect;
@@ -13,24 +12,17 @@ namespace Domain.Service.Characters.Conditions
         public string Name => "睡眠";
         public ParticleType ParticleType => ParticleType.Sleep;
         public Impact Impact => Impact.Harmful;
-        public string InflictLog => "は眠りについた";
-        public string DeleteLog => "は眠りから覚めた";
 
         public void Inflict(IHasCondition hasCondition, Id<IEntity> actor)
         {
-            hasCondition.Status.AddFlagStat(FlagStatType.CannotAct);
-            hasCondition.Status.AddFlagStat(FlagStatType.Blind);
-        }
-
-        public UniTask Persist(IHasCondition hasCondition)
-        {
-            return UniTask.CompletedTask;
+            hasCondition.Status.GetFlagStat(FlagStatType.CannotAct).Add();
+            hasCondition.Status.GetFlagStat(FlagStatType.Blind).Add();
         }
 
         public void Delete(IHasCondition hasCondition, Id<IEntity> actor)
         {
-            hasCondition.Status.RemoveFlagStat(FlagStatType.CannotAct);
-            hasCondition.Status.RemoveFlagStat(FlagStatType.Blind);
+            hasCondition.Status.GetFlagStat(FlagStatType.CannotAct).Remove();
+            hasCondition.Status.GetFlagStat(FlagStatType.Blind).Remove();
         }
 
         public float Evaluate(ITargetOfEffect target)

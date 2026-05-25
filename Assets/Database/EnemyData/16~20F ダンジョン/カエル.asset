@@ -16,6 +16,7 @@ MonoBehaviour:
   Group: 1
   CharacterType:
     rid: 2541219158355345417
+  _sprite: {fileID: 21300000, guid: 9ad45ab126e16004b81a2e42083de6fc, type: 3}
   IsBoss: 0
   Hp: 8
   Aggression: 1
@@ -31,15 +32,21 @@ MonoBehaviour:
     distanceBottomBound: 3
     lessThanBottomBound: 1
     PrioritizeMovementWhenDistanceLessThanBottomBound: 0
-    PrioritizeEnemiesOverLeaders: 0
+    PrioritizeEnemiesOverLeaders: 1
     ChaseLeader: 1
   MoveSpeed: 2
-  IsHard: 0
-  IsHeavy: 0
+  Flags: 
   IsFlying: 0
   CanThroughWalls: 0
+  CanMimic: 0
+  MimicWeights:
+    ItemRevealOnPickUp: 1
+    ItemRevealOnUse: 1
+    Money: 1
+    Stairs: 1
   CanPickUp: 0
   CanUseItem: 0
+  CanReceivePlayerGift: 0
   Skills:
   - Skill:
       <Position>k__BackingField:
@@ -49,11 +56,14 @@ MonoBehaviour:
       <Effects>k__BackingField:
       - rid: 4274951402137321476
       <Repeats>k__BackingField: 1
+      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <Cost>k__BackingField: 0
       <RushDistance>k__BackingField: 0
       <BackStepDistance>k__BackingField: 0
-      <ProbabilityOfSuccess>k__BackingField: 0.95
+      <ChargeTurn>k__BackingField: 0
+      <CoolTime>k__BackingField: 1
       <Log>k__BackingField: "\u306F\u6C34\u6D41\u30AB\u30C3\u30BF\u30FC\u3092\u653E\u3063\u305F\u3002"
-    CoolTime: 1
+    Priority: 0
   HasLastSkill: 0
   LastSkill:
     <Position>k__BackingField:
@@ -63,10 +73,16 @@ MonoBehaviour:
     <Effects>k__BackingField:
     - rid: -2
     <Repeats>k__BackingField: 1
+    <ProbabilityOfSuccess>k__BackingField: 1
+    <Cost>k__BackingField: 0
     <RushDistance>k__BackingField: 0
     <BackStepDistance>k__BackingField: 0
-    <ProbabilityOfSuccess>k__BackingField: 1
+    <ChargeTurn>k__BackingField: 0
+    <CoolTime>k__BackingField: 0
     <Log>k__BackingField: 
+  AttackMultiplier: 1
+  ElementAttackMultiplier:
+    data: []
   ElementDamageRateMultiplier:
     data: []
   ConditionResistance:
@@ -96,6 +112,7 @@ MonoBehaviour:
         - _element: 2
           _power: 5
         _criticalRate: 0
+        _isWeaponAttack: 0
     - rid: 4274951402137321477
       type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data: 

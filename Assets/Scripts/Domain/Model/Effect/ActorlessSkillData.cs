@@ -13,7 +13,7 @@ namespace Domain.Model.Effect
     {
         [field: SerializeReference]
         [field: Required]
-        public IActorlessEffectPosition Position { get; private set; }
+        public IPositionOnlyDependentEffectPosition Position { get; private set; }
 
         [field: SerializeReference]
         [field: Required]
@@ -23,13 +23,15 @@ namespace Domain.Model.Effect
         [field: Required]
         public List<IActorlessEffect> Effects { get; private set; }
 
-        [field: SerializeReference]
+        [field: SerializeField]
         [field: MinValue(1)]
         public int Repeats { get; private set; } = 1;
 
+        public int Cost => 0;
+        public int ChargeTurn => 0;
         public int RushDistance => 0;
-
         public int BackStepDistance => 0;
+        public int CoolTime => 0;
 
         [field: SerializeField]
         [field: Range(0, 1)]
@@ -37,7 +39,7 @@ namespace Domain.Model.Effect
 
         public string Log => "";
 
-        public ActorlessSkillData(IActorlessEffectPosition position, INotDirectionalArea area,
+        public ActorlessSkillData(IPositionOnlyDependentEffectPosition position, INotDirectionalArea area,
             List<IActorlessEffect> effect,
             float probabilityOfSuccess)
         {

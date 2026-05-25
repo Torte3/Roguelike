@@ -9,54 +9,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42c9d6e8f38cdc547ad116f2420ef50e, type: 3}
+  m_Script: {fileID: 11500000, guid: 8d05bbe6caa05a74e8a0d30dc3973d2c, type: 3}
   m_Name: "\u305F\u3060\u306E\u6307\u8F2A"
-  m_EditorClassIdentifier: 
-  Category: 5
+  m_EditorClassIdentifier: Domain.Model::Domain.Model.Item.ArtifactData
   Icon: {fileID: 1240741089, guid: 8194dc449c9e43f4abb1876681ab2524, type: 3}
   IsShiny: 0
   _rarity: 0
-  EffectType: 0
-  UseOnDeath: 0
-  SpawnEffectsOnUse: 0
-  SpawnEffectsOnThrow: 0
-  IsSameEffect: 0
-  IsSameSkill: 0
-  SkillOnUse:
-    <Position>k__BackingField:
-      rid: 2541219106150416411
-    <Area>k__BackingField:
-      rid: 4425516923575599143
-    <Effects>k__BackingField:
-    - rid: 4425516923575599144
-    <Repeats>k__BackingField: 1
-    <ProbabilityOfSuccess>k__BackingField: 0.95
-  SkillOnThrow:
-    <Area>k__BackingField:
-      rid: 4425516923575599143
-    <Effects>k__BackingField:
-    - rid: 4425516923575599144
-    <ProbabilityOfSuccess>k__BackingField: 0.9
-  ItemEffect:
-    rid: -2
-  StorageCapacity: 0
-  UsageLimit: 1
-  UpgradeLimit: 3
-  PassiveConditions: []
+  UseCustomBasePrice: 0
+  CustomBasePrice: 0
+  AdditionalPrice: 0
+  MultiplyPrice: 1
+  SynthesisSlotLimit: 2
+  HasBuiltInPassive: 0
+  BuiltInPassiveConditionBundle:
+    _displayName: 
+    _conditions: []
   references:
     version: 2
-    RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
-    - rid: 2541219106150416411
-      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
-      data: 
-    - rid: 4425516923575599143
-      type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
-      data: 
-    - rid: 4425516923575599144
-      type: {class: AddConditionEffect, ns: Domain.Service.Effect, asm: Domain.Service}
-      data:
-        _condition:
-          _name: 
-        _probabilityOfSuccess: 0
+    RefIds: []

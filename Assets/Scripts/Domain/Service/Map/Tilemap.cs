@@ -14,7 +14,7 @@ using Utilities.Serialize.Option;
 
 namespace Domain.Service.Map
 {
-    public class Tilemap : IDisposable, ISerializable<TilemapMemento>, ITilemapViewer
+    public class Tilemap : IDisposable, ISerializable<TilemapMemento>, ITilemap
     {
         private readonly HashSet<Vector2Int> _allWalkablePositionsSet;
         private readonly HashSet<Vector2Int> _allPassablePositionsSet;
@@ -31,12 +31,17 @@ namespace Domain.Service.Map
         public readonly int Height;
         public readonly int Width;
 
+        public void UpdateChunk(Vector2Int position)
+        {
+            return;
+        }
+
         public Tilemap(TilemapMemento memento)
         {
-            Width = memento.Width;
-            Height = memento.Height;
             _tiles = memento.Tiles;
-            _overlayTiles = new ObservableDictionary<Vector2Int, OverlayTileCategory>(memento.OverlayTiles);
+            Width = _tiles.Max(pair => pair.Key.x) - _tiles.Min(pair => pair.Key.x) + 1;
+            Height = _tiles.Max(pair => pair.Key.y) - _tiles.Min(pair => pair.Key.y) + 1;
+            _overlayTiles = memento.OverlayTiles;
 
             _allWalkablePositionsSet = FindAllWalkablePositions().ToHashSet();
             _allPassablePositionsSet = FindAllPassablePositions().ToHashSet();
@@ -75,8 +80,8 @@ namespace Domain.Service.Map
         {
             Width = width;
             Height = height;
-            _tiles = new ObservableDictionary<Vector2Int, TileData>(Rect.RectRange()
-                .ToDictionary(x => x, _ => new TileData(TileData.Build(TileCategory.Blank, false))));
+            _tiles = new(new RectInt(Vector2Int.zero, new Vector2Int(width, height)).RectRange()
+                .ToDictionary(x => x, _ => new TileData(TileData.Build(MapType.Cave, TileCategory.Blank, false))));
         }
 
         public Vector2Int Size => new(Width, Height);
@@ -91,8 +96,7 @@ namespace Domain.Service.Map
         {
             _mementoCache = new TilemapMemento
             (
-                Width,
-                Height,
+                "",
                 _tiles,
                 _overlayTiles
             );
@@ -119,12 +123,13 @@ namespace Domain.Service.Map
         }
 
         public Observable<IEnumerable<(Vector2Int Position, TileData Tile)>> OnTilesChanged => _onTilesChanged;
+        public Observable<IEnumerable<(Vector2Int Position, TileData Tile)>> OnTilesLoaded => Observable.Never<IEnumerable<(Vector2Int Position, TileData Tile)>>();
 
         public Observable<IEnumerable<(Vector2Int Position, OverlayTileCategory? Category)>> OnOverlayTilesChanged =>
             _onOverlayTilesChanged;
 
         public Observable<IEnumerable<(Vector2Int Position, bool IsKnown)>> OnTilesKnownChanged => _onTilesKnownChanged;
-        public RectInt Rect => new(Vector2Int.zero, Size);
+        public ReadOnlyReactiveProperty<RectInt> Rect => new ReactiveProperty<RectInt>(new RectInt(Vector2Int.zero, Size));
 
         public IEnumerable<(Vector2Int position, TileData tileData)> GetAllTiles()
         {
@@ -185,14 +190,14 @@ namespace Domain.Service.Map
             return new HashSet<Vector2Int>(_allLightPassablePositionsSet);
         }
 
-        ~Tilemap()
-        {
-            Dispose();
-        }
-
         public bool IsPositionInsideMap(Vector2Int position)
         {
             return _tiles.ContainsKey(position);
+        }
+
+        public bool IsPositionInsideActiveChunk(Vector2Int position)
+        {
+            return IsPositionInsideMap(position);
         }
 
         public Option<TileData> GetTile(Vector2Int position)
@@ -233,7 +238,7 @@ namespace Domain.Service.Map
                     if (category != null)
                     {
                         if (GetTile(position).MapOr(false,
-                                tile => tile.TileType == category.Value.GetPlaceableTileCategory()))
+                                tile => tile.Category() == category.Value.GetPlaceableTileCategory()))
                         {
                             _overlayTiles[position] = category.Value;
                             result.Add((position, category.Value));
@@ -270,12 +275,12 @@ namespace Domain.Service.Map
         {
             var changedPositions = positions
                 .Select(position => (position, GetTile(position)))
-                .Where(pair => pair.Item2.MapOr(false, tile => tile.TileType == TileCategory.Wall))
+                .Where(pair => pair.Item2.MapOr(false, tile => tile.Category() == TileCategory.Wall))
                 .Select(pair => (pair.position, pair.Item2.Expect("tile is null")));
             var result = new List<(Vector2Int position, TileData tileData)>();
             foreach (var (position, tile) in changedPositions)
             {
-                _tiles[position] = new TileData(TileData.Build(TileCategory.Floor, false));
+                _tiles[position] = new TileData(TileData.Build(tile.MapType, TileCategory.Floor, false));
                 result.Add((position, _tiles[position]));
             }
 

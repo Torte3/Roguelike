@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using UnityEngine;
 
 namespace Utilities
 {
@@ -7,16 +8,18 @@ namespace Utilities
     public class Id<T> : IEquatable<Id<T>>
     {
         public static Id<T> Empty => new(Guid.Empty);
-        public Guid Value { get; }
+        [SerializeField] private readonly string _value;
+        public Guid Value => Guid.Parse(_value);
 
         public Id(Guid value)
         {
-            Value = value;
+            _value = value.ToString();
         }
 
         public Id(string value)
         {
-            Value = Guid.Parse(value);
+            _ = Guid.Parse(value);
+            _value = value;
         }
 
         public static Id<T> Generate()
