@@ -89,3 +89,11 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Local editor / agent state (not for sharing)
+/.cursor/
+/.vscode/
+/.idea/
+
+# Local performance test artifacts (not for sharing)
+/Assets/Resources/PerformanceTestRun*.json
