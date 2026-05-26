@@ -24,6 +24,9 @@ namespace Provider
             var previews = new List<GameObject>();
             world.OnActiveMapChanged.Subscribe(mapChanged =>
                 {
+                    disposables.Clear();
+                    previews.ForEach(preview => Object.Destroy(preview));
+                    previews.Clear();
                     var map = mapChanged.Map;
                     var player = map.Player.Character;
                     disposables.Add(map.OnEffectSpawned.Subscribe(effectSpawned =>
@@ -76,8 +79,7 @@ namespace Provider
                             }
                         }
                     }));
-                },
-                _ => disposables.Clear()
+                }
             );
         }
     }

@@ -178,6 +178,7 @@
     <type fullname="View.BonfireView" preserve="all" />
     <type fullname="View.CharacterArrow" preserve="all" />
     <type fullname="View.CharacterView" preserve="all" />
+    <type fullname="View.DamageText" preserve="all" />
     <type fullname="View.EntityView" preserve="all" />
     <type fullname="View.ItemView" preserve="all" />
     <type fullname="View.LifeTimer" preserve="all" />

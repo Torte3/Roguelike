@@ -21,11 +21,11 @@ namespace Provider
             Settings.GlobalSettings.SEVolume.Value.SubscribeIncludingCurrentValue(volume => seManager.SetVolume(volume / 100f));
             world.OnActiveMapChanged.Subscribe(mapChanged =>
                 {
+                    _disposable.Clear();
                     var map = mapChanged.Map;
                     _disposable.Add(map.OnEffectSpawned.Subscribe(effectSpawned => { seManager.AttackSE(); }));
                     _disposable.Add(map.Player.Character.Entity.OnTeleport.Subscribe(teleport => { seManager.TeleportSE(); }));
-                },
-                _ => _disposable.Clear());
+                });
             gameManager.OnPlayBGM.Subscribe(bgm =>
             {
                 switch (bgm)

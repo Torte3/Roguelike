@@ -50,7 +50,10 @@ namespace View.UI
             };
             _storageView.Reset(itemDataListAndEtc);
             if (resetFocus)
+            {
+                _focusIndex.Value = 0;
                 _storageView.Select(0);
+            }
             UpdateInfoText();
         }
 

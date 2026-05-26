@@ -55,7 +55,7 @@ namespace Domain.Service.Characters
 
             var character = new CharacterMemento
             (
-                name: data.Name,
+                name: data.name,
                 characterType: data.CharacterType,
                 behavior: PlayerBehavior.Build(),
                 status: CharacterStatusManager.Build(

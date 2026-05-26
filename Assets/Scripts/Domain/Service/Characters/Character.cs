@@ -56,6 +56,7 @@ namespace Domain.Service.Characters
         private ReactiveProperty<int> _chargeTurn = new(0);
         private IDisposable? _chargePositionCancelSubscription;
         private readonly IGameManager _gameManager;
+        private readonly CompositeDisposable _disposables = new();
 
         internal Character(CharacterMemento data, ICharacterBehavior behavior, IGameManager gameManager, IMap map, bool isPlayer)
         {
@@ -95,7 +96,7 @@ namespace Domain.Service.Characters
                         KnowItem(item, false);
                     }
                 }
-            });
+            }).AddTo(_disposables);
 
             CurseAutoIdentify.Subscribe(_ =>
             {
@@ -103,18 +104,18 @@ namespace Domain.Service.Characters
                 {
                     KnowCurse(item, false);
                 }
-            });
+            }).AddTo(_disposables);
 
             _chargePositionCancelSubscription = Observable.Merge(
-                    Entity.OnMove.Select(_ => Unit.Default),
-                    Entity.OnTeleport.Select(_ => Unit.Default))
-                .Subscribe(_ =>
+                Entity.OnMove.Select(_ => Unit.Default),
+                Entity.OnTeleport.Select(_ => Unit.Default)
+            ).Subscribe(_ =>
                 {
                     if (_chargeAction.HasValue
                         && _chargeStartPosition.IsSome(out var start)
                         && start != Entity.CurrentPosition)
                         ResetChargeAction();
-                });
+                }).AddTo(_disposables);
         }
 
         public Location CurrentLocation => new(_map.Id, Entity.CurrentPosition);
@@ -733,6 +734,7 @@ namespace Domain.Service.Characters
             Entity.Dispose();
             _inventory.Dispose();
             _direction.Dispose();
+            _disposables.Dispose();
         }
 
         public CharacterMemento Serialize()

@@ -27,8 +27,16 @@ namespace Provider
             inventoryView.Initialize();
             world.OnActiveMapChanged.Subscribe(mapChanged =>
                 {
+                    _disposables.Clear();
+
                     var map = mapChanged.Map;
                     var inventory = map.Player.Character.Inventory;
+
+                    inventoryView.Reset(
+                        inventory.AllItems.Select(
+                            item => BuildItemViewData(map, item, canSelect: true)
+                        ).ToList(),
+                        mapChanged.IsNewWorld);
 
                     if (map.Shop != null)
                     {
@@ -37,12 +45,6 @@ namespace Provider
                             .Subscribe(_ => ReplaceAllItemViews(inventoryView, map))
                             .AddTo(_disposables);
                     }
-
-                    inventoryView.Reset(
-                        inventory.AllItems.Select(
-                            item => BuildItemViewData(map, item, canSelect: true)
-                        ).ToList(),
-                        mapChanged.IsNewWorld);
 
                     inventory.OnItemInserted.Subscribe(inserted =>
                     {
@@ -81,8 +83,7 @@ namespace Provider
                     }).AddTo(_disposables);
 
                     ReplaceAllItemViews(inventoryView, map);
-                },
-                _ => _disposables.Clear()
+                }
             );
         }
 

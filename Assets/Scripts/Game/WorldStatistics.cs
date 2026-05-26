@@ -54,6 +54,7 @@ namespace Game
         private readonly HashSet<Id<IItem>> _discoveredCursedItemIds = new();
         public int CursedItemDiscoverCount => _discoveredCursedItemIds.Count;
         private readonly GlobalStatistics _globalStatistics;
+        private readonly CompositeDisposable _mapDisposables = new();
 
         public WorldStatistics(StatisticsMemento memento, GameManager game, World world, GlobalStatistics globalStatistics)
         {
@@ -82,10 +83,11 @@ namespace Game
 
             world.OnActiveMapChanged.Subscribe(mapChanged =>
             {
+                _mapDisposables.Clear();
                 var map = mapChanged.Map;
                 UpdateMaxMapLevel(map.Depth);
                 map.Player.Character.KnownItemNames.ObserveAdd().Subscribe(item =>
-                    _globalStatistics.RecordKnownItem(item.Value));
+                    _globalStatistics.RecordKnownItem(item.Value)).AddTo(_mapDisposables);
                 map.Characters.SubscribeIncludingCurrentObservables(
                     character => character.Status.OnDamageReceived,
                     (character, msg) =>
@@ -96,7 +98,7 @@ namespace Game
                                  msg.Attacker?.IsPlayer == true)
                             RecordDamageDealt(msg.Damage);
                     }
-                );
+                ).AddTo(_mapDisposables);
                 map.Characters.SubscribeIncludingCurrentObservables(
                     character => character.Status.OnHealReceived,
                     (character, amount) =>
@@ -104,10 +106,10 @@ namespace Game
                         if (character.IsPlayer)
                             RecordHealReceived(amount);
                     }
-                );
-                map.Player.Character.OnItemUsed.Subscribe(RecordItemUsed);
+                ).AddTo(_mapDisposables);
+                map.Player.Character.OnItemUsed.Subscribe(RecordItemUsed).AddTo(_mapDisposables);
                 map.Player.Character.Entity.OnDestroyed.Subscribe(cause =>
-                    RecordDeath(map.Player.Character.GetNameIgnoreVisibility(map.Player) + cause));
+                    RecordDeath(map.Player.Character.GetNameIgnoreVisibility(map.Player) + cause)).AddTo(_mapDisposables);
                 map.Characters.SubscribeIncludingCurrentObservables(
                     character => character.OnDead,
                     (character, _) =>
@@ -115,17 +117,17 @@ namespace Game
                         if (!character.IsPlayer && map.Player.Character.Affiliation.IsEnemy(character.Affiliation))
                             RecordEnemyKilled(character.Name);
                     }
-                );
+                ).AddTo(_mapDisposables);
                 map.Shop?.IsStolen.Pairwise().Subscribe(pair =>
                 {
                     if (pair.Current && !pair.Previous)
                         RecordSteal();
-                });
+                }).AddTo(_mapDisposables);
                 map.MonsterHouse?.HasEverEntered.Pairwise().Subscribe(pair =>
                 {
                     if (pair.Current && !pair.Previous)
                         RecordMonsterHouseEntered();
-                });
+                }).AddTo(_mapDisposables);
                 var inventory = map.Player.Character.Inventory;
                 foreach (var item in inventory.AllItems)
                 {
@@ -135,7 +137,7 @@ namespace Game
                 {
                     var item = inserted.NewItem;
                     SubscribeCursedItems(item);
-                });
+                }).AddTo(_mapDisposables);
             });
 
             game.OnTurnChanged.Subscribe(_ => RecordTurn());
@@ -224,8 +226,8 @@ namespace Game
         private void SubscribeCursedItems(IItem item)
         {
             TryRecordCursedItemDiscovery(item);
-            item.CurseIdentified.Subscribe(_ => TryRecordCursedItemDiscovery(item));
-            item.Cursed.Subscribe(_ => TryRecordCursedItemDiscovery(item));
+            item.CurseIdentified.Subscribe(_ => TryRecordCursedItemDiscovery(item)).AddTo(_mapDisposables);
+            item.Cursed.Subscribe(_ => TryRecordCursedItemDiscovery(item)).AddTo(_mapDisposables);
         }
 
         private void TryRecordCursedItemDiscovery(IItem item)

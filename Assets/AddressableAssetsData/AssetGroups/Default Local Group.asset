@@ -180,6 +180,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e3c12374e0bc68c499d88af702dd2f24
+    m_Address: Assets/Prefabs/EvArrow.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ea3f0d2ca36c0184c95aa60b767b5a92
     m_Address: Assets/Database/EnemyData
     m_ReadOnly: 0

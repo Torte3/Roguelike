@@ -21,7 +21,7 @@ MonoBehaviour:
   StatueChance: 0
   SleepChance: 0.75
   MimicChance: 0
-  CursedItemChance: 0.05
+  CursedItemChance: 0
   BonfireWeight: 1
   MagicPotWeight: 1
   WorkbenchWeight: 1

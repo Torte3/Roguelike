@@ -38,6 +38,8 @@ namespace View
 
             foreach (var child in transform.GetComponentsInChildren<ParticleSystemRenderer>())
             {
+                if (child.sharedMaterial == null)
+                    continue;
                 child.enabled = _isVisible;
             }
         }

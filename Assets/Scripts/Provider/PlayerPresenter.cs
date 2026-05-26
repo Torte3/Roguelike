@@ -19,6 +19,7 @@ namespace Provider
             CompositeDisposable _disposables = new();
             world.OnActiveMapChanged.Subscribe(mapChanged =>
                 {
+                    _disposables.Clear();
                     var player = mapChanged.Map.Player;
                     if (player.Character.IsDead)
                     {
@@ -26,6 +27,12 @@ namespace Provider
                     }
 
                     var playerView = characters.Get(player.Character);
+
+                    var existingArrow = playerView.GetComponentInChildren<CharacterArrow>();
+                    if (existingArrow != null)
+                    {
+                        Object.Destroy(existingArrow.gameObject);
+                    }
 
                     var arrowPrefab = ObjectLoader.LoadPrefab("Arrow");
                     var arrow = Object.Instantiate(arrowPrefab, playerView.transform);
@@ -64,8 +71,7 @@ namespace Provider
                                 statView.SetTextColor(Color.white);
                             }
                         }));
-                },
-                map => { _disposables.Clear(); });
+                });
         }
     }
 }

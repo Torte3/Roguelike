@@ -16,6 +16,8 @@ namespace Provider
         {
             world.OnActiveMapChanged.Subscribe(mapChanged =>
                 {
+                    _disposable.Clear();
+
                     var map = mapChanged.Map;
                     damageTextSpawner.DeleteAllText();
                     _disposable.Add(map.Player.Character.Status.OnDamageReceived.Subscribe(damageChanged =>
@@ -58,8 +60,7 @@ namespace Provider
                             }
                         }
                     ));
-                },
-                _ => _disposable.Clear());
+                });
         }
     }
 }
