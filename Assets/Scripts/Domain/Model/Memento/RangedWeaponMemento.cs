@@ -12,7 +12,8 @@ namespace Domain.Model.Memento
     public class RangedWeaponMemento : IItemMemento
     {
         [field: SerializeField] public BaseItemMemento BaseItem { get; private set; }
-        [field: SerializeField] public Option<WeaponPrefix> Prefix { get; private set; }
+        [SerializeField] private Option<ScriptableObjectSerializable<WeaponPrefix>> _prefix;
+        public Option<WeaponPrefix> Prefix => _prefix.Map(p => p.Value);
         [field: SerializeField] public int DefaultPower { get; private set; }
         [field: SerializeField] public IconSerializable ProjectileIcon { get; private set; }
         [field: SerializeField] public List<ItemFeature> Features { get; private set; }
@@ -30,7 +31,7 @@ namespace Domain.Model.Memento
         )
         {
             BaseItem = baseItem;
-            Prefix = prefix;
+            _prefix = prefix.Map(p => p.ToSerializable());
             DefaultPower = defaultPower;
             ProjectileIcon = projectileIcon;
             Features = features;
