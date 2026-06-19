@@ -1,3 +1,4 @@
+using System;
 using Cysharp.Threading.Tasks;
 using Domain.Model.Item;
 using Domain.Service.Action;
@@ -8,7 +9,7 @@ namespace Domain.Service.Characters.Behavior
 {
     public class CharacterControlInputReceiver
     {
-        private ItemFocus _focus = new(0);
+        private Func<ItemFocus> _focusProvider = () => new(0);
         private readonly Subject<Unit> _onActionRead = new();
         private readonly AsyncReactiveProperty<(Move action, bool isStarted)> _onMoveInputReceived = new((null, false));
 
@@ -16,6 +17,8 @@ namespace Domain.Service.Characters.Behavior
             _onUseItemActionReceived = new(new(0));
 
         private readonly AsyncReactiveProperty<ItemFocus> _onItemSelectConfirmReceived = new(new(0));
+
+        private readonly AsyncReactiveProperty<Unit> _onItemSelectCancelReceived = new(Unit.Default);
 
         private readonly AsyncReactiveProperty<ItemFocus> _onThrowItemActionReceived =
             new(new(0));
@@ -37,6 +40,7 @@ namespace Domain.Service.Characters.Behavior
 
         internal IReadOnlyAsyncReactiveProperty<ItemFocus> OnUseItemActionReceived => _onUseItemActionReceived;
         internal IReadOnlyAsyncReactiveProperty<ItemFocus> OnItemSelectConfirmReceived => _onItemSelectConfirmReceived;
+        internal IReadOnlyAsyncReactiveProperty<Unit> OnItemSelectCancelReceived => _onItemSelectCancelReceived;
         internal IReadOnlyAsyncReactiveProperty<ItemFocus> OnThrowItemActionReceived => _onThrowItemActionReceived;
         internal IReadOnlyAsyncReactiveProperty<ItemFocus> OnSwapItemActionReceived => _onSwapItemActionReceived;
         internal IReadOnlyAsyncReactiveProperty<Unit> OnDoNothingActionReceived => _onDoNothingActionReceived;
@@ -54,25 +58,31 @@ namespace Domain.Service.Characters.Behavior
         public void SetAttackInput()
         {
             if (_enable.CurrentValue)
-                _onUseItemActionReceived.Value = _focus;
+                _onUseItemActionReceived.Value = _focusProvider();
         }
 
         public void SetItemSelectConfirmInput()
         {
             if (_enable.CurrentValue)
-                _onItemSelectConfirmReceived.Value = _focus;
+                _onItemSelectConfirmReceived.Value = _focusProvider();
+        }
+
+        public void SetItemSelectCancelInput()
+        {
+            if (_enable.CurrentValue)
+                _onItemSelectCancelReceived.Value = Unit.Default;
         }
 
         public void SetThrowInput()
         {
             if (_enable.CurrentValue)
-                _onThrowItemActionReceived.Value = _focus;
+                _onThrowItemActionReceived.Value = _focusProvider();
         }
 
         public void SetDropInput()
         {
             if (_enable.CurrentValue)
-                _onSwapItemActionReceived.Value = _focus;
+                _onSwapItemActionReceived.Value = _focusProvider();
         }
 
         public void SetDoNothingInput()
@@ -84,7 +94,7 @@ namespace Domain.Service.Characters.Behavior
         public void SetRenameInput()
         {
             if (_enable.CurrentValue)
-                _onRenameItemActionReceived.Value = _focus;
+                _onRenameItemActionReceived.Value = _focusProvider();
         }
 
         public void SetFaceNearestCharacterInput()
@@ -93,10 +103,9 @@ namespace Domain.Service.Characters.Behavior
                 _onFaceNearestCharacterActionReceived.Value = Unit.Default;
         }
 
-        public void SetItemFocus(ItemFocus focus)
+        public void SetItemFocusProvider(Func<ItemFocus> provider)
         {
-            if (_enable.CurrentValue)
-                _focus = focus;
+            _focusProvider = provider ?? (() => new(0));
         }
 
         internal void ReadInput()

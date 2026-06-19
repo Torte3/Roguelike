@@ -67,7 +67,7 @@ MonoBehaviour:
       data:
         Icon:
           _name: icons_full_16_159
-        CanHitLayer: 0100000000000000
+        CanHitLayer: 010000000000000003000000
         IsPiercing: 0
     - rid: 4425516923575599132
       type: {class: BlowAwayEffect, ns: Domain.Service.Effect, asm: Domain.Service}

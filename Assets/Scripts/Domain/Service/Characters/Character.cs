@@ -1090,12 +1090,12 @@ namespace Domain.Service.Characters
                 var skill = new SkillWithCost(memento);
                 await UseSkill(skill, CurrentDirection, _map);
             }
-            _inventory.UpdateTurn();
         }
 
         public void UpdateCharacterTurn()
         {
             _skills.ForEach(x => x.Skill.CoolDown());
+            _inventory.UpdateTurn();
         }
 
         public string Info()

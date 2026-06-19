@@ -38,7 +38,7 @@ namespace Domain.Service.Items
 
         public ICharacter Reveal(IMap map)
         {
-            GameLog.Add(map.Player.Character.IsVisible(Entity.CurrentPosition), $"{Item.GetName(map.Player, map.ItemPlaceholders)}はモンスターだった");
+            GameLog.Add(map.Player.Character.IsVisible(Entity.CurrentPosition), $"{Item.GetName(map.Player, map.ItemPlaceholders)}は{Mimic.Name}の擬態だった！");
             Entity.Destroy("モンスターが正体を表した");
             return map.SpawnEnemyIgnoreMimic(
                 Mimic,

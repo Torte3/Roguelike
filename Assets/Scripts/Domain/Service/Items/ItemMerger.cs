@@ -50,7 +50,7 @@ namespace Domain.Service.Items
                     {
                         return true;
                     }
-                    if (item.CanUpgrade() && mergeBaseItem.UpgradeCount > 0)
+                    if (item.UpgradeCount > 0 && mergeBaseItem.CanUpgrade())
                     {
                         return true;
                     }

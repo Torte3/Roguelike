@@ -215,7 +215,7 @@ namespace Domain.Service.Items
             Debug.Log($"ShouldRevealMimic: {_mimic.IsSome()}");
             if (_mimic.IsSome(out var mimic))
             {
-                GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}はモンスターだった");
+                GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は{mimic.Name}の擬態だった！");
                 map.SpawnEnemyIgnoreMimic(mimic, position, doActImmediately: true, isSlept: false, isShiny: false);
                 _onMimicRevealed.OnNext(Unit.Default);
                 return true;

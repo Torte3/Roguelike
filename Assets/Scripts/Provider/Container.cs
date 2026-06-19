@@ -38,6 +38,7 @@ namespace Provider
             builder.Register<CharacterSelectReceiver>(Lifetime.Singleton);
             builder.Register<TextInputReceiver>(Lifetime.Singleton);
             builder.Register<CharacterControlInputReceiver>(Lifetime.Singleton);
+            builder.Register<TutorialReceiver>(Lifetime.Singleton);
             builder.Register<SynchronizedCharacterView>(Lifetime.Singleton);
             builder.Register<SynchronizedIconEntityView>(Lifetime.Singleton);
             builder.Register<SynchronizedThrowAnimationEntityView>(Lifetime.Singleton);
@@ -66,6 +67,8 @@ namespace Provider
             builder.RegisterComponentInHierarchy<BGMManager>();
             builder.RegisterComponentInHierarchy<SEManager>();
             builder.RegisterComponentInHierarchy<ItemLibraryView>();
+            builder.RegisterComponentInHierarchy<KeyHintView>();
+            builder.RegisterComponentInHierarchy<TutorialWindow>();
 
             builder.RegisterPlainEntryPoint<InitPresenter>();
             builder.RegisterPlainEntryPoint<DungeonInfoPresenter>();
@@ -83,6 +86,8 @@ namespace Provider
             builder.RegisterPlainEntryPoint<MainMenuPresenter>();
             builder.RegisterPlainEntryPoint<SettingPresenter>();
             builder.RegisterPlainEntryPoint<LogPresenter>();
+            builder.RegisterPlainEntryPoint<KeyHintPresenter>();
+            builder.RegisterPlainEntryPoint<TutorialPresenter>();
             builder.RegisterPlainEntryPoint<ShopInfoPresenter>();
             builder.RegisterPlainEntryPoint<ItemPreviewPresenter>();
             builder.RegisterPlainEntryPoint<StatisticsPresenter>();

@@ -59,6 +59,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _itemViewPrefab: {fileID: -7847131293135838076, guid: c4f92b6139c253d47ab6f0f99be0afd4, type: 3}
+  _horizontalJump: 10
+  _inputDeadzone: 0.5
+  _repeatDelay: 0.4
+  _verticalRepeatStartInterval: 0.12
+  _verticalRepeatMinInterval: 0.05
+  _verticalRepeatAcceleration: 0.8
+  _horizontalRepeatInterval: 0.15
 --- !u!114 &8187704012525280751
 MonoBehaviour:
   m_ObjectHideFlags: 0

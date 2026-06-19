@@ -23,6 +23,10 @@ namespace Domain.Model.Memento
         [field: SerializeField] public int TotalStealCount { get; private set; }
         [field: SerializeField] public int TotalMonsterHouseEnterCount { get; private set; }
         [field: SerializeField] public int TotalCursedItemDiscoverCount { get; private set; }
+        [field: SerializeField] public bool HasShownFirstGameTutorial { get; private set; }
+        [field: SerializeField] public bool HasShownShopTutorial { get; private set; }
+        [field: SerializeField] public bool HasShownMagicCircleTutorial { get; private set; }
+        [field: SerializeField] public bool HasShownFloor30Tutorial { get; private set; }
         [SerializeField] private SerializableDictionary<string, int> _itemUsedCountByBaseName;
         public Dictionary<string, int> ItemUsedCountByBaseName => _itemUsedCountByBaseName.ToDictionary();
         [SerializeField] private SerializableDictionary<string, int> _deathCountByCause;
@@ -43,7 +47,11 @@ namespace Domain.Model.Memento
             int totalMonsterHouseEnterCount,
             int totalCursedItemDiscoverCount,
             Dictionary<string, int> itemUsedCountByBaseName,
-            Dictionary<string, int> deathCountByCause)
+            Dictionary<string, int> deathCountByCause,
+            bool hasShownFirstGameTutorial,
+            bool hasShownShopTutorial,
+            bool hasShownMagicCircleTutorial,
+            bool hasShownFloor30Tutorial)
         {
             MaxMapLevel = maxMapLevel;
             KnownItemNames = knownItemNames;
@@ -61,6 +69,10 @@ namespace Domain.Model.Memento
             TotalCursedItemDiscoverCount = totalCursedItemDiscoverCount;
             _itemUsedCountByBaseName = itemUsedCountByBaseName.ToSerializable();
             _deathCountByCause = deathCountByCause.ToSerializable();
+            HasShownFirstGameTutorial = hasShownFirstGameTutorial;
+            HasShownShopTutorial = hasShownShopTutorial;
+            HasShownMagicCircleTutorial = hasShownMagicCircleTutorial;
+            HasShownFloor30Tutorial = hasShownFloor30Tutorial;
         }
     }
 }

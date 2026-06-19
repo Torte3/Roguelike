@@ -37,26 +37,22 @@ namespace Provider
                         receiver.Disable();
                     else
                         receiver.Enable();
-
-                    var asset = EventSystem.current?.GetComponent<InputSystemUIInputModule>()?.actionsAsset;
-                    if (isInputBlocked)
-                        asset?.Disable();
-                    else
-                        asset?.Enable();
                 });
 
             receiver.OnMovePerformed
+                .Where(_ => !receiver.IsSelectItemModifier)
                 .Select(vector => DirectionMethods.NearestDirectionFromVector(vector))
                 .WhereNotNull()
                 .Subscribe(direction => actionReceiver.SetMoveInput(direction, true));
             actionReceiver.OnActionRead
+                .Where(_ => !receiver.IsSelectItemModifier)
                 .Select(_ => receiver.MoveVector)
                 .Select(vector => DirectionMethods.NearestDirectionFromVector(vector))
                 .WhereNotNull()
                 .Subscribe(direction => actionReceiver.SetMoveInput(direction, false));
 
-            inventoryView.Focus.Subscribe(focus =>
-                actionReceiver.SetItemFocus(focus.ToItemFocus()));
+            inventoryView.ConfigureNavigation(() => receiver.InventoryNavigateVector);
+            actionReceiver.SetItemFocusProvider(() => inventoryView.CurrentFocus.ToItemFocus());
             receiver.OnAttackPerformed.Subscribe(_ => actionReceiver.SetAttackInput());
             receiver.OnSubmitPerformed
                 .Subscribe(_ => actionReceiver.SetItemSelectConfirmInput());
@@ -80,7 +76,11 @@ namespace Provider
                 .Subscribe(_ => actionReceiver.SetFaceNearestCharacterInput());
 
             receiver.OnMainMenuOpening.Subscribe(_ => menuController.OpenMeinMenu());
-            receiver.OnMenuCanceling.Subscribe(_ => menuController.CloseMenu());
+            receiver.OnMenuCanceling.Subscribe(_ =>
+            {
+                actionReceiver.SetItemSelectCancelInput();
+                menuController.CloseMenu();
+            });
             receiver.OnMenuClosing.Subscribe(_ => menuController.CloseAllMenus());
 
             ApplySwapAfterEventSystemInitialized(receiver);
@@ -132,6 +132,8 @@ namespace Provider
         private async UniTaskVoid ApplySwapAfterEventSystemInitialized(InputReceiver receiver)
         {
             await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
+
+            receiver.BindToUIModule();
 
             Settings.GlobalSettings.SwapABXY.Value
                 .SubscribeIncludingCurrentValue(receiver.ApplyFaceButtonSwap);

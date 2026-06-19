@@ -52,7 +52,9 @@ namespace Domain.Model.Character
         private void OnValidate()
         {
             var assetPath = AssetDatabase.GetAssetPath(GetInstanceID());
-            Name = Path.GetFileNameWithoutExtension(assetPath);
+            var fileName = Path.GetFileNameWithoutExtension(assetPath);
+            if (!string.IsNullOrEmpty(fileName))
+                Name = fileName;
 
             Flags = Flags.Distinct().ToList();
 

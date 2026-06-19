@@ -284,11 +284,7 @@ namespace Domain.Service.Characters.Behavior
         public async UniTask<ItemFocus> SelectItem(string text, params ItemFocus[] disabledItemIndexes)
         {
             _onStartItemSelect.OnNext(new OnStartItemSelectMessage(text, disabledItemIndexes));
-            ItemFocus? focus;
-            do
-            {
-                focus = await _receiver.OnItemSelectConfirmReceived.WaitAsync();
-            } while (!focus.IsOnEmpty && disabledItemIndexes.Contains(focus));
+            var focus = await WaitItemSelectOrCancel(disabledItemIndexes);
 
             _gameManager.PlaySE(SE.ItemSelectConfirm);
             _onSelectedItemSelect.OnNext(Unit.Default);
@@ -304,15 +300,29 @@ namespace Domain.Service.Characters.Behavior
         {
             _onStartItemSelect.OnNext(new OnStartItemSelectMessage(text, disabledItemIndexes, previews, defaultPreview, previewTitle));
 
-            ItemFocus? focus;
-            do
-            {
-                focus = await _receiver.OnItemSelectConfirmReceived.WaitAsync();
-            } while (!focus.IsOnEmpty && disabledItemIndexes.Contains(focus));
+            var focus = await WaitItemSelectOrCancel(disabledItemIndexes);
 
             _gameManager.PlaySE(SE.ItemSelectConfirm);
             _onSelectedItemSelect.OnNext(Unit.Default);
             return focus;
+        }
+
+        private async UniTask<ItemFocus> WaitItemSelectOrCancel(ItemFocus[] disabledItemIndexes)
+        {
+            while (true)
+            {
+                var cts = new CancellationTokenSource();
+                var (winIndex, confirmed, _) = await UniTask.WhenAny(
+                    _receiver.OnItemSelectConfirmReceived.WaitAsync(cts.Token),
+                    _receiver.OnItemSelectCancelReceived.WaitAsync(cts.Token));
+                cts.Cancel();
+
+                if (winIndex == 1)
+                    return ItemFocus.Empty;
+
+                if (confirmed.IsOnEmpty || !disabledItemIndexes.Contains(confirmed))
+                    return confirmed;
+            }
         }
 
         private static void LogIfCursedBlocksThrowAfterDoableFailed(IHasBehavior character, IMap map, IItem item)

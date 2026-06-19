@@ -25,6 +25,7 @@ namespace Domain.Model
         public UniTask<int> GetChoiceWithItemPreview(string? text, IMap map, params (string choice, IItem item)[] choices);
         public UniTask<int> GetChoiceWithItemPreview(string? text, IMap map, int cancelChoiceIndex, params (string choice, IItem item)[] choices);
         public UniTask<string?> GetTextInput(bool canCancel = false);
+        public UniTask ShowTutorialIfNeeded(TutorialType type);
         public void MoveMap(Id<IMap> destination, Id<IEntity> from);
         public void PlayBGM(BGM bgm);
         public void PlaySE(SE se);

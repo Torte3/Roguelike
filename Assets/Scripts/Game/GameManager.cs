@@ -31,6 +31,7 @@ namespace Game
         private readonly CharacterSelectReceiver _characterSelectReceiver;
         private readonly TextInputReceiver _textInputReceiver;
         private readonly CharacterControlInputReceiver _receiver;
+        private readonly TutorialReceiver _tutorialReceiver;
         public Observable<Unit> OnTurnChanged => _turnController.OnTurnChanged;
         public ReadOnlyReactiveProperty<int> Turn => _turnController.TurnInLevel;
         private GlobalStatistics _globalStatistics;
@@ -56,7 +57,8 @@ namespace Game
         public GameManager(World world, GameInput input, ChoiceReceiver choiceReceiver,
             CharacterSelectReceiver characterSelectReceiver,
             TextInputReceiver textInputReceiver,
-            CharacterControlInputReceiver receiver)
+            CharacterControlInputReceiver receiver,
+            TutorialReceiver tutorialReceiver)
         {
             _world = world;
             _turnController = new TurnController(input);
@@ -65,6 +67,7 @@ namespace Game
             _characterSelectReceiver = characterSelectReceiver;
             _textInputReceiver = textInputReceiver;
             _receiver = receiver;
+            _tutorialReceiver = tutorialReceiver;
 
             _world.OnActiveMapChanged.Subscribe(mapChanged =>
             {
@@ -256,6 +259,7 @@ namespace Game
                 var map = CreateSaveData(playerData);
                 var _ = await GetChoice(null, "New Game");
                 await ChoiceDifficulty();
+                await ShowTutorialIfNeeded(TutorialType.FirstGame);
                 StartGame(map, 0);
             }
 
@@ -293,6 +297,14 @@ namespace Game
                 case 1:
                     break;
             }
+        }
+
+        public async UniTask ShowTutorialIfNeeded(TutorialType type)
+        {
+            if (_globalStatistics.HasShownTutorial(type))
+                return;
+            await _tutorialReceiver.Show(type);
+            _globalStatistics.RecordTutorialShown(type);
         }
 
         private MapManager LoadSaveData(SaveData saveData)
@@ -350,6 +362,8 @@ namespace Game
             PlayBGM(BGM.Normal);
             var map = _world.LoadMap(mapId, destination, this);
             Save();
+            if (map.Depth >= 30)
+                await ShowTutorialIfNeeded(TutorialType.Floor30);
             StartMap(map, 0);
             Log.Debug("[Game]End LoadMap");
         }

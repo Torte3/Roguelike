@@ -181,6 +181,24 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SelectItem"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""29b10bef-644e-4b00-8ddd-8c9a203a847f"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SelectItemModifier"",
+                    ""type"": ""Button"",
+                    ""id"": ""0b81421f-241b-4c27-80ed-0532b2f0bf56"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -296,31 +314,9 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""5d6c0793-3c46-4eb2-a749-2323bbe3e6fb"",
-                    ""path"": ""<XInputController>/buttonSouth"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Attack"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""df269882-db41-4f53-a5c6-58d018102592"",
-                    ""path"": ""<SwitchProControllerHID>/buttonEast"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Attack"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""3c718290-d6c1-4ddf-82a8-e2343984376d"",
                     ""path"": ""<Gamepad>/buttonEast"",
-                    ""interactions"": """",
+                    ""interactions"": ""Press(behavior=1)"",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Attack"",
@@ -331,28 +327,6 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
                     ""name"": """",
                     ""id"": ""240c120b-f425-417f-8bcb-d73cfc01ccc3"",
                     ""path"": ""<Keyboard>/shift"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Dash"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""da4086cf-d000-4d43-acc5-e75daa773b76"",
-                    ""path"": ""<XInputController>/buttonEast"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Dash"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""094a1bbf-74c9-474c-883d-92a268f983c0"",
-                    ""path"": ""<SwitchProControllerHID>/buttonSouth"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -384,28 +358,6 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""bc1c0815-1507-4e08-91db-812cb7d53b3f"",
-                    ""path"": ""<XInputController>/buttonNorth"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""TurnOnly"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""a83b2b63-2e65-4062-ba34-d18382472cf2"",
-                    ""path"": ""<SwitchProControllerHID>/buttonWest"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""TurnOnly"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""e614d14f-ccf0-403c-88ea-39cc5a9fff13"",
                     ""path"": ""<Gamepad>/buttonWest"",
                     ""interactions"": """",
@@ -419,28 +371,6 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
                     ""name"": """",
                     ""id"": ""b24e07f1-2a9b-49a9-bd31-375661bba70c"",
                     ""path"": ""<Keyboard>/e"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""SwapItem"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""8c1f11d6-5f65-49a7-a20e-71c1438c7caf"",
-                    ""path"": ""<XInputController>/buttonWest"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""SwapItem"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""3c22b918-c783-48cb-8d1e-9acd092ce1e0"",
-                    ""path"": ""<SwitchProControllerHID>/buttonNorth"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -517,7 +447,7 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
                 {
                     ""name"": ""One Modifier"",
                     ""id"": ""fa5c7124-dba9-4ab4-9779-8b407c6ce068"",
-                    ""path"": ""OneModifier"",
+                    ""path"": ""OneModifier(overrideModifiersNeedToBePressedFirst=true)"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -528,7 +458,7 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
                 {
                     ""name"": ""modifier"",
                     ""id"": ""7a55299c-aae6-43ba-9952-bd3a17679260"",
-                    ""path"": ""<XInputController>/buttonSouth"",
+                    ""path"": ""<Gamepad>/buttonEast"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -539,7 +469,7 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
                 {
                     ""name"": ""binding"",
                     ""id"": ""4848b0d2-7bba-4001-9877-7b082366d8bc"",
-                    ""path"": ""<XInputController>/buttonEast"",
+                    ""path"": ""<Gamepad>/buttonSouth"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -566,6 +496,83 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""DiagonalOnly"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""27c319a3-6049-44e1-8e65-39b1cd2a1902"",
+                    ""path"": ""<Gamepad>/rightStick"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SelectItem"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Keyboard"",
+                    ""id"": ""cd698ba8-43b3-49cc-bc98-0211e8435291"",
+                    ""path"": ""2DVector"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SelectItem"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""3bb67fb5-5e6c-4497-84d7-8b167ed2907f"",
+                    ""path"": ""<Keyboard>/upArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""SelectItem"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""6c195e2d-e6cf-4643-8fd8-0dd05cf8fd31"",
+                    ""path"": ""<Keyboard>/downArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""SelectItem"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""efb374f4-8f22-46af-8400-9f1953f3275c"",
+                    ""path"": ""<Keyboard>/leftArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""SelectItem"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""7fccf78f-602a-46ce-9893-e6d4744bd854"",
+                    ""path"": ""<Keyboard>/rightArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""SelectItem"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7ce0290d-0bc6-4cf9-ba34-a36feb62bd8f"",
+                    ""path"": ""<Gamepad>/leftShoulder"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SelectItemModifier"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -621,28 +628,6 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
                     ""name"": """",
                     ""id"": ""f567e931-b648-4400-bd6b-33958654d003"",
                     ""path"": ""<Keyboard>/escape"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Cancel"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""dbc1c79f-2c9f-4d2a-ab30-be8bc9044010"",
-                    ""path"": ""<XInputController>/buttonEast"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Cancel"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""bd311632-6a11-4e51-a919-46d5991ef29c"",
-                    ""path"": ""<SwitchProControllerHID>/buttonSouth"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -771,61 +756,6 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 },
                 {
-                    ""name"": ""Joystick"",
-                    ""id"": ""8400f7ee-2ac7-4ab5-9f2d-78a31dcd628e"",
-                    ""path"": ""2DVector"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Navigate"",
-                    ""isComposite"": true,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": ""up"",
-                    ""id"": ""0c1b8999-937f-42c8-9636-7f2462585b6d"",
-                    ""path"": ""<Joystick>/stick/up"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Joystick"",
-                    ""action"": ""Navigate"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""down"",
-                    ""id"": ""09cb2f2d-d8f0-4534-a235-08a89d03d49b"",
-                    ""path"": ""<Joystick>/stick/down"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Joystick"",
-                    ""action"": ""Navigate"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""left"",
-                    ""id"": ""076ad571-fd00-4295-a625-481daa88285e"",
-                    ""path"": ""<Joystick>/stick/left"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Joystick"",
-                    ""action"": ""Navigate"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""right"",
-                    ""id"": ""fd69b245-e86e-4a01-ac17-bfd94239bae1"",
-                    ""path"": ""<Joystick>/stick/right"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Joystick"",
-                    ""action"": ""Navigate"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
                     ""name"": ""Keyboard"",
                     ""id"": ""2eb9337f-48b0-404c-9cdb-b07971a15234"",
                     ""path"": ""2DVector"",
@@ -882,10 +812,10 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""25706476-bca7-4d20-a44f-434ebe052b70"",
+                    ""id"": ""65e6a262-2a22-4d53-ac1c-161c6dc03be3"",
                     ""path"": ""<Gamepad>/leftStick"",
                     ""interactions"": """",
-                    ""processors"": ""StickDeadzone"",
+                    ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Navigate"",
                     ""isComposite"": false,
@@ -906,28 +836,6 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
                     ""name"": """",
                     ""id"": ""1d7f1ad1-1fec-4d57-8d1e-2cac9d223026"",
                     ""path"": ""<Keyboard>/space"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Submit"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""c7ad8b9b-168a-4b1c-bb0a-50a6d046c0a2"",
-                    ""path"": ""<XInputController>/buttonSouth"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Submit"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""7b5e9b6e-03bc-435a-9512-dcd9595e1257"",
-                    ""path"": ""<SwitchProControllerHID>/buttonEast"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -1095,6 +1003,8 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
         m_Field_Throw = m_Field.FindAction("Throw", throwIfNotFound: true);
         m_Field_Rename = m_Field.FindAction("Rename", throwIfNotFound: true);
         m_Field_DoNothing = m_Field.FindAction("DoNothing", throwIfNotFound: true);
+        m_Field_SelectItem = m_Field.FindAction("SelectItem", throwIfNotFound: true);
+        m_Field_SelectItemModifier = m_Field.FindAction("SelectItemModifier", throwIfNotFound: true);
         // Menu
         m_Menu = asset.FindActionMap("Menu", throwIfNotFound: true);
         m_Menu_Close = m_Menu.FindAction("Close", throwIfNotFound: true);
@@ -1203,6 +1113,8 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
     private readonly InputAction m_Field_Throw;
     private readonly InputAction m_Field_Rename;
     private readonly InputAction m_Field_DoNothing;
+    private readonly InputAction m_Field_SelectItem;
+    private readonly InputAction m_Field_SelectItemModifier;
     /// <summary>
     /// Provides access to input actions defined in input action map "Field".
     /// </summary>
@@ -1254,6 +1166,14 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Field/DoNothing".
         /// </summary>
         public InputAction @DoNothing => m_Wrapper.m_Field_DoNothing;
+        /// <summary>
+        /// Provides access to the underlying input action "Field/SelectItem".
+        /// </summary>
+        public InputAction @SelectItem => m_Wrapper.m_Field_SelectItem;
+        /// <summary>
+        /// Provides access to the underlying input action "Field/SelectItemModifier".
+        /// </summary>
+        public InputAction @SelectItemModifier => m_Wrapper.m_Field_SelectItemModifier;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -1310,6 +1230,12 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
             @DoNothing.started += instance.OnDoNothing;
             @DoNothing.performed += instance.OnDoNothing;
             @DoNothing.canceled += instance.OnDoNothing;
+            @SelectItem.started += instance.OnSelectItem;
+            @SelectItem.performed += instance.OnSelectItem;
+            @SelectItem.canceled += instance.OnSelectItem;
+            @SelectItemModifier.started += instance.OnSelectItemModifier;
+            @SelectItemModifier.performed += instance.OnSelectItemModifier;
+            @SelectItemModifier.canceled += instance.OnSelectItemModifier;
         }
 
         /// <summary>
@@ -1351,6 +1277,12 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
             @DoNothing.started -= instance.OnDoNothing;
             @DoNothing.performed -= instance.OnDoNothing;
             @DoNothing.canceled -= instance.OnDoNothing;
+            @SelectItem.started -= instance.OnSelectItem;
+            @SelectItem.performed -= instance.OnSelectItem;
+            @SelectItem.canceled -= instance.OnSelectItem;
+            @SelectItemModifier.started -= instance.OnSelectItemModifier;
+            @SelectItemModifier.performed -= instance.OnSelectItemModifier;
+            @SelectItemModifier.canceled -= instance.OnSelectItemModifier;
         }
 
         /// <summary>
@@ -1763,6 +1695,20 @@ public partial class @MyInputAction: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnDoNothing(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "SelectItem" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnSelectItem(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "SelectItemModifier" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnSelectItemModifier(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Menu" which allows adding and removing callbacks.

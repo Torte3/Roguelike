@@ -110,7 +110,7 @@ MonoBehaviour:
       type: {class: SpawnCharacterEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:
         _character:
-          _name: "\u30DE\u30B8\u30AB\u30EB\u30B8\u30A7\u30EB"
+          _name: "\u9B54\u5C0E\u30B8\u30A7\u30EB"
         _count: 2
         _inheritsShiny: 1
     - rid: 8023009114449248379

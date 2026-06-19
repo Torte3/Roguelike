@@ -97,6 +97,7 @@ namespace Domain.Service.Events
             }
             else if (_mimic.IsSome(out var mimic))
             {
+                GameLog.Add(map.Player.Character.IsVisible(Entity.CurrentPosition), $"宝箱は{mimic.Name}の擬態だった！");
                 map.SpawnEnemyIgnoreMimic(
                     mimic,
                     Entity.CurrentPosition,

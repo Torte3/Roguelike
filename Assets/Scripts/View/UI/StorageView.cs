@@ -1,8 +1,10 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using R3;
 using Unity.Logging;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Utilities;
 
@@ -17,6 +19,164 @@ namespace View.UI
         public Observable<int> OnSelected => _onSelected;
         private bool _canSkip = false;
 
+        [Header("Navigation")]
+        [SerializeField] private int _horizontalJump = 10;
+        [SerializeField] private float _inputDeadzone = 0.5f;
+        [SerializeField] private float _repeatDelay = 0.4f;
+        [SerializeField] private float _verticalRepeatStartInterval = 0.12f;
+        [SerializeField] private float _verticalRepeatMinInterval = 0.05f;
+        [Tooltip("上下リピートごとに間隔へ掛ける係数 (<1で加速)")]
+        [SerializeField] private float _verticalRepeatAcceleration = 0.8f;
+        [Tooltip("左右リピート間隔 (加速なし・一定)")]
+        [SerializeField] private float _horizontalRepeatInterval = 0.15f;
+
+        private enum NavDir { None, Up, Down, Left, Right }
+        private Func<Vector2>? _readNavigate;
+        private NavDir _lastNav = NavDir.None;
+        private float _repeatTimer;
+        private float _repeatInterval;
+
+        public void ConfigureNavigation(Func<Vector2> readNavigate)
+        {
+            _readNavigate = readNavigate;
+        }
+
+        private void Update()
+        {
+            if (_readNavigate == null)
+                return;
+
+            var current = CurrentSelectedIndex();
+            var dir = current < 0 ? NavDir.None : Quantize(_readNavigate());
+            if (dir == NavDir.None)
+            {
+                _lastNav = NavDir.None;
+                return;
+            }
+
+            if (dir != _lastNav)
+            {
+                HandleNav(current, dir, fresh: true);
+                _repeatTimer = _repeatDelay;
+                _repeatInterval = dir is NavDir.Up or NavDir.Down ? _verticalRepeatStartInterval : _horizontalRepeatInterval;
+            }
+            else
+            {
+                _repeatTimer -= Time.unscaledDeltaTime;
+                if (_repeatTimer <= 0f)
+                {
+                    HandleNav(current, dir, fresh: false);
+                    if (dir is NavDir.Up or NavDir.Down)
+                        _repeatInterval = Mathf.Max(_verticalRepeatMinInterval, _repeatInterval * _verticalRepeatAcceleration);
+                    _repeatTimer = _repeatInterval;
+                }
+            }
+
+            _lastNav = dir;
+        }
+
+        private NavDir Quantize(Vector2 v)
+        {
+            if (Mathf.Abs(v.x) < _inputDeadzone && Mathf.Abs(v.y) < _inputDeadzone)
+                return NavDir.None;
+            if (Mathf.Abs(v.y) >= Mathf.Abs(v.x))
+                return v.y > 0f ? NavDir.Up : NavDir.Down;
+            return v.x > 0f ? NavDir.Right : NavDir.Left;
+        }
+
+        private void HandleNav(int current, NavDir dir, bool fresh)
+        {
+            switch (dir)
+            {
+                case NavDir.Up:
+                    StepVertical(current, -1, fresh);
+                    break;
+                case NavDir.Down:
+                    StepVertical(current, 1, fresh);
+                    break;
+                case NavDir.Left:
+                    StepHorizontal(current, -1);
+                    break;
+                case NavDir.Right:
+                    StepHorizontal(current, 1);
+                    break;
+            }
+        }
+
+        private void StepVertical(int current, int direction, bool fresh)
+        {
+            var target = Step(current, direction, 1);
+            if (target != current)
+            {
+                Select(target);
+                return;
+            }
+            if (!fresh)
+                return;
+            var wrap = direction < 0 ? LastInteractableIndex() : FirstInteractableIndex();
+            if (wrap >= 0 && wrap != current)
+                Select(wrap);
+        }
+
+        private void StepHorizontal(int current, int direction)
+        {
+            var target = Step(current, direction, _horizontalJump);
+            if (target != current)
+                Select(target);
+        }
+
+        private int Step(int from, int direction, int distance)
+        {
+            if (_itemViews.Count == 0)
+                return from;
+            var last = _itemViews.Count - 1;
+            var result = from;
+            var i = from;
+            var moved = 0;
+            while (moved < distance)
+            {
+                var next = i + direction;
+                if (next < 0 || next > last)
+                    break;
+                i = next;
+                if (IsSelectable(i))
+                {
+                    result = i;
+                    moved++;
+                }
+            }
+            return result;
+        }
+
+        private bool IsSelectable(int index) => !_canSkip || _itemViews[index].interactable;
+
+        private int FirstInteractableIndex()
+        {
+            for (var i = 0; i < _itemViews.Count; i++)
+                if (IsSelectable(i))
+                    return i;
+            return -1;
+        }
+
+        private int LastInteractableIndex()
+        {
+            for (var i = _itemViews.Count - 1; i >= 0; i--)
+                if (IsSelectable(i))
+                    return i;
+            return -1;
+        }
+
+        private int CurrentSelectedIndex()
+        {
+            var selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+            if (selected == null)
+                return -1;
+            for (var i = 0; i < _itemViews.Count; i++)
+                if (_itemViews[i] != null && _itemViews[i].gameObject == selected)
+                    return i;
+            return -1;
+        }
+
         public ItemViewData GetItem(int index)
         {
             Log.Verbose($"[View]StorageView GetItem: {index}");
@@ -28,40 +188,15 @@ namespace View.UI
             return _itemViews.IndexOf(itemView);
         }
 
-        private void UpdateVerticalNavigation()
+        private void DisableSelectableNavigation()
         {
-            Log.Verbose($"[View]StorageView UpdateNavigation");
-            foreach (var (view, index) in _itemViews.Index())
+            foreach (var view in _itemViews)
             {
-                var nav = new Navigation
-                {
-                    mode = Navigation.Mode.Explicit,
-                    selectOnLeft = FindInteractableItem(index, -1, 10),
-                    selectOnRight = FindInteractableItem(index, 1, 10),
-                    selectOnUp = FindInteractableItem(index, -1),
-                    selectOnDown = FindInteractableItem(index, 1)
-                };
-                view.GetComponent<Selectable>().navigation = nav;
+                var selectable = view.GetComponent<Selectable>();
+                var nav = selectable.navigation;
+                nav.mode = Navigation.Mode.None;
+                selectable.navigation = nav;
             }
-        }
-
-        private Selectable? FindInteractableItem(int currentIndex, int direction, int distance = 1)
-        {
-            if (_itemViews.Count == 0) return null;
-
-            var startIndex = currentIndex;
-            var index = (currentIndex + direction * distance).Mod(_itemViews.Count);
-
-            while (index != startIndex)
-            {
-                if (!_canSkip || _itemViews[index].interactable)
-                {
-                    return _itemViews[index].GetComponent<Selectable>();
-                }
-                index = (index + direction).WrapIndex(_itemViews.Count);
-            }
-
-            return null;
         }
 
         public void Reset(List<ItemViewData> itemDatas)
@@ -91,7 +226,7 @@ namespace View.UI
                 }
             }
 
-            UpdateVerticalNavigation();
+            DisableSelectableNavigation();
             UpdateSiblingOrder();
         }
 
@@ -126,7 +261,7 @@ namespace View.UI
             view.Set(itemData);
             view.UpdateInteractable(interactable);
             view.OnSelected.Subscribe(_ => _onSelected.OnNext(GetIndex(view))).AddTo(view);
-            UpdateVerticalNavigation();
+            DisableSelectableNavigation();
             UpdateSiblingOrder();
         }
 
@@ -135,7 +270,7 @@ namespace View.UI
             Log.Verbose($"[View]StorageView Remove: {index}");
             Destroy(ItemViews[index].gameObject);
             _itemViews.RemoveAt(index);
-            UpdateVerticalNavigation();
+            DisableSelectableNavigation();
             UpdateSiblingOrder();
         }
 
@@ -158,7 +293,6 @@ namespace View.UI
         {
             Log.Verbose($"[View]StorageView UpdateItemSkip: {canSkip}");
             _canSkip = canSkip;
-            UpdateVerticalNavigation();
         }
     }
 }

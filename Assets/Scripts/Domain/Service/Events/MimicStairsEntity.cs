@@ -43,7 +43,7 @@ namespace Domain.Service.Events
                 MovementEntityType.MagicCircle => "魔法陣",
                 _ => throw new NotImplementedException(),
             };
-            GameLog.Add(map.Player.Character.IsVisible(Entity.CurrentPosition), $"{entityName}はモンスターだった");
+            GameLog.Add(map.Player.Character.IsVisible(Entity.CurrentPosition), $"{entityName}は{Mimic.Name}の擬態だった！");
             Entity.Destroy("モンスターが正体を表した");
             return map.SpawnEnemyIgnoreMimic(
                 Mimic,

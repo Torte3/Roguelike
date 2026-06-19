@@ -233,7 +233,7 @@ MonoBehaviour:
     LakeChance: 0.2
     ItemCount: 1
     MoneyCount: 1
-    MoneyAverage: 100
+    MoneyAverage: 20
     CharacterCount: 1
     TrapCount: 0.5
     StatueChance: 0.1
@@ -251,7 +251,7 @@ MonoBehaviour:
     LakeChance: 0.05
     ItemCount: 2
     MoneyCount: 1
-    MoneyAverage: 100
+    MoneyAverage: 20
     CharacterCount: 1
     TrapCount: 0.5
     StatueChance: 0.1
@@ -308,7 +308,7 @@ MonoBehaviour:
     LakeChance: 0.2
     ItemCount: 1
     MoneyCount: 1
-    MoneyAverage: 300
+    MoneyAverage: 60
     CharacterCount: 1
     TrapCount: 0.5
     StatueChance: 0.1
@@ -326,7 +326,7 @@ MonoBehaviour:
     LakeChance: 0.05
     ItemCount: 2
     MoneyCount: 1
-    MoneyAverage: 100
+    MoneyAverage: 20
     CharacterCount: 1
     TrapCount: 0.5
     StatueChance: 0.1
@@ -374,7 +374,7 @@ MonoBehaviour:
     LakeChance: 0.2
     ItemCount: 1
     MoneyCount: 1
-    MoneyAverage: 100
+    MoneyAverage: 20
     CharacterCount: 1
     TrapCount: 0.5
     StatueChance: 0.1
@@ -392,7 +392,7 @@ MonoBehaviour:
     LakeChance: 0.05
     ItemCount: 2
     MoneyCount: 1
-    MoneyAverage: 100
+    MoneyAverage: 20
     CharacterCount: 1
     TrapCount: 0.5
     StatueChance: 0.1
@@ -2270,7 +2270,7 @@ MonoBehaviour:
     LakeChance: 0.2
     ItemCount: 1
     MoneyCount: 1
-    MoneyAverage: 300
+    MoneyAverage: 60
     CharacterCount: 1
     TrapCount: 0.5
     StatueChance: 0.1
@@ -2288,7 +2288,7 @@ MonoBehaviour:
     LakeChance: 0.05
     ItemCount: 2
     MoneyCount: 1
-    MoneyAverage: 100
+    MoneyAverage: 20
     CharacterCount: 1
     TrapCount: 0.5
     StatueChance: 0.1
@@ -2565,7 +2565,7 @@ MonoBehaviour:
     LakeChance: 0.05
     ItemCount: 0
     MoneyCount: 0
-    MoneyAverage: 100
+    MoneyAverage: 20
     CharacterCount: 0
     TrapCount: 0
     StatueChance: 0.1
@@ -2583,7 +2583,7 @@ MonoBehaviour:
     LakeChance: 0.05
     ItemCount: 2
     MoneyCount: 1
-    MoneyAverage: 100
+    MoneyAverage: 20
     CharacterCount: 1
     TrapCount: 0.5
     StatueChance: 0.1
@@ -2823,7 +2823,7 @@ MonoBehaviour:
     LakeChance: 0
     ItemCount: 1
     MoneyCount: 1
-    MoneyAverage: 100
+    MoneyAverage: 20
     CharacterCount: 1
     TrapCount: 0.5
     StatueChance: 0.05
@@ -2841,7 +2841,7 @@ MonoBehaviour:
     LakeChance: 0.05
     ItemCount: 2
     MoneyCount: 1
-    MoneyAverage: 100
+    MoneyAverage: 20
     CharacterCount: 1
     TrapCount: 0.5
     StatueChance: 0.1

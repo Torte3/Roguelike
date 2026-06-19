@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Domain.Model;
 using Domain.Model.Memento;
 using ObservableCollections;
 using R3;
@@ -47,6 +48,11 @@ namespace Game
 
         public int TotalCursedItemDiscoverCount { get; private set; }
 
+        public bool HasShownFirstGameTutorial { get; private set; }
+        public bool HasShownShopTutorial { get; private set; }
+        public bool HasShownMagicCircleTutorial { get; private set; }
+        public bool HasShownFloor30Tutorial { get; private set; }
+
         public GlobalStatistics(GlobalStatisticsMemento memento)
         {
             _knownItemNames = new(memento.KnownItemNames);
@@ -64,6 +70,10 @@ namespace Game
             TotalStealCount = memento.TotalStealCount;
             TotalMonsterHouseEnterCount = memento.TotalMonsterHouseEnterCount;
             TotalCursedItemDiscoverCount = memento.TotalCursedItemDiscoverCount;
+            HasShownFirstGameTutorial = memento.HasShownFirstGameTutorial;
+            HasShownShopTutorial = memento.HasShownShopTutorial;
+            HasShownMagicCircleTutorial = memento.HasShownMagicCircleTutorial;
+            HasShownFloor30Tutorial = memento.HasShownFloor30Tutorial;
             foreach (var kvp in memento.ItemUsedCountByBaseName)
                 _itemUsedCountByBaseName[kvp.Key] = kvp.Value;
             foreach (var kvp in memento.DeathCountByCause)
@@ -123,6 +133,26 @@ namespace Game
 
         public void RecordCursedItemDiscovery() => TotalCursedItemDiscoverCount++;
 
+        public bool HasShownTutorial(TutorialType type) => type switch
+        {
+            TutorialType.FirstGame => HasShownFirstGameTutorial,
+            TutorialType.Shop => HasShownShopTutorial,
+            TutorialType.MagicCircle => HasShownMagicCircleTutorial,
+            TutorialType.Floor30 => HasShownFloor30Tutorial,
+            _ => false,
+        };
+
+        public void RecordTutorialShown(TutorialType type)
+        {
+            switch (type)
+            {
+                case TutorialType.FirstGame: HasShownFirstGameTutorial = true; break;
+                case TutorialType.Shop: HasShownShopTutorial = true; break;
+                case TutorialType.MagicCircle: HasShownMagicCircleTutorial = true; break;
+                case TutorialType.Floor30: HasShownFloor30Tutorial = true; break;
+            }
+        }
+
         public void RecordKnownItem(string baseName) => _knownItemNames.Add(baseName);
 
         public GlobalStatisticsMemento Serialize()
@@ -131,13 +161,14 @@ namespace Game
                 TotalPlayTime.Ticks, TotalTurns.CurrentValue,
                 _totalDamageReceived, _maxDamageReceived, _totalDamageDealt, _maxDamageDealt,
                 _totalHealReceived, _maxHealReceived, TotalStealCount, TotalMonsterHouseEnterCount,
-                TotalCursedItemDiscoverCount, _itemUsedCountByBaseName, _deathCountByCause);
+                TotalCursedItemDiscoverCount, _itemUsedCountByBaseName, _deathCountByCause,
+                HasShownFirstGameTutorial, HasShownShopTutorial, HasShownMagicCircleTutorial, HasShownFloor30Tutorial);
         }
 
         public static GlobalStatisticsMemento Build()
         {
             return new GlobalStatisticsMemento(1, new(), new Dictionary<string, int>(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                new Dictionary<string, int>(), new Dictionary<string, int>());
+                new Dictionary<string, int>(), new Dictionary<string, int>(), false, false, false, false);
         }
 
         public string GetStatisticsText()

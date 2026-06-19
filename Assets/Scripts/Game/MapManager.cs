@@ -515,6 +515,8 @@ namespace Game
                         foreach (var playerEventEntity in EntityManager.GetPlayerEventEntitiesFastAt(positionChanged,
                                      EntityLayer.Floor, EntityLayer.Bottom))
                         {
+                            if (playerEventEntity is IMovementEntity { Type: MovementEntityType.MagicCircle })
+                                await _gameManager.ShowTutorialIfNeeded(TutorialType.MagicCircle);
                             await playerEventEntity.Events.DoEvent(EntityManager.Player, _gameManager, this);
                         }
                     }
