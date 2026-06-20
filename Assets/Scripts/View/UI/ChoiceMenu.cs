@@ -23,10 +23,11 @@ namespace View.UI
         [SerializeField] private ChoiceButton _choiceButtonPrefab;
         [SerializeField] private SEManager _seManager;
         private readonly List<ChoiceButton> _buttons = new();
+        private int _initialIndex;
 
         public void SetCanCancel(bool canCancel) => _canClose = canCancel;
 
-        public void SetChoices(string? choiceText, params string[] choices)
+        public void SetChoices(string? choiceText, int initialIndex, params string[] choices)
         {
             foreach (var button in _buttons)
             {
@@ -40,7 +41,8 @@ namespace View.UI
             else
                 _choiceText.text = "";
 
-            _selectedIndex.Value = 0;
+            _initialIndex = Mathf.Clamp(initialIndex, 0, Mathf.Max(0, choices.Length - 1));
+            _selectedIndex.Value = _initialIndex;
             foreach (var (choice, index) in choices.Index())
             {
                 var button = Instantiate(_choiceButtonPrefab, _content);
@@ -68,6 +70,7 @@ namespace View.UI
                     selectOnDown = _buttons[(i + 1).WrapIndex(_buttons.Count)].GetComponent<Button>()
                 };
                 _buttons[i].GetComponent<Button>().navigation = nav;
+                _buttons[i].GetComponent<AutoSelecter>().enabled = i == _initialIndex;
             }
         }
 

@@ -18,18 +18,18 @@ MonoBehaviour:
     rid: 2790137613772128355
   _sprite: {fileID: 21300000, guid: 51554110f03d8834594f33830f04097e, type: 3}
   IsBoss: 0
-  Hp: 4
+  Hp: 6
   Aggression: 4
   Behavior:
     wanderAround: 1
-    Default: 3
+    Default: 2
     PrioritizeMovement: 0
     UseTopBound: 0
     greaterThanTopBound: 1
     distanceTopBound: 5
     PrioritizeMovementWhenDistanceGreaterThanTopBound: 0
     UseBottomBound: 1
-    distanceBottomBound: 3
+    distanceBottomBound: 2
     lessThanBottomBound: 3
     PrioritizeMovementWhenDistanceLessThanBottomBound: 0
     PrioritizeEnemiesOverLeaders: 1
@@ -68,7 +68,7 @@ MonoBehaviour:
       <Position>k__BackingField:
         rid: 2790137640983199744
       <Area>k__BackingField:
-        rid: 2790137640983199745
+        rid: 6522576111895052388
       <Effects>k__BackingField:
       - rid: 2790137640983199746
       <Repeats>k__BackingField: 1
@@ -114,15 +114,7 @@ MonoBehaviour:
       data:
         Type: 3
     - rid: 2790137640983199744
-      type: {class: NearByCharacter, ns: Domain.Model.Effect.Position, asm: Domain.Model}
-      data:
-        NumberOfTarget: 1
-        TargetAlly: 0
-        TargetEnemy: 1
-        TargetNeutral: 0
-        TargetSelf: 0
-    - rid: 2790137640983199745
-      type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      type: {class: AtFeet, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data: 
     - rid: 2790137640983199746
       type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
@@ -164,3 +156,9 @@ MonoBehaviour:
           _power: 1
         _criticalRate: 0
         _isWeaponAttack: 0
+    - rid: 6522576111895052388
+      type: {class: CircleArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
+      data:
+        ContainsSelf: 0
+        CanIgnoreWalls: 0
+        Radius: 2

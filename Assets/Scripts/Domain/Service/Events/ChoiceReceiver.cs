@@ -13,8 +13,8 @@ namespace Domain.Service.Events
     {
         private readonly Subject<(string? text, string[] choices, int? cancelChoiceIndex)> _onShownChoice = new();
         public Observable<(string? text, string[] choices, int? cancelChoiceIndex)> OnShownChoice => _onShownChoice;
-        private readonly Subject<(string? text, (string choice, string infoTitle, string info)[] choices, int? cancelChoiceIndex)> _onShownChoiceWithInfo = new();
-        public Observable<(string? text, (string choice, string infoTitle, string info)[] choices, int? cancelChoiceIndex)> OnShownChoiceWithInfo => _onShownChoiceWithInfo;
+        private readonly Subject<(string? text, (string choice, string infoTitle, string info)[] choices, int defaultIndex, bool clearPreviousMenus)> _onShownChoiceWithInfo = new();
+        public Observable<(string? text, (string choice, string infoTitle, string info)[] choices, int defaultIndex, bool clearPreviousMenus)> OnShownChoiceWithInfo => _onShownChoiceWithInfo;
         private readonly Subject<OnShownChoiceWithItemPreviewMessage> _onShownChoiceWithItemPreview = new();
         public Observable<OnShownChoiceWithItemPreviewMessage> OnShownChoiceWithItemPreview => _onShownChoiceWithItemPreview;
         private readonly AsyncReactiveProperty<int> _onReceivedChoicedIndex = new(-1);
@@ -34,22 +34,21 @@ namespace Domain.Service.Events
             return index;
         }
 
-        public UniTask<int> GetChoiceWithInfo(string? text, params (string choice, string infoTitle, string info)[] choices) =>
-            GetChoiceWithInfoInternal(text, null, choices);
-
         public UniTask<int> GetChoiceWithInfo(
             string? text,
-            int cancelChoiceIndex,
+            int defaultIndex = 0,
+            bool clearPreviousMenus = false,
             params (string choice, string infoTitle, string info)[] choices) =>
-            GetChoiceWithInfoInternal(text, cancelChoiceIndex, choices);
+            GetChoiceWithInfoInternal(text, choices, defaultIndex, clearPreviousMenus);
 
         private async UniTask<int> GetChoiceWithInfoInternal(
             string? text,
-            int? cancelChoiceIndex,
-            (string choice, string infoTitle, string info)[] choices)
+            (string choice, string infoTitle, string info)[] choices,
+            int defaultIndex,
+            bool clearPreviousMenus)
         {
             Log.Debug($"[Menu]GetChoice: {text} {string.Join(", ", choices.Select(c => c.choice))}");
-            ShowChoicesWithInfo(text, choices, cancelChoiceIndex);
+            ShowChoicesWithInfo(text, choices, defaultIndex, clearPreviousMenus);
             var index = await _onReceivedChoicedIndex.WaitAsync();
             Log.Debug($"[Menu]GetChoice: {index}");
             return index;
@@ -78,9 +77,9 @@ namespace Domain.Service.Events
             return index;
         }
 
-        private void ShowChoicesWithInfo(string? text, (string choice, string infoTitle, string info)[] choices, int? cancelChoiceIndex)
+        private void ShowChoicesWithInfo(string? text, (string choice, string infoTitle, string info)[] choices, int defaultIndex, bool clearPreviousMenus)
         {
-            _onShownChoiceWithInfo.OnNext((text, choices, cancelChoiceIndex));
+            _onShownChoiceWithInfo.OnNext((text, choices, defaultIndex, clearPreviousMenus));
         }
 
         private void ShowChoices(string? text, string[] choices, int? cancelChoiceIndex)

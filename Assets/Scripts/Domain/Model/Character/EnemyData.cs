@@ -53,10 +53,17 @@ namespace Domain.Model.Character
         {
             var assetPath = AssetDatabase.GetAssetPath(GetInstanceID());
             var fileName = Path.GetFileNameWithoutExtension(assetPath);
-            if (!string.IsNullOrEmpty(fileName))
-                Name = fileName;
+            var newName = !string.IsNullOrEmpty(fileName) ? fileName : Name;
+            var newFlags = Flags.Distinct().ToList();
+            var newCanReceivePlayerGift = newName != "店員" && CanUseItem;
 
-            Flags = Flags.Distinct().ToList();
+            var changed = Name != newName
+                          || CanReceivePlayerGift != newCanReceivePlayerGift
+                          || !Flags.SequenceEqual(newFlags);
+
+            Name = newName;
+            Flags = newFlags;
+            CanReceivePlayerGift = newCanReceivePlayerGift;
 
             foreach (var skill in Skills)
             {
@@ -68,9 +75,8 @@ namespace Domain.Model.Character
                 LastSkill.OnValidate(1);
             }
 
-            CanReceivePlayerGift = Name != "店員" && CanUseItem;
-
-            EditorUtility.SetDirty(this);
+            if (changed)
+                EditorUtility.SetDirty(this);
         }
 #endif
     }

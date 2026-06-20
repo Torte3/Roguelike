@@ -100,9 +100,7 @@ namespace Provider
 
             choiceReceiver.OnShownChoiceWithInfo.Subscribe(async message =>
             {
-                var index = message.cancelChoiceIndex is { } cancelIndex
-                    ? await menuController.GetChoiceWithInfo(message.text, cancelIndex, message.choices)
-                    : await menuController.GetChoiceWithInfo(message.text, message.choices);
+                var index = await menuController.GetChoiceWithInfo(message.text, message.defaultIndex, message.clearPreviousMenus, message.choices);
                 choiceReceiver.SetChoicedIndex(index);
             });
 

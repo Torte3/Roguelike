@@ -79,30 +79,19 @@ namespace View.UI
 
         public async UniTask<int> GetChoiceWithInfo(
             string? text,
+            int defaultIndex = 0,
+            bool clearPreviousMenus = false,
             params (string choice, string infoTitle, string info)[] choices)
         {
-            AddMenu(_infoMenu);
+            if (clearPreviousMenus)
+                SwitchMenu(_infoMenu);
+            else
+                AddMenu(_infoMenu);
             var disposable = _choiceMenu.SelectedIndex.Subscribe(index =>
             {
                 _infoMenu.SetInfo(choices[index].infoTitle, choices[index].info);
             });
-            var choiceIndex = await GetChoice(text, choices.Select(x => x.choice).ToArray());
-            disposable.Dispose();
-            PopMenu();
-            return choiceIndex;
-        }
-
-        public async UniTask<int> GetChoiceWithInfo(
-            string? text,
-            int cancelChoiceIndex,
-            params (string choice, string infoTitle, string info)[] choices)
-        {
-            AddMenu(_infoMenu);
-            var disposable = _choiceMenu.SelectedIndex.Subscribe(index =>
-            {
-                _infoMenu.SetInfo(choices[index].infoTitle, choices[index].info);
-            });
-            var choiceIndex = await GetChoice(text, cancelChoiceIndex, choices.Select(x => x.choice).ToArray());
+            var choiceIndex = await GetChoiceInternal(text, null, choices.Select(x => x.choice).ToArray(), defaultIndex);
             disposable.Dispose();
             PopMenu();
             return choiceIndex;
@@ -114,10 +103,10 @@ namespace View.UI
         public UniTask<int> GetChoice(string? text, int cancelChoiceIndex, params string[] choices) =>
             GetChoiceInternal(text, cancelChoiceIndex, choices);
 
-        private async UniTask<int> GetChoiceInternal(string? text, int? cancelChoiceIndex, string[] choices)
+        private async UniTask<int> GetChoiceInternal(string? text, int? cancelChoiceIndex, string[] choices, int defaultIndex = 0)
         {
             _choiceMenu.SetCanCancel(cancelChoiceIndex.HasValue);
-            _choiceMenu.SetChoices(text, choices);
+            _choiceMenu.SetChoices(text, defaultIndex, choices);
             await UniTask.NextFrame();
             AddMenu(_choiceMenu);
             var choiceIndex = await WaitForChoice(

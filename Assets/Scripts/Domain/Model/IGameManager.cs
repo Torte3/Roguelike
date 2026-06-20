@@ -20,8 +20,7 @@ namespace Domain.Model
         public void EndEvent(Guid eventId);
         public UniTask<int> GetChoice(string? text, params string[] choices);
         public UniTask<int> GetChoice(string? text, int cancelChoiceIndex, params string[] choices);
-        public UniTask<int> GetChoiceWithInfo(string? text, params (string choice, string infoTitle, string info)[] choices);
-        public UniTask<int> GetChoiceWithInfo(string? text, int cancelChoiceIndex, params (string choice, string infoTitle, string info)[] choices);
+        public UniTask<int> GetChoiceWithInfo(string? text, int defaultIndex = 0, bool clearPreviousMenus = false, params (string choice, string infoTitle, string info)[] choices);
         public UniTask<int> GetChoiceWithItemPreview(string? text, IMap map, params (string choice, IItem item)[] choices);
         public UniTask<int> GetChoiceWithItemPreview(string? text, IMap map, int cancelChoiceIndex, params (string choice, IItem item)[] choices);
         public UniTask<string?> GetTextInput(bool canCancel = false);

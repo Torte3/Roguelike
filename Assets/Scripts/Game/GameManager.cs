@@ -97,14 +97,12 @@ namespace Game
             );
         }
 
-        public UniTask<int> GetChoiceWithInfo(string? text, params (string choice, string infoTitle, string info)[] choices) =>
-            _choiceReceiver.GetChoiceWithInfo(text, choices);
-
         public UniTask<int> GetChoiceWithInfo(
             string? text,
-            int cancelChoiceIndex,
+            int defaultIndex = 0,
+            bool clearPreviousMenus = false,
             params (string choice, string infoTitle, string info)[] choices) =>
-            _choiceReceiver.GetChoiceWithInfo(text, cancelChoiceIndex, choices);
+            _choiceReceiver.GetChoiceWithInfo(text, defaultIndex, clearPreviousMenus, choices);
 
         public UniTask<int> GetChoiceWithItemPreview(string? text, IMap map, params (string choice, IItem item)[] choices) =>
             _choiceReceiver.GetChoiceWithItemPreview(text, map, choices);
@@ -283,9 +281,10 @@ namespace Game
 
         private async UniTask ChoiceDifficulty()
         {
-            var choice = await GetChoiceWithInfo(null,
-                ("Easy", "<color=#00BFFF>- Easy -</color>", "復活できます\nアイテムは自動で鑑定されます\n敵の強さはNormalと同じです"),
-                ("Normal", "<color=#FFFF00>- Normal -</color>", "復活できません\nアイテムの詳細は鑑定するまで不明です")
+            var choice = await GetChoiceWithInfo(text: null, defaultIndex: 1, clearPreviousMenus: true,
+                ("Easy", "<color=#00BFFF>- Easy -</color>", "復活できます\nアイテムは自動で鑑定されます"),
+                ("Normal", "<color=#FFFF00>- Normal -</color>", "復活できません\nアイテムは自動で鑑定されます"),
+                ("Hard", "<color=#FF4500>- Hard -</color>", "復活できません\nアイテムの詳細は鑑定するまで不明です")
             );
             switch (choice)
             {
@@ -295,6 +294,9 @@ namespace Game
                     Settings.WorldSettings.AutoIdentify.Value.Value = true;
                     break;
                 case 1:
+                    Settings.WorldSettings.AutoIdentify.Value.Value = true;
+                    break;
+                case 2:
                     break;
             }
         }

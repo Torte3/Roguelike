@@ -50,22 +50,6 @@ MonoBehaviour:
   Skills:
   - Skill:
       <Position>k__BackingField:
-        rid: 4274951402137321479
-      <Area>k__BackingField:
-        rid: 4274951402137321478
-      <Effects>k__BackingField:
-      - rid: 4274951402137321480
-      <Repeats>k__BackingField: 1
-      <ProbabilityOfSuccess>k__BackingField: 0.95
-      <Cost>k__BackingField: 0
-      <RushDistance>k__BackingField: 0
-      <BackStepDistance>k__BackingField: 0
-      <ChargeTurn>k__BackingField: 0
-      <CoolTime>k__BackingField: 0
-      <Log>k__BackingField: "\u306F\u9AA8\u3092\u6295\u3052\u3064\u3051\u305F\u3002"
-    Priority: 0
-  - Skill:
-      <Position>k__BackingField:
         rid: 4274951402137321484
       <Area>k__BackingField:
         rid: 4274951402137321481
@@ -115,24 +99,6 @@ MonoBehaviour:
       type: {class: Skeleton, ns: Domain.Model.Character.Type, asm: Domain.Model}
       data:
         Type: 3
-    - rid: 4274951402137321478
-      type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
-      data: 
-    - rid: 4274951402137321479
-      type: {class: ProjectileImpact, ns: Domain.Model.Effect.Position, asm: Domain.Model}
-      data:
-        Icon:
-          _name: icons_full_16_891
-        CanHitLayer: 01000000
-        IsPiercing: 0
-    - rid: 4274951402137321480
-      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
-      data:
-        _elementPowers:
-        - _element: 0
-          _power: 4
-        _criticalRate: 0
-        _isWeaponAttack: 0
     - rid: 4274951402137321481
       type: {class: LineArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
       data:
