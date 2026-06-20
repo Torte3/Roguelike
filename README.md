@@ -40,27 +40,12 @@
 
 ## Gameplay
 
-### Easy: 基本的なプレイの流れ
+最新ビルドでの、約5分のプレイ動画です。  
+タイトルから始まり、通常階の探索・戦闘、店、ボス戦、モンスターハウス、仲間との行動、アイテム合成、設定などの各メニューまで、一通りの要素を確認できます。
 
-Easy 難易度の序盤のプレイ例です。  
-探索、戦闘、アイテム使用に加えて、合成・強化・ボス戦まで、一通りのゲームの流れを確認できます。
+<video src="./docs/videos/GamePlay.mp4" controls width="720"></video>
 
-LogRogue の基本的なプレイ内容を確認する場合は、まずこちらの動画を参照してください。
-
-<video src="./docs/videos/Easy.mp4" controls width="720"></video>
-
-[動画を開く](./docs/videos/Easy.mp4)
-
-### Normal: 未識別アイテムと識別要素
-
-Normal 難易度の序盤のプレイ例です。  
-Normal という名前ですが、未識別アイテムが登場するため、ローグライク経験者向けの難易度です。
-
-この動画では、未識別アイテムを扱う流れや、識別要素の雰囲気を確認できます。
-
-<video src="./docs/videos/Normal.mp4" controls width="720"></video>
-
-[動画を開く](./docs/videos/Normal.mp4)
+[動画を開く](./docs/videos/GamePlay.mp4)
 
 ---
 
