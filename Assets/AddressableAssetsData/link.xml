@@ -1,0 +1,261 @@
+<linker>
+  <assembly fullname="Domain.Model, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="Domain.Model.Character.ConditionTemplate" preserve="all" />
+    <type fullname="Domain.Model.Character.EnemyData" preserve="all" />
+    <type fullname="Domain.Model.Character.PlayerData" preserve="all" />
+    <type fullname="Domain.Model.Dungeon.DungeonBluePrintData" preserve="all" />
+    <type fullname="Domain.Model.Dungeon.EnemyTableData" preserve="all" />
+    <type fullname="Domain.Model.Dungeon.FloorData" preserve="all" />
+    <type fullname="Domain.Model.Dungeon.InfiniteMapNode" preserve="all" />
+    <type fullname="Domain.Model.Dungeon.MapGraph" preserve="all" />
+    <type fullname="Domain.Model.Dungeon.MapNode" preserve="all" />
+    <type fullname="Domain.Model.Dungeon.Placeholders" preserve="all" />
+    <type fullname="Domain.Model.Dungeon.SectionData" preserve="all" />
+    <type fullname="Domain.Model.Dungeon.StartMapNode" preserve="all" />
+    <type fullname="Domain.Model.Entity.StatueData" preserve="all" />
+    <type fullname="Domain.Model.Entity.TrapData" preserve="all" />
+    <type fullname="Domain.Model.Item.ArtifactData" preserve="all" />
+    <type fullname="Domain.Model.Item.DirectWeaponData" preserve="all" />
+    <type fullname="Domain.Model.Item.ItemData" preserve="all" />
+    <type fullname="Domain.Model.Item.ItemMarketPriceTable" preserve="all" />
+    <type fullname="Domain.Model.Item.RangedWeaponData" preserve="all" />
+    <type fullname="Domain.Model.Item.WeaponPrefix" preserve="all" />
+    <type fullname="Domain.Model.Character.BehaviorData" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.CharacterSkillWithRuleData" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.MimicWeights" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Bat" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Chest" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Cloud" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Crab" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Dwarf" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Frog" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Ghast" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Golem" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Hulk" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Human" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Moth" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Mummy" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Mushroom" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Potion" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Puddle" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Pyramid" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Scorpion" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Shield" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Skeleton" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Skull" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Slime" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.SlimeSmall" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.SlimeSmaller" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Snake" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Space" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Tentacle" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Witch" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Type.Worm" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Condition.RemovalConditionData" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Dungeon.CategoryPlaceholders" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Dungeon.InfiniteSectionDefinition" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Dungeon.ItemCategoryWeight" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Dungeon.MasterItemDataBase" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Dungeon.ShopItemData" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Dungeon.StairsLink" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Dungeon.TeleportLink" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Effect.ActorlessSkillData" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Effect.Area.CircleArea" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Effect.Area.FanArea" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Effect.Area.LineArea" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Effect.Area.SelfArea" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Effect.Element" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Effect.Position.AllCharacter" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Effect.Position.AtFeet" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Effect.Position.NearByCharacter" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Effect.Position.ProjectileImpact" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Effect.SkillData" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Effect.SkillDataOnThrow" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Effect.SkillDataOnUse" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Item.ArtifactPassiveConditionBundle" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Item.ItemDataSerializable" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Item.RarityWeightTable`1" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Item.StringSerializableItemFeature" preserve="nothing" serialized="true" />
+  </assembly>
+  <assembly fullname="FangAutoTile, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="Ruccho.Fang.FangAutoTile" preserve="all" />
+    <type fullname="Ruccho.Fang.SlopeDefinition" preserve="nothing" serialized="true" />
+    <type fullname="Ruccho.Fang.TileCombination" preserve="nothing" serialized="true" />
+  </assembly>
+  <assembly fullname="RandomDungeonWithBluePrint, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="RandomDungeonWithBluePrint.FieldBluePrint" preserve="all" />
+    <type fullname="RandomDungeonWithBluePrint.FieldBluePrint/Connection" preserve="nothing" serialized="true" />
+    <type fullname="RandomDungeonWithBluePrint.FieldBluePrint/Section" preserve="nothing" serialized="true" />
+  </assembly>
+  <assembly fullname="Unity.2D.Tilemap.Extras, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="UnityEngine.RuleTile" preserve="all" />
+    <type fullname="UnityEngine.RuleTile/TilingRule" preserve="nothing" serialized="true" />
+  </assembly>
+  <assembly fullname="Unity.Addressables, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" preserve="all">
+    <type fullname="UnityEngine.AddressableAssets.Addressables" preserve="all" />
+  </assembly>
+  <assembly fullname="Unity.ResourceManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" preserve="all">
+    <type fullname="UnityEngine.ResourceManagement.ResourceProviders.AssetBundleProvider" preserve="all" />
+    <type fullname="UnityEngine.ResourceManagement.ResourceProviders.BundledAssetProvider" preserve="all" />
+    <type fullname="UnityEngine.ResourceManagement.ResourceProviders.InstanceProvider" preserve="all" />
+    <type fullname="UnityEngine.ResourceManagement.ResourceProviders.SceneProvider" preserve="all" />
+  </assembly>
+  <assembly fullname="Unity.TextMeshPro, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="TMPro.TextMeshPro" preserve="all" />
+    <type fullname="TMPro.TextMeshProUGUI" preserve="all" />
+    <type fullname="TMPro.TMP_FontAsset" preserve="all" />
+    <type fullname="TMPro.TMP_SpriteAsset" preserve="all" />
+    <type fullname="TMPro.FaceInfo_Legacy" preserve="nothing" serialized="true" />
+    <type fullname="TMPro.FontAssetCreationSettings" preserve="nothing" serialized="true" />
+    <type fullname="TMPro.KerningTable" preserve="nothing" serialized="true" />
+    <type fullname="TMPro.TMP_Character" preserve="nothing" serialized="true" />
+    <type fullname="TMPro.TMP_FontFeatureTable" preserve="nothing" serialized="true" />
+    <type fullname="TMPro.TMP_FontWeightPair" preserve="nothing" serialized="true" />
+    <type fullname="TMPro.TMP_SpriteCharacter" preserve="nothing" serialized="true" />
+    <type fullname="TMPro.TMP_SpriteGlyph" preserve="nothing" serialized="true" />
+    <type fullname="TMPro.VertexGradient" preserve="nothing" serialized="true" />
+  </assembly>
+  <assembly fullname="UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="UnityEngine.AnimationClip" preserve="all" />
+    <type fullname="UnityEngine.Animator" preserve="all" />
+    <type fullname="UnityEngine.RuntimeAnimatorController" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="UnityEngine.GameObject" preserve="all" />
+    <type fullname="UnityEngine.Material" preserve="all" />
+    <type fullname="UnityEngine.MeshRenderer" preserve="all" />
+    <type fullname="UnityEngine.MonoBehaviour" preserve="all" />
+    <type fullname="UnityEngine.Object" preserve="all" />
+    <type fullname="UnityEngine.RectTransform" preserve="all" />
+    <type fullname="UnityEngine.RenderTexture" preserve="all" />
+    <type fullname="UnityEngine.Shader" preserve="all" />
+    <type fullname="UnityEngine.Sprite" preserve="all" />
+    <type fullname="UnityEngine.SpriteRenderer" preserve="all" />
+    <type fullname="UnityEngine.Texture2D" preserve="all" />
+    <type fullname="UnityEngine.Transform" preserve="all" />
+    <type fullname="UnityEngine.Events.ArgumentCache" preserve="nothing" serialized="true" />
+    <type fullname="UnityEngine.Events.PersistentCallGroup" preserve="nothing" serialized="true" />
+    <type fullname="UnityEngine.Events.PersistentListenerMode" preserve="nothing" serialized="true" />
+    <type fullname="UnityEngine.RectOffset" preserve="nothing" serialized="true" />
+  </assembly>
+  <assembly fullname="UnityEngine.GridModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="UnityEngine.Grid" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.ParticleSystemModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="UnityEngine.ParticleSystem" preserve="all" />
+    <type fullname="UnityEngine.ParticleSystemRenderer" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.SpriteMaskModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="UnityEngine.SpriteMask" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.TilemapModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="UnityEngine.Tilemaps.Tile" preserve="all" />
+    <type fullname="UnityEngine.Tilemaps.Tilemap" preserve="all" />
+    <type fullname="UnityEngine.Tilemaps.TilemapRenderer" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="UnityEngine.UI.Button" preserve="all" />
+    <type fullname="UnityEngine.UI.ContentSizeFitter" preserve="all" />
+    <type fullname="UnityEngine.UI.HorizontalLayoutGroup" preserve="all" />
+    <type fullname="UnityEngine.UI.Image" preserve="all" />
+    <type fullname="UnityEngine.UI.LayoutElement" preserve="all" />
+    <type fullname="UnityEngine.UI.Slider" preserve="all" />
+    <type fullname="UnityEngine.UI.Toggle" preserve="all" />
+    <type fullname="UnityEngine.UI.VerticalLayoutGroup" preserve="all" />
+    <type fullname="UnityEngine.UI.AnimationTriggers" preserve="nothing" serialized="true" />
+    <type fullname="UnityEngine.UI.Button/ButtonClickedEvent" preserve="nothing" serialized="true" />
+    <type fullname="UnityEngine.UI.ColorBlock" preserve="nothing" serialized="true" />
+    <type fullname="UnityEngine.UI.MaskableGraphic/CullStateChangedEvent" preserve="nothing" serialized="true" />
+    <type fullname="UnityEngine.UI.Navigation" preserve="nothing" serialized="true" />
+    <type fullname="UnityEngine.UI.Slider/SliderEvent" preserve="nothing" serialized="true" />
+    <type fullname="UnityEngine.UI.SpriteState" preserve="nothing" serialized="true" />
+    <type fullname="UnityEngine.UI.Toggle/ToggleEvent" preserve="nothing" serialized="true" />
+  </assembly>
+  <assembly fullname="UnityEngine.UIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="UnityEngine.CanvasRenderer" preserve="all" />
+  </assembly>
+  <assembly fullname="View, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="View.BonfireView" preserve="all" />
+    <type fullname="View.CharacterArrow" preserve="all" />
+    <type fullname="View.CharacterView" preserve="all" />
+    <type fullname="View.DamageText" preserve="all" />
+    <type fullname="View.EntityView" preserve="all" />
+    <type fullname="View.ItemView" preserve="all" />
+    <type fullname="View.LifeTimer" preserve="all" />
+    <type fullname="View.OverrideSprite" preserve="all" />
+    <type fullname="View.ParticleController" preserve="all" />
+    <type fullname="View.PopupIconMotion" preserve="all" />
+    <type fullname="View.SpriteHpBar" preserve="all" />
+    <type fullname="View.SpriteView" preserve="all" />
+    <type fullname="View.StairsLock" preserve="all" />
+    <type fullname="View.UI.AutoSelecter" preserve="all" />
+    <type fullname="View.UI.CheckBoxOption" preserve="all" />
+    <type fullname="View.UI.CheckBoxText" preserve="all" />
+    <type fullname="View.UI.ChoiceButton" preserve="all" />
+    <type fullname="View.UI.InventoryItemView" preserve="all" />
+    <type fullname="View.UI.LabeledSliderOption" preserve="all" />
+    <type fullname="View.UI.SliderOption" preserve="all" />
+    <type fullname="View.UI.StatLine" preserve="all" />
+    <type fullname="View.UI.StorageView" preserve="all" />
+  </assembly>
+  <assembly fullname="Domain.Service">
+    <type fullname="Domain.Service.Characters.Conditions.Acceleration" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Characters.Conditions.AddAttackMultiplier" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Characters.Conditions.AddConditionResistanceMultiplier" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Characters.Conditions.AddMaxHp" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Characters.Conditions.Dominated" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Characters.Conditions.FlagCondition" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Characters.Conditions.NaturalHeal" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Characters.Conditions.Poisoned" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Characters.Conditions.Slept" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Characters.Conditions.Slowness" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.AbsorbsEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.AddConditionEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.AffectionIncreaseEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.AlertEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.AttackEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.BlowAwayEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.BreakEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.ClearConditionEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.CurseItemEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.DigEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.DropItemEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.ForgetEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.HealEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.PercentageDamageEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.RandomEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.RemoveUpgradeEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.SpawnCharacterEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.SpawnFireEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.SpawnIceEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.SpawnRandomCharacterEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.SpawnTrapEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.TeleportEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.Effect.TeleportToAreaEffect" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.ItemEffect.ChangeItem" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.ItemEffect.CurseItem" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.ItemEffect.DuplicateItem" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.ItemEffect.Identify" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.ItemEffect.Repair" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.ItemEffect.UnleashCurse" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Service.ItemEffect.UpgradeItem" preserve="nothing" serialized="true" />
+  </assembly>
+  <assembly fullname="UnityEngine.TextCoreFontEngineModule">
+    <type fullname="UnityEngine.TextCore.FaceInfo" preserve="nothing" serialized="true" />
+    <type fullname="UnityEngine.TextCore.Glyph" preserve="nothing" serialized="true" />
+    <type fullname="UnityEngine.TextCore.GlyphMetrics" preserve="nothing" serialized="true" />
+    <type fullname="UnityEngine.TextCore.GlyphRect" preserve="nothing" serialized="true" />
+  </assembly>
+  <assembly fullname="Utilities">
+    <type fullname="Utilities.Serialize.IconSerializable" preserve="nothing" serialized="true" />
+    <type fullname="Utilities.Serialize.SerializableDictionary`2" preserve="nothing" serialized="true" />
+    <type fullname="Utilities.Serialize.SerializableDictionary`2/SerializableKeyValuePair" preserve="nothing" serialized="true" />
+    <type fullname="Utilities.Table.Table`1" preserve="nothing" serialized="true" />
+    <type fullname="Utilities.Table.Table`1/WeightedItem" preserve="nothing" serialized="true" />
+  </assembly>
+  <assembly fullname="XNode">
+    <type fullname="XNode.Node/NodePortDictionary" preserve="nothing" serialized="true" />
+    <type fullname="XNode.NodePort" preserve="nothing" serialized="true" />
+    <type fullname="XNode.NodePort/PortConnection" preserve="nothing" serialized="true" />
+  </assembly>
+</linker>

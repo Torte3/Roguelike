@@ -82,7 +82,7 @@ namespace Domain.Service.Characters
 
             return totalAffection switch
             {
-                > AffectionAllyThreshold => AffiliationType.Ally,
+                > AffectionAllyThreshold when Group != CharacterGroup.Neutral => AffiliationType.Ally,
                 < AffectionEnemyThreshold => AffiliationType.Enemy,
                 _ => AffiliationType.Neutral
             };

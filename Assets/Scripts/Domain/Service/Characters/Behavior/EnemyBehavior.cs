@@ -389,6 +389,8 @@ namespace Domain.Service.Characters.Behavior
                     continue;
                 if (!character.CanReadItem && item.RequiresLiteracy)
                     continue;
+                if (item is IEquipmentToggleTarget && item.IsEquipped.UnwrapOr(false))
+                    continue;
 
                 if (item.SkillOnUse.Expect("SkillOnUse is null").Skill.IsDirectional)
                 {

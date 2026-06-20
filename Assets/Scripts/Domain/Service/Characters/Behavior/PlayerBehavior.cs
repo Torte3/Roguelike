@@ -287,6 +287,7 @@ namespace Domain.Service.Characters.Behavior
             var focus = await WaitItemSelectOrCancel(disabledItemIndexes);
 
             _gameManager.PlaySE(SE.ItemSelectConfirm);
+            await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
             _onSelectedItemSelect.OnNext(Unit.Default);
             return focus;
         }
@@ -303,6 +304,7 @@ namespace Domain.Service.Characters.Behavior
             var focus = await WaitItemSelectOrCancel(disabledItemIndexes);
 
             _gameManager.PlaySE(SE.ItemSelectConfirm);
+            await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
             _onSelectedItemSelect.OnNext(Unit.Default);
             return focus;
         }

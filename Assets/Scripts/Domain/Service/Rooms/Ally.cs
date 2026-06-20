@@ -42,11 +42,11 @@ namespace Domain.Service.Rooms
                             {
                                 player.Character.Inventory.Remove(item);
                                 character.Inventory.AddToEmpty(item);
+                                GameLog.Add(character.Entity.IsVisible,
+                                    $"{character.GetName(player)}に{item.GetName(player, map.ItemPlaceholders)}を渡した。");
                                 TryEquipGiftedItem(character, item, map);
                                 var affectionGain = item.GetPrice(map.MarketPriceTable) * GiftAffectionPerPrice;
                                 character.Affiliation.ModifyAffection(player.Character.Entity.Id, affectionGain);
-                                GameLog.Add(character.Entity.IsVisible,
-                                    $"{character.GetName(player)}に{item.GetName(player, map.ItemPlaceholders)}を渡した。");
                             }
                             else
                             {

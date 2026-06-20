@@ -17,6 +17,7 @@ namespace Provider
     public class SynchronizedCharacterView : SynchronizedEntityView<ICharacter, CharacterView>
     {
         private readonly SerialDisposable _disposable = new();
+        private readonly Dictionary<ICharacter, List<GameObject>> _chargePreviews = new();
         protected override InputReceiver _inputReceiver { get; init; }
         private readonly EffectViewSpawner _effectViewSpawner;
         protected override GameManager _gameManager { get; init; }
@@ -84,21 +85,24 @@ namespace Provider
                 .AddTo(characterView);
 
             var previews = new List<GameObject>();
+            _chargePreviews[character] = previews;
             character.OnChargeActionUpdated.Subscribe(chargeAction =>
             {
                 previews.ForEach(preview => GameObject.Destroy(preview));
+                previews.Clear();
                 if (chargeAction.Turn > 0 && chargeAction.Data != null)
                 {
                     var area = chargeAction.Data.Area;
                     var color = chargeAction.Data.Color;
                     color.a = 0.25f;
-                    previews = _effectViewSpawner.SpawnChargePreview(
-                        area, color, chargeAction.Turn, character.Entity.CurrentPosition);
+                    previews.AddRange(_effectViewSpawner.SpawnChargePreview(
+                        area, color, chargeAction.Turn, character.Entity.CurrentPosition));
                 }
             }).AddTo(characterView);
             character.Entity.OnDestroyed.Subscribe(_ =>
             {
                 previews.ForEach(preview => GameObject.Destroy(preview));
+                previews.Clear();
             }).AddTo(characterView);
 
             var particleController = characterView.GetComponent<ParticleController>();
@@ -112,6 +116,11 @@ namespace Provider
 
         protected override void CleanupView(ICharacter character, CharacterView characterView)
         {
+            if (_chargePreviews.TryGetValue(character, out var previews))
+            {
+                previews.ForEach(preview => GameObject.Destroy(preview));
+                _chargePreviews.Remove(character);
+            }
         }
     }
 }
