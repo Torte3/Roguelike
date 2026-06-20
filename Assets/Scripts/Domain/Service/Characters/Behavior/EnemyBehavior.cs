@@ -126,35 +126,7 @@ namespace Domain.Service.Characters.Behavior
                 }
             }
 
-            var actions = new List<(IAction action, float evaluate)>();
-            if (result.IsDiscoveringCharacter())
-            {
-                if (PrioritizeMovement(character, result.TargetLocation, map.Id))
-                {
-                    Log.Debug("[Think]Prioritize Movement.");
-                    actions.AddRange(GenerateValidMoves(character, result, map));
-                    if (!actions.Any())
-                    {
-                        actions.AddRange(GenerateValidUseSkills(character, map));
-                        actions.AddRange(GenerateValidUseItems(character, map));
-                        actions.AddRange(GenerateValidThrowItems(character, map));
-                    }
-                }
-                else
-                {
-                    actions.AddRange(GenerateValidUseSkills(character, map));
-                    actions.AddRange(GenerateValidUseItems(character, map));
-                    actions.AddRange(GenerateValidThrowItems(character, map));
-                    if (!actions.Any())
-                    {
-                        actions.AddRange(GenerateValidMoves(character, result, map));
-                    }
-                }
-            }
-            else
-            {
-                actions.AddRange(GenerateValidMoves(character, result, map));
-            }
+            var actions = CollectActionCandidates(character, result, map);
 
             foreach (var actionTemp in actions)
             {
@@ -167,6 +139,41 @@ namespace Domain.Service.Characters.Behavior
 
             _previousResult = result;
             return action.action;
+        }
+
+        private List<(IAction action, float evaluate)> CollectActionCandidates(IHasBehavior character,
+            BehaviorResult result, IMap map)
+        {
+            var actions = new List<(IAction action, float evaluate)>();
+
+            if (!result.IsDiscoveringCharacter())
+            {
+                actions.AddRange(GenerateValidMoves(character, result, map));
+                return actions;
+            }
+
+            if (PrioritizeMovement(character, result.TargetLocation, map.Id))
+            {
+                Log.Debug("[Think]Prioritize Movement.");
+                actions.AddRange(GenerateValidMoves(character, result, map));
+                if (!actions.Any())
+                    actions.AddRange(GenerateValidUseActions(character, map));
+            }
+            else
+            {
+                actions.AddRange(GenerateValidUseActions(character, map));
+                if (!actions.Any())
+                    actions.AddRange(GenerateValidMoves(character, result, map));
+            }
+
+            return actions;
+        }
+
+        private IEnumerable<(IAction action, float evaluate)> GenerateValidUseActions(IHasBehavior character, IMap map)
+        {
+            return GenerateValidUseSkills(character, map)
+                .Concat(GenerateValidUseItems(character, map))
+                .Concat(GenerateValidThrowItems(character, map));
         }
 
         private BehaviorResult GenerateNextBehaviorResult(IHasBehavior character, IMap map)

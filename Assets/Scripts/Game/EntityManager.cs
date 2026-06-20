@@ -440,11 +440,6 @@ namespace Game
                 mimicStairs.Reveal(_map);
             }
         }
-        /// <summary>
-        ///     Gets a character that follows the player when moving from one map to another.
-        ///     Does not include the player themselves.
-        /// </summary>
-        /// <returns></returns>
         public IEnumerable<ICharacter> GetFollowingCharacters()
         {
             return Characters

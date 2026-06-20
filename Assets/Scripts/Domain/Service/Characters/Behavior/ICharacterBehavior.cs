@@ -7,9 +7,11 @@ using Domain.Model.Map;
 using Domain.Model.Memento;
 using R3;
 
+#nullable enable
+
 namespace Domain.Service.Characters.Behavior
 {
-    public interface ICharacterBehavior : ISerializable<BehaviorMemento>, IItemSelector
+    public interface ICharacterBehavior : ISerializable<BehaviorMemento>
     {
         public BehaviorData BehaviorData { get; }
         public Observable<OnStartItemSelectMessage> OnStartItemSelect { get; }
@@ -19,5 +21,9 @@ namespace Domain.Service.Characters.Behavior
             IInput input);
 
         public void KnowLocationOf(Location location);
+
+        public UniTask<ItemFocus> SelectItem(string text, ItemFocus[] disabledItems);
+        public UniTask<ItemFocus> SelectItemWithPreview(string text, ItemFocus[] disabledItems,
+            ItemSelectPreview[] previews, ItemSelectPreview? defaultPreview, string previewTitle);
     }
 }

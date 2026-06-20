@@ -220,11 +220,6 @@ namespace Domain.Service.Characters
 
         #region CanMove
 
-        /// <summary>
-        ///     Returns whether movement is possible in that direction. If it is possible to pass through walls, this is true even
-        ///     if the destination is not passable.
-        ///     If you want to check whether the destination is passable, please use World.IsPassable.
-        /// </summary>
         public bool CanMove(Vector2Int position, Direction8 direction, IPassableChecker map)
         {
             return CanMove(position, direction, IsFlying, CanThroughWalls, map);
@@ -918,7 +913,6 @@ namespace Domain.Service.Characters
         {
             _affiliationManager.OnCharacterHealed(actor.Affiliation, Affiliation, impact);
         }
-
 
         public void ClearAffiliation(IMap map)
         {

@@ -204,7 +204,7 @@ namespace Domain.Service.Map
         {
             if (!IsPositionInsideMap(position))
             {
-                Log.Info($"position {position} is out of map (MapSize Width:{Width}, Height:{Height})");
+                Log.Verbose($"[Map]position {position} is out of map (MapSize Width:{Width}, Height:{Height})");
                 return Option<TileData>.None;
             }
 

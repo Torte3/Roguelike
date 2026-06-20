@@ -99,8 +99,8 @@ namespace Tetr4lab.UnityEngine.SQLite {
 			if (IsOpen) { Close (); }
 		}
 
-		/// <summary>DBを開く</summary>
-		private void Open () {
+		/// <summary>DBを開く（接続をセッション中維持するため public 化。冪等）</summary>
+		public void Open () {
 			if (!IsOpen) {
 				var result = SQLiteEntry.sqlite3_open (_pathDB, out _ptrSQLiteDB);
 				if (result != SQLiteResultCode.SQLITE_OK) {

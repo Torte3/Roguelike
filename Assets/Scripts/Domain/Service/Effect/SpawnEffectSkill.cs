@@ -7,6 +7,7 @@ using Domain.Model.Character;
 using Domain.Model.Character.Status;
 using Domain.Model.Dungeon;
 using Domain.Model.Effect;
+using Domain.Model.Entity;
 using Domain.Model.Effect.Area;
 using Domain.Model.Effect.Position;
 using Domain.Model.Evaluation;
@@ -87,6 +88,13 @@ namespace Domain.Service.Effect
         public IEnumerable<Vector2Int> GetArea(IActorOfEffect actor, Vector2Int position, Direction8 direction,
             IMap map, bool onlyVisible = false)
         {
+            position = AdvanceByRushDistance(actor, position, direction, map);
+            return GetAreaIgnoreRush(actor, position, direction, map, onlyVisible);
+        }
+
+        private Vector2Int AdvanceByRushDistance(IActorOfEffect actor, Vector2Int position, Direction8 direction,
+            IMap map)
+        {
             for (var i = 0; i < RushDistance; i++)
             {
                 if (actor.CanMove(position, direction, map) && !actor.Status.IsFlagStat(FlagStatType.CannotMove))
@@ -95,7 +103,7 @@ namespace Domain.Service.Effect
                     break;
             }
 
-            return GetAreaIgnoreRush(actor, position, direction, map, onlyVisible);
+            return position;
         }
 
         private IEnumerable<Vector2Int> GetAreaIgnoreRush(IActorOfEffect actor, Vector2Int position, Direction8 direction,
@@ -154,42 +162,7 @@ namespace Domain.Service.Effect
                                  .OrderBy(target => Vector2.Distance(target.Entity.CurrentPosition, position))
                                  .Reverse())
                     {
-                        switch (target)
-                        {
-                            case ICharacter character:
-                                await effect.Apply(actor, character, position, map);
-
-                                if (effect.Impact == Impact.Harmful)
-                                {
-                                    var impactValue = effect.Evaluate(actor, character);
-                                    character.OnAttackedBy(actor, impactValue);
-
-                                    foreach (var c in map.GetCharactersCanSeePosition(character.Entity.CurrentPosition)
-                                                            .Where(target => target != actor && target != actor))
-                                    {
-                                        c.Affiliation.OnCharacterAttacked(actor.Affiliation, character.Affiliation,
-                                            impactValue);
-                                    }
-
-                                }
-                                else if (effect.Impact == Impact.Beneficial)
-                                {
-                                    var impactValue = effect.Evaluate(actor, character);
-                                    character.OnHealedBy(actor, impactValue);
-
-                                    foreach (var c in map.GetCharactersCanSeePosition(character.Entity.CurrentPosition)
-                                                            .Where(target => target != actor && target != actor))
-                                    {
-                                        c.Affiliation.OnCharacterHealed(actor.Affiliation, character.Affiliation,
-                                            impactValue);
-                                    }
-                                }
-
-                                break;
-                            default:
-                                await effect.Apply(actor, target, position, map);
-                                break;
-                        }
+                        await ApplyEffectToTarget(effect, actor, target, position, map);
                     }
 
                     await effect.Apply(actor, area, map);
@@ -215,14 +188,55 @@ namespace Domain.Service.Effect
             return SpawnEffectSkillResult.Success;
         }
 
+        private async UniTask ApplyEffectToTarget(IEffect effect, IActorOfEffect actor, IEntity target,
+            Vector2Int position, IMap map)
+        {
+            switch (target)
+            {
+                case ICharacter character:
+                    await effect.Apply(actor, character, position, map);
+
+                    if (effect.Impact == Impact.Harmful)
+                    {
+                        var impactValue = effect.Evaluate(actor, character);
+                        character.OnAttackedBy(actor, impactValue);
+                        ReflectAttackToNearbyAffiliations(map, actor, character, impactValue);
+                    }
+                    else if (effect.Impact == Impact.Beneficial)
+                    {
+                        var impactValue = effect.Evaluate(actor, character);
+                        character.OnHealedBy(actor, impactValue);
+                        ReflectHealToNearbyAffiliations(map, actor, character, impactValue);
+                    }
+
+                    break;
+                default:
+                    await effect.Apply(actor, target, position, map);
+                    break;
+            }
+        }
+
+        private void ReflectAttackToNearbyAffiliations(IMap map, IActorOfEffect actor, ICharacter target,
+            float impactValue)
+        {
+            foreach (var witness in CharactersWhoCanSee(map, target, actor))
+                witness.Affiliation.OnCharacterAttacked(actor.Affiliation, target.Affiliation, impactValue);
+        }
+
+        private void ReflectHealToNearbyAffiliations(IMap map, IActorOfEffect actor, ICharacter target,
+            float impactValue)
+        {
+            foreach (var witness in CharactersWhoCanSee(map, target, actor))
+                witness.Affiliation.OnCharacterHealed(actor.Affiliation, target.Affiliation, impactValue);
+        }
+
+        private static IEnumerable<ICharacter> CharactersWhoCanSee(IMap map, ICharacter target, IActorOfEffect actor)
+            => map.GetCharactersCanSeePosition(target.Entity.CurrentPosition).Where(c => c != actor);
+
         public float Evaluate(IActorOfEffect actor, IItem? sourceItem, Vector2Int position, Direction8 direction,
             IMap map)
         {
-            for (var i = 0; i < RushDistance; i++)
-            {
-                if (actor.CanMove(position, direction, map) && !actor.Status.IsFlagStat(FlagStatType.CannotMove))
-                    position += direction.Vector();
-            }
+            position = AdvanceByRushDistance(actor, position, direction, map);
 
             var area = GetArea(actor, position, direction, map, true);
             var characters = map.Characters.In(area);

@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Domain.Model.Map;
 using Game;
@@ -59,46 +60,16 @@ namespace Provider
                     map.TilemapViewer.OnOverlayTilesChanged.Subscribe(context =>
                     {
                         foreach (var (position, category) in context)
-                        {
-                            switch (category)
-                            {
-                                case OverlayTileCategory.Grass:
-                                    overlayTileView.SetGrass(
-                                        position,
-                                        map.TilemapViewer.GetTile(position)
-                                            .Map(tile => ToTileSet(tile.MapType))
-                                            .UnwrapOr(() => ToTileSet(map.Type)),
-                                        GetTileVisibility(map, position));
-                                    break;
-                                case OverlayTileCategory.FloatingIce:
-                                    overlayTileView.SetIce(position, GetTileVisibility(map, position));
-                                    break;
-                                case null:
-                                    overlayTileView.RemoveTile(position);
-                                    break;
-                                default:
-                                    throw new ArgumentOutOfRangeException(nameof(category), category, null);
-                            }
-                        }
+                            ApplyOverlayTileChange(overlayTileView, map, position, category);
                     }).AddTo(_disposables);
-                    // HACK: The following subscription might conflict with the one below if their handling logic diverges in the future.
                     map.TilemapViewer.OnTilesKnownChanged.Subscribe(context =>
                     {
                         foreach (var (position, isKnown) in context)
                         {
-                            if (isKnown)
-                            {
-                                SetVisibility(tileView, overlayTileView, minimapController, position,
-                                    TileVisibility.Visible);
-                            }
-                            else
-                            {
-                                SetVisibility(tileView, overlayTileView, minimapController, position,
-                                    TileVisibility.Transparent);
-                            }
+                            var visibility = isKnown ? TileVisibility.Visible : TileVisibility.Transparent;
+                            SetVisibility(tileView, overlayTileView, minimapController, position, visibility);
                         }
                     }).AddTo(_disposables);
-                    // HACK: Here.
                     var previousVisibleArea = map.Player.Character.VisionRange.VisibleArea;
                     map.Player.Character.VisionRange.OnVisibleAreaChanged
                         .Select(x => map.Player.Character.VisionRange.VisibleArea)
@@ -107,17 +78,10 @@ namespace Provider
                             var areaEntered = visibleAreaChanged.Except(previousVisibleArea);
                             var areaExited = previousVisibleArea.Except(visibleAreaChanged);
                             previousVisibleArea = visibleAreaChanged;
-                            foreach (var position in areaEntered)
-                            {
-                                SetVisibility(tileView, overlayTileView, minimapController, position,
-                                    TileVisibility.Visible);
-                            }
-
-                            foreach (var position in areaExited)
-                            {
-                                SetVisibility(tileView, overlayTileView, minimapController, position,
-                                    TileVisibility.Translucent);
-                            }
+                            SetVisibilityForPositions(tileView, overlayTileView, minimapController, areaEntered,
+                                TileVisibility.Visible);
+                            SetVisibilityForPositions(tileView, overlayTileView, minimapController, areaExited,
+                                TileVisibility.Translucent);
                         }).AddTo(_disposables);
                 },
                 _ => _disposables.Clear());
@@ -204,6 +168,37 @@ namespace Provider
             tileView.SetTileVisibility(position, visibility);
             overlayTileView.SetTileVisibility(position, visibility);
             minimapController.SetTileVisibility(position, visibility);
+        }
+
+        private void ApplyOverlayTileChange(OverlayTileViewController overlayTileView, MapManager map,
+            Vector2Int position, OverlayTileCategory? category)
+        {
+            switch (category)
+            {
+                case OverlayTileCategory.Grass:
+                    overlayTileView.SetGrass(
+                        position,
+                        map.TilemapViewer.GetTile(position)
+                            .Map(tile => ToTileSet(tile.MapType))
+                            .UnwrapOr(() => ToTileSet(map.Type)),
+                        GetTileVisibility(map, position));
+                    break;
+                case OverlayTileCategory.FloatingIce:
+                    overlayTileView.SetIce(position, GetTileVisibility(map, position));
+                    break;
+                case null:
+                    overlayTileView.RemoveTile(position);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(category), category, null);
+            }
+        }
+
+        private void SetVisibilityForPositions(TileViewController tileView, OverlayTileViewController overlayTileView,
+            MinimapController minimapController, IEnumerable<Vector2Int> positions, TileVisibility visibility)
+        {
+            foreach (var position in positions)
+                SetVisibility(tileView, overlayTileView, minimapController, position, visibility);
         }
     }
 }

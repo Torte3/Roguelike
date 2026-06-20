@@ -127,7 +127,6 @@ namespace Domain.Service.Items
 
         public override async UniTask<ISkillResult> Use(IActor actor, Vector2Int position, Direction8 direction, IMap map)
         {
-            Debug.Log($"Use:");
             if (ShouldRevealMimic(actor, position, map))
             {
                 return SpawnEffectSkillResult.Failed;

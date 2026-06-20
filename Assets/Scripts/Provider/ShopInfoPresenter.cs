@@ -26,7 +26,6 @@ namespace Provider
                         }).AddTo(disposables);
                         Observable.EveryUpdate().Where(_ => map.Shop.IsInside.CurrentValue).Subscribe(_ =>
                         {
-                            Debug.Log($"PurchasePrice: {map.Shop.GetPurchasePrice(map)}, SalePrice: {map.Shop.GetSalePrice(map)}");
                             shopInfoView.SetInfo(map.Shop.GetPurchasePrice(map), map.Shop.GetSalePrice(map));
                         }).AddTo(disposables);
                     }

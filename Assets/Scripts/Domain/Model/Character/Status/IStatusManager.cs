@@ -7,7 +7,7 @@ using Utilities.Stats;
 
 namespace Domain.Model.Character.Status
 {
-    public interface IStatusManager : IHasInfo, IStats
+    public interface IStatusManager : IHasInfo
     {
         public Observable<OnDamageReceivedMessage> OnDamageReceived { get; }
         public Observable<int> OnHealReceived { get; }
@@ -22,5 +22,17 @@ namespace Domain.Model.Character.Status
         public void AddWaitTime(float value);
         public void ResetWaitTime();
         public bool IsWaitTimeFull();
+
+        public ReadOnlyReactiveProperty<int> MaxHp { get; }
+        public ReadOnlyReactiveProperty<int> HpValue { get; }
+        public ReadOnlyReactiveProperty<float> WaitTimeValue { get; }
+        public bool IsFlagStat(FlagStatType type);
+        public ReadOnlyReactiveProperty<bool> GetFlagProperty(FlagStatType type);
+        public float GetStatValue(StatType type);
+        public float GetAttackMultiplier();
+        public float GetElementAttackMultiplier(Element element);
+        public float GetCombinedElementAttackMultiplier(Element element);
+        public float GetElementDamageRateMultiplier(Element element);
+        public float GetConditionResistance(ConditionTemplate condition);
     }
 }

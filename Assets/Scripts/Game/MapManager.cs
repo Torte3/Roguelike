@@ -64,7 +64,7 @@ namespace Game
             MarketPriceTable = marketPriceTable;
             _gameManager = gameManager;
 
-            var playerPosition = map.RandomBlankPosition;
+            var playerPosition = map.InitialPlayerPosition;
 
             _tilemap = new Tilemap(map.Tilemap);
 
@@ -90,7 +90,7 @@ namespace Game
 
             if (playerPosition == null)
             {
-                playerPosition = map.RandomBlankPosition;
+                playerPosition = map.InitialPlayerPosition;
             }
 
             _tilemap = new Tilemap(map.Tilemap);
@@ -319,6 +319,36 @@ namespace Game
             return TilemapViewer.IsGrass(position);
         }
 
+        private void TryAutoPickUpOnMove(ICharacter character, Vector2Int positionChanged)
+        {
+            var item = EntityManager.GetItemAt(positionChanged);
+            if (item == null)
+                return;
+
+            var autoPickUpShopItem = character.IsPlayer && Settings.GlobalSettings.AutoPickUpShopItem.CurrentValue;
+            var canPickUp = character.CanPickUp
+                            && character.CanPickUpItem()
+                            && EntityManager.CanPickUpAt(positionChanged, autoPickUpShopItem);
+            if (!canPickUp)
+            {
+                if (EntityManager.Player.Character.IsVisible(positionChanged))
+                    GameLog.Add(character.Entity.IsVisible,
+                        $"{character.GetName(EntityManager.Player)}は<color=yellow>{item.Item.GetName(EntityManager.Player, ItemPlaceholders)}</color>の上に乗った");
+                return;
+            }
+
+            EntityManager.PickUpAt(positionChanged, autoPickUpShopItem);
+            if (!character.Inventory.CanAddToEmpty())
+                throw new Exception("Unexpected error. Unable to pick up item.");
+
+            character.Inventory.AddToEmpty(item.Item);
+            _gameManager.PlaySE(SE.Pickup);
+            _gameManager.RequestWorldIconPopup(item.Icon, positionChanged);
+            if (EntityManager.Player.Character.IsVisible(positionChanged))
+                GameLog.Add(character.Entity.IsVisible,
+                    $"{character.GetName(EntityManager.Player)}は<color=yellow>{item.Item.GetName(EntityManager.Player, ItemPlaceholders)}</color>を拾った");
+        }
+
         public async UniTask ExecuteEntityTouchEventsAt(Vector2Int position, IEntity triggerEntity)
         {
             foreach (var entityEventEntity in EntityManager.GetEntityEventEntitiesFastAt(position,
@@ -387,8 +417,6 @@ namespace Game
 
         public MapMemento Serialize()
         {
-            var characters = EntityManager.Characters.ToList();
-            characters.Remove(EntityManager.Player.Character);
             return new MapMemento
             (
                 Id,
@@ -396,7 +424,7 @@ namespace Game
                 EntityManager.Serialize(),
                 _monsterHouse.ToOption().Map(x => x.Serialize()),
                 _shop.ToOption().Map(x => x.Serialize()),
-                GetAllBlankAndStandablePositions().GetAtRandom().Position
+                Vector2Int.zero
             );
         }
 
@@ -409,7 +437,7 @@ namespace Game
                 EntityManager.SerializeWithoutPartyMembers(GetFollowingCharacters()),
                 _monsterHouse.ToOption().Map(x => x.Serialize()),
                 _shop.ToOption().Map(x => x.Serialize()),
-                GetAllBlankAndStandablePositions().GetAtRandom().Position
+                Vector2Int.zero
             );
         }
 
@@ -437,7 +465,6 @@ namespace Game
                 _tilemap.UpdateChunk(positionChanged);
                 if (IsGrass(positionChanged))
                 {
-                    Log.Debug($"SetGrasses: {EntityManager.Player.Character.Entity.CurrentPosition}");
                     SetGrasses(new[] { EntityManager.Player.Character.Entity.CurrentPosition }, false);
                     _gameManager.PlaySE(SE.GrassWalk);
                 }
@@ -454,41 +481,7 @@ namespace Game
                 character => character.Entity.Position.SkipLatestValueOnSubscribe(),
                 async (character, positionChanged) =>
                 {
-                    var item = EntityManager.GetItemAt(positionChanged);
-                    if (item != null)
-                    {
-                        Log.Debug($"CanPickUp: {character.CanPickUp}");
-                        Log.Debug($"CanPickUpItem: {character.CanPickUpItem()}");
-                        Log.Debug($"CanPickUpAt: {EntityManager.CanPickUpAt(positionChanged, character.IsPlayer && Settings.GlobalSettings.AutoPickUpShopItem.CurrentValue)}");
-                        if (character.CanPickUp
-                            && character.CanPickUpItem()
-                            && EntityManager.CanPickUpAt(positionChanged,
-                                character.IsPlayer && Settings.GlobalSettings.AutoPickUpShopItem.CurrentValue))
-                        {
-                            EntityManager.PickUpAt(positionChanged,
-                                character.IsPlayer && Settings.GlobalSettings.AutoPickUpShopItem.CurrentValue);
-                            if (character.Inventory.CanAddToEmpty())
-                            {
-                                character.Inventory.AddToEmpty(item.Item);
-                                _gameManager.PlaySE(SE.Pickup);
-                                _gameManager.RequestWorldIconPopup(item.Icon, positionChanged);
-                                if (EntityManager.Player.Character.IsVisible(positionChanged))
-                                {
-                                    GameLog.Add(character.Entity.IsVisible,
-                                        $"{character.GetName(EntityManager.Player)}は<color=yellow>{item.Item.GetName(EntityManager.Player, ItemPlaceholders)}</color>を拾った");
-                                }
-                            }
-                            else
-                            {
-                                throw new Exception("Unexpected error. Unable to pick up item.");
-                            }
-                        }
-                        else if (EntityManager.Player.Character.IsVisible(positionChanged))
-                        {
-                            GameLog.Add(character.Entity.IsVisible,
-                                $"{character.GetName(EntityManager.Player)}は<color=yellow>{item.Item.GetName(EntityManager.Player, ItemPlaceholders)}</color>の上に乗った");
-                        }
-                    }
+                    TryAutoPickUpOnMove(character, positionChanged);
                 }
             ).AddTo(_disposables);
 

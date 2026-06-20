@@ -4,7 +4,6 @@ namespace Utilities
 {
     public class Colors
     {
-        // NOTE: The follwing color names come from the CSS3 specification, Section 4.3 Extended Color Keywords
         // http://www.w3.org/TR/css3-color/#svg-color
 
         public static readonly Color AliceBlue = new Color32(240, 248, 255, 255);

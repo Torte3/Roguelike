@@ -212,7 +212,6 @@ namespace Domain.Service.Items
 
         public bool ShouldRevealMimic(IActorOfEffect actor, Vector2Int position, IMap map)
         {
-            Debug.Log($"ShouldRevealMimic: {_mimic.IsSome()}");
             if (_mimic.IsSome(out var mimic))
             {
                 GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は{mimic.Name}の擬態だった！");

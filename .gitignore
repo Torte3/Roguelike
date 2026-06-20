@@ -66,6 +66,8 @@ sysinfo.txt
 crashlytics-build.properties
 
 /save.db
+/save.db-wal
+/save.db-shm
 /.VSCodeCounter/
 /Assets/ConsolePro/
 /Assets/Aevus/

@@ -47,37 +47,28 @@ namespace Provider
                         previews.ForEach(preview => Object.Destroy(preview));
                         previews.Clear();
                         if (player.IsDead)
-                        {
                             return;
-                        }
 
                         var focus = inventoryView.Focus.CurrentValue;
-                        if (!focus.IsOnEmpty)
-                        {
-                            IItem? item = null;
-                            if (focus.IsOnGroundItem)
-                            {
-                                item = map.Items.At(player.Entity.CurrentPosition).FirstOrDefault()?.Item;
-                            }
-                            else
-                            {
-                                item = player.Inventory.GetItem(focus.Index);
-                            }
+                        if (focus.IsOnEmpty)
+                            return;
 
-                            if (item != null && player.IsKnownItem(item))
-                            {
-                                if (item.SkillOnUse.HasValue &&
-                                    item.SkillOnUse.Value.Skill is SpawnEffectSkill spawnEffectSkill)
-                                {
-                                    var area = spawnEffectSkill.GetArea(player,
-                                        player.Entity.CurrentPosition,
-                                        player.CurrentDirection, map, true);
-                                    var color = spawnEffectSkill.Color;
-                                    color.a = 0.25f;
-                                    previews = effectViewSpawner.SpawnPreview(area, color);
-                                }
-                            }
-                        }
+                        var item = focus.IsOnGroundItem
+                            ? map.Items.At(player.Entity.CurrentPosition).FirstOrDefault()?.Item
+                            : player.Inventory.GetItem(focus.Index);
+                        if (item == null || !player.IsKnownItem(item))
+                            return;
+
+                        if (!item.SkillOnUse.HasValue)
+                            return;
+                        if (item.SkillOnUse.Value.Skill is not SpawnEffectSkill spawnEffectSkill)
+                            return;
+
+                        var area = spawnEffectSkill.GetArea(player, player.Entity.CurrentPosition,
+                            player.CurrentDirection, map, true);
+                        var color = spawnEffectSkill.Color;
+                        color.a = 0.25f;
+                        previews = effectViewSpawner.SpawnPreview(area, color);
                     }));
                 }
             );
