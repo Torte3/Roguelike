@@ -9,7 +9,8 @@ namespace Utilities
     {
         public static Id<T> Empty => new(Guid.Empty);
         [SerializeField] private readonly string _value;
-        public Guid Value => Guid.Parse(_value);
+        [NonSerialized] private Guid? _guid;
+        public Guid Value => _guid ??= Guid.Parse(_value);
 
         public Id(Guid value)
         {

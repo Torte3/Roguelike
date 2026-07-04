@@ -9,31 +9,29 @@ namespace Utilities.Stats
         public readonly IntStat _max;
         private readonly ReactiveProperty<float> _value;
 
-        public IntResource(int maxValue)
+        public IntResource(int maxValue) : this(new IntStat(maxValue), maxValue)
         {
-            _max = new IntStat(maxValue);
-            _value = new ReactiveProperty<float>(maxValue);
-            Max.IntValue.Subscribe(_ => clampCurrentValue());
         }
 
-        public IntResource(int maxValue, int value)
+        public IntResource(int maxValue, int value) : this(new IntStat(maxValue), value)
         {
-            _max = new IntStat(maxValue);
+        }
+
+        public IntResource(ResourceData data) : this(new IntStat(data.Max), data.Value)
+        {
+        }
+
+        private IntResource(IntStat max, float value)
+        {
+            _max = max;
             _value = new ReactiveProperty<float>(value);
-            Max.IntValue.Subscribe(_ => clampCurrentValue());
-        }
-
-        public IntResource(ResourceData data)
-        {
-            _max = new IntStat(data.Max);
-            _value = new ReactiveProperty<float>(data.Value);
+            Value = _value.Select(v => Mathf.FloorToInt(v)).ToReadOnlyReactiveProperty();
             Max.IntValue.Subscribe(_ => clampCurrentValue());
         }
 
         public IntStat Max => _max;
 
-        public ReadOnlyReactiveProperty<int> Value =>
-            _value.Select(v => Mathf.FloorToInt(v)).ToReadOnlyReactiveProperty();
+        public ReadOnlyReactiveProperty<int> Value { get; }
 
         public void Dispose()
         {
