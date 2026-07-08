@@ -3,9 +3,9 @@ using Sirenix.OdinInspector.Editor.Validation;
 using Sirenix.OdinInspector.Editor.ValueResolvers;
 using Utilities.Validation;
 
-[assembly: RegisterValidator(typeof(Utilities.Validation.Editor.RequiredIfAttributeValidator))]
+[assembly: RegisterValidator(typeof(Utilities.Editor.Validation.RequiredIfAttributeValidator))]
 
-namespace Utilities.Validation.Editor
+namespace Utilities.Editor.Validation
 {
     public sealed class RequiredIfAttributeValidator : AttributeValidator<RequiredIfAttribute, object>
     {

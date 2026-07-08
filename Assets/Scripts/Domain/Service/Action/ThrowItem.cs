@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System.Linq;
+using System.Text;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
@@ -12,6 +13,12 @@ namespace Domain.Service.Action
 {
     internal record ThrowItem(IItem Item, Direction8 Direction) : IAction
     {
+        protected virtual bool PrintMembers(StringBuilder builder)
+        {
+            builder.Append($"Item = {Item.DebugInfo()}, Direction = {Direction}");
+            return true;
+        }
+
         public bool Doable(IActor actor, IMap map)
         {
             if (actor.Status.IsFlagStat(FlagStatType.CannotAct))
@@ -31,7 +38,7 @@ namespace Domain.Service.Action
             return true;
         }
 
-        public async UniTask Do(IActor actor, IMap map, IInput input)
+        public async UniTask Do(IActor actor, IMap map)
         {
             await actor.ThrowItem(Item, Direction, map);
         }
@@ -41,11 +48,6 @@ namespace Domain.Service.Action
             if (Item.RemainingUses.CurrentValue > 0)
                 return actor.EvaluateThrow(Item, Direction, map) / Item.RemainingUses.CurrentValue;
             return 0;
-        }
-
-        public string Info()
-        {
-            return $"ThrowItem: Item:{Item.DebugInfo()}, Direction:{Direction}";
         }
     }
 }

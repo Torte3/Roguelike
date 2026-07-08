@@ -1,5 +1,6 @@
 #nullable enable
 using System.Linq;
+using System.Text;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
@@ -13,6 +14,12 @@ namespace Domain.Service.Action
 {
     internal record UseItem(IItem Item, Direction8 Direction) : IAction
     {
+        protected virtual bool PrintMembers(StringBuilder builder)
+        {
+            builder.Append($"Item = {Item.DebugInfo()}, Direction = {Direction}");
+            return true;
+        }
+
         public bool Doable(IActor actor, IMap map)
         {
             if (actor.Status.IsFlagStat(FlagStatType.CannotAct))
@@ -34,7 +41,7 @@ namespace Domain.Service.Action
                 return false;
             }
 
-            if (!Item.IsInfoIdentified(map.Player) && Item.HasActivatableSkillWhenUsed)
+            if (!map.Player.Character.IsKnownItem(Item) && Item.HasActivatableSkillWhenUsed)
             {
                 return true;
             }
@@ -48,7 +55,7 @@ namespace Domain.Service.Action
             return true;
         }
 
-        public async UniTask Do(IActor actor, IMap map, IInput input)
+        public async UniTask Do(IActor actor, IMap map)
         {
             await actor.UseItem(Item, Direction, map);
         }
@@ -56,11 +63,6 @@ namespace Domain.Service.Action
         public float Evaluate(IActor actor, IMap map)
         {
             return Item.EvaluateWhenUsed(actor, actor.Entity.CurrentPosition, Direction, map);
-        }
-
-        public string Info()
-        {
-            return $"UseItem: Item:{Item.DebugInfo()}, Direction:{Direction}";
         }
     }
 }

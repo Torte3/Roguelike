@@ -3,21 +3,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Configuration;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
+using Domain.Model.Character.Behavior;
+using Domain.Model.Character.Message;
 using Domain.Model.Character.Status;
 using Domain.Model.Dungeon;
 using Domain.Model.Entity;
 using Domain.Model.Item;
+using Domain.Model.Item.Slots;
 using Domain.Model.Map;
 using Domain.Model.Memento;
-using Domain.Model.Setting;
+using Domain.Model.WorldEvents;
 using Domain.Service.Action;
 using Domain.Service.Events;
-using Domain.Service.Logs;
 using R3;
 using Unity.Logging;
+using UnityEngine;
 using Utilities;
 using Utilities.Serialize.Option;
 
@@ -27,7 +31,6 @@ namespace Domain.Service.Characters.Behavior
     {
         private readonly IntelligentDashController _intelligentDashController = new();
         private readonly CharacterControlInputReceiver _receiver;
-        private readonly IGameManager _gameManager;
         public BehaviorData BehaviorData => new();
         private readonly Subject<OnStartItemSelectMessage> _onStartItemSelect = new();
         public Observable<OnStartItemSelectMessage> OnStartItemSelect => _onStartItemSelect;
@@ -46,10 +49,9 @@ namespace Domain.Service.Characters.Behavior
             RenameItem
         }
 
-        public PlayerBehavior(CharacterControlInputReceiver receiver, IGameManager gameManager)
+        public PlayerBehavior(CharacterControlInputReceiver receiver)
         {
             _receiver = receiver;
-            _gameManager = gameManager;
         }
 
         public BehaviorMemento Serialize()
@@ -68,12 +70,24 @@ namespace Domain.Service.Characters.Behavior
             IInput input)
         {
             Log.Debug("[Think] Start waiting input...");
+            await _receiver.WaitUntilReady();
             if (input.IsDash()) await _intelligentDashController.Wait(character, map);
 
             var tasks = InitializeTasks();
             _receiver.ReadInput();
-            var result = await tasks;
+            try
+            {
+                return await ReadAction(character, gameManager, map, input, await tasks);
+            }
+            finally
+            {
+                _receiver.FinishReading();
+            }
+        }
 
+        private async UniTask<IAction> ReadAction(IHasBehavior character, IGameManager gameManager, IMap map,
+            IInput input, (InputType type, (Move action, bool isStarted)? move, ItemFocus? focus) result)
+        {
             while (true)
             {
                 switch (result.type)
@@ -236,7 +250,7 @@ namespace Domain.Service.Characters.Behavior
                 return;
 
             var choices = new List<string>();
-            if (!focusItem.IsInfoIdentified(map.Player))
+            if (!map.Player.Character.IsKnownItem(focusItem))
             {
                 choices.Add("このアイテムの種類に名前をつける");
             }
@@ -262,18 +276,30 @@ namespace Domain.Service.Characters.Behavior
                 {
                     var typeName = await gameManager.GetTextInput(canCancel: true);
                     if (typeName != null)
+                    {
                         map.ItemPlaceholders.Rename(focusItem.BaseName, typeName);
+                        foreach (var renamed in map.ItemsInWorldAndInventories().Where(item => item.BaseName == focusItem.BaseName))
+                            map.Events.Record(new ItemUpdated(renamed.LookIn(map)));
+                        map.Events.Record(new ItemRenamed(character.Entity.Ref));
+                    }
                     break;
                 }
                 case "このアイテム単体に名前をつける":
+                case "このアイテム単体の名前を変える":
                 {
                     var itemName = await gameManager.GetTextInput(canCancel: true);
                     if (itemName != null)
+                    {
                         focusItem.Rename(itemName);
+                        map.Events.Record(new ItemUpdated(focusItem.LookIn(map)));
+                        map.Events.Record(new ItemRenamed(character.Entity.Ref));
+                    }
                     break;
                 }
                 case "このアイテム単体の名前をデフォルトに戻す":
                     focusItem.RevertToDefaultName();
+                    map.Events.Record(new ItemUpdated(focusItem.LookIn(map)));
+                    map.Events.Record(new ItemRenamed(character.Entity.Ref));
                     break;
             }
         }
@@ -320,12 +346,17 @@ namespace Domain.Service.Characters.Behavior
         {
         }
 
+        public bool CanAcceptSwapFrom(IHasBehavior character, Vector2Int requesterPosition, IMap map)
+        {
+            return false;
+        }
+
         public async UniTask<ItemFocus> SelectItem(string text, params ItemFocus[] disabledItemIndexes)
         {
+            await _receiver.WaitUntilReady();
             _onStartItemSelect.OnNext(new OnStartItemSelectMessage(text, disabledItemIndexes));
             var focus = await WaitItemSelectOrCancel(disabledItemIndexes);
 
-            _gameManager.PlaySE(SE.ItemSelectConfirm);
             await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
             _onSelectedItemSelect.OnNext(Unit.Default);
             return focus;
@@ -338,11 +369,11 @@ namespace Domain.Service.Characters.Behavior
             ItemSelectPreview? defaultPreview,
             string previewTitle)
         {
+            await _receiver.WaitUntilReady();
             _onStartItemSelect.OnNext(new OnStartItemSelectMessage(text, disabledItemIndexes, previews, defaultPreview, previewTitle));
 
             var focus = await WaitItemSelectOrCancel(disabledItemIndexes);
 
-            _gameManager.PlaySE(SE.ItemSelectConfirm);
             await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
             _onSelectedItemSelect.OnNext(Unit.Default);
             return focus;
@@ -372,10 +403,10 @@ namespace Domain.Service.Characters.Behavior
                 return;
             if (!IsItemAccessibleForThrow(character, map, item))
                 return;
-            if (!item.IsDiscardBlocked)
+            if (!item.ThrowCheck().IsFailed(out var failure))
                 return;
-            GameLog.Add(character.Entity.IsVisible,
-                $"{item.GetName(map.Player, map.ItemPlaceholders)}は呪われていて投げられない");
+            map.Events.Record(new ItemActionFailed(character.Entity.IsVisible, item.NameIn(map), item.EquipState,
+                ItemAction.Throw, failure));
         }
 
         private static void LogIfCursedBlocksDropAfterDoableFailed(IHasBehavior character, IMap map, IItem? item)
@@ -384,10 +415,10 @@ namespace Domain.Service.Characters.Behavior
                 return;
             if (!character.Inventory.CanRemove(item))
                 return;
-            if (!item.IsDiscardBlocked)
+            if (!item.DiscardCheck().IsFailed(out var failure))
                 return;
-            GameLog.Add(character.Entity.IsVisible,
-                $"{item.GetName(map.Player, map.ItemPlaceholders)}は呪われていて捨てられない");
+            map.Events.Record(new ItemActionFailed(character.Entity.IsVisible, item.NameIn(map), item.EquipState,
+                ItemAction.Discard, failure));
         }
 
         private static bool IsItemAccessibleForThrow(IHasBehavior character, IMap map, IItem item) =>

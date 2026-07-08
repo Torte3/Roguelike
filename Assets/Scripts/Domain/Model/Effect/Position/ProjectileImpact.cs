@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.ComponentModel.DataAnnotations;
 using Domain.Model.Entity;
 using Domain.Model.Evaluation;
@@ -42,12 +43,17 @@ namespace Domain.Model.Effect.Position
             return Get(position, direction, map);
         }
 
+        public Vector2Int LandingOf(IEnumerable<Vector2Int> impacts)
+        {
+            return impacts.Last();
+        }
+
         public float EvaluateHitProbability()
         {
             return CommonSenseParameters.ProjectileImpactHitProbability;
         }
 
-        public string Info()
+        public string Description()
         {
             return "着弾地点" + (IsPiercing ? "（貫通）" : "");
         }

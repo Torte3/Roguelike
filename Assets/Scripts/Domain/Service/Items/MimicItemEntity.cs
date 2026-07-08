@@ -2,19 +2,19 @@
 using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
+using Domain.Model.Character.Data;
 using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using Domain.Service.Events;
-using Domain.Service.Logs;
-using UnityEngine;
 using Utilities;
 
 namespace Domain.Service.Items
 {
-    public class MimicItemEntity : ICharacterEventEntity, IIconEntity
+    public class MimicItemEntity : ICharacterEventEntity
     {
         private readonly ItemEntity _itemEntity;
         public IItem Item => _itemEntity.Item;
@@ -38,8 +38,8 @@ namespace Domain.Service.Items
 
         public ICharacter Reveal(IMap map)
         {
-            GameLog.Add(map.Player.Character.IsVisible(Entity.CurrentPosition), $"{Item.GetName(map.Player, map.ItemPlaceholders)}は{Mimic.Name}の擬態だった！");
-            Entity.Destroy("モンスターが正体を表した");
+            map.Events.Record(new MimicRevealed(Entity.IsVisible, LabelIn(map), Mimic.Name));
+            Entity.Destroy();
             return map.SpawnEnemyIgnoreMimic(
                 Mimic,
                 Entity.CurrentPosition,
@@ -48,8 +48,6 @@ namespace Domain.Service.Items
                 isShiny: false
             );
         }
-
-        public Sprite Icon => Item.Icon;
 
         public ICharacterEvent Event { get; init; }
 
@@ -68,16 +66,24 @@ namespace Domain.Service.Items
             return new MimicItemMemento(item, mimic);
         }
 
-        public async UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)
+        public EntityLabel LabelIn(IMap map)
+        {
+            return _itemEntity.LabelIn(map);
+        }
+
+        public WorldEvent Appeared(IMap map)
+        {
+            return _itemEntity.Appeared(map);
+        }
+
+        public UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)
         {
             var destination = ItemEntity.GetThrowDestination(Entity.CurrentPosition, direction, distance, map);
-            if (Entity.IsVisible && destination != Entity.CurrentPosition)
-            {
-                Entity.SetVisibility(false);
-                await map.ShowThrowAnimation(Icon, Entity.CurrentPosition, direction, distance, false, EntityLayer.Middle);
-                Entity.Teleport(map.FindBlankPositionFrom(destination,
-                    position => map.At(position).IsBlankAndStandable(EntityLayer.Bottom)));
-            }
+            var landing = map.FloorLanding(Entity.CurrentPosition, destination);
+            if (landing.HasValue)
+                Entity.BlowTo(landing.Value);
+
+            return UniTask.CompletedTask;
         }
     }
 }

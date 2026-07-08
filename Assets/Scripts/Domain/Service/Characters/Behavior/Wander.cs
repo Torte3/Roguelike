@@ -3,13 +3,14 @@ using System.Linq;
 using Domain.Model.Character;
 using Domain.Model.Map;
 using Domain.Service.Action;
+using UnityEngine;
 using Utilities;
 
 namespace Domain.Service.Characters.Behavior
 {
-    internal static class Wander
+    internal sealed class Wander : IMovement
     {
-        public static IEnumerable<IAction> GenerateMoveActionsDoable(IHasBehavior character, IMap map)
+        public IEnumerable<IAction> GenerateMoveActionsDoable(IHasBehavior character, Vector2Int targetPosition, IMap map)
         {
             var directions = new Dictionary<Direction8, float>();
             var facingDirection = character.CurrentDirection;
@@ -81,5 +82,7 @@ namespace Domain.Service.Characters.Behavior
             return DirectionMethods.AllDirections.Where(direction => character.CanMove(direction, map))
                 .Select(direction => new Move(direction, 0.02f));
         }
+
+        public Direction8? NextStep(IHasBehavior character, Vector2Int targetPosition, IMap map) => null;
     }
 }

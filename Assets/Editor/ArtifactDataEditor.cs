@@ -1,4 +1,4 @@
-using Domain.Model.Item;
+using Domain.Model.Item.Data;
 using Domain.Service.Items;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
@@ -71,7 +71,7 @@ namespace Editor
             ItemInspectorPreviewEditor.DrawSafe(() =>
             {
                 var item = new EquipmentItem((ArtifactData)target);
-                ItemDescriptionPreviewEditor.DrawIdentifiedLikeInventory(item.FullInfoGenericSkillDescription(), 120f);
+                ItemDescriptionPreviewEditor.DrawIdentifiedLikeInventory(ItemDescriptionPreviewEditor.GenericDescriptionOf(item), 120f);
             });
         }
     }

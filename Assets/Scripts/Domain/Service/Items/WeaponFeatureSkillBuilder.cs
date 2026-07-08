@@ -1,11 +1,13 @@
 #nullable enable
 using System.Collections.Generic;
 using System.Linq;
-using Domain.Model.Character;
+using Domain.Model.Character.Data;
 using Domain.Model.Condition;
 using Domain.Model.Effect;
+using Domain.Model.Effect.Elements;
 using Domain.Model.Evaluation;
 using Domain.Model.Item;
+using Domain.Model.Item.Data;
 using Domain.Service.Effect;
 using UnityEngine;
 using Utilities;
@@ -96,7 +98,7 @@ namespace Domain.Service.Items
             if (features.Contains(ItemFeature.Dig))
                 effects.Add(new DigEffect());
             if (features.Contains(ItemFeature.BreakTrap))
-                effects.Add(new BreakEffect(false, false, false, true, false, false));
+                effects.Add(new BreakEffect(BreakTargets.Trap));
 
             var abnormalConditionMultiplier = features.Count(f => f == ItemFeature.EnhanceAbnormalCondition) + 1;
             foreach (var (feature, (templateName, baseProbability)) in ConditionFeatureMapping)

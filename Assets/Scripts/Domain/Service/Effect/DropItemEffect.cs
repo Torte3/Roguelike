@@ -4,9 +4,8 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using Domain.Model.Character.Status;
 using Domain.Model.Effect;
-using Domain.Model.Item;
 using Domain.Model.Map;
-using Domain.Service.Logs;
+using Domain.Model.WorldEvents;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Utilities;
@@ -34,7 +33,7 @@ namespace Domain.Service.Effect
         {
             if (target.Status.IsFlagStat(FlagStatType.SecureHold))
             {
-                GameLog.Add(target.IsVisible, $"{target.GetName(map.Player)}はアイテムを落とさなかった");
+                map.Events.Record(new EffectMissed(target.Entity.Ref, target.Label, EffectMissReason.DidNotDropItem));
                 return UniTask.CompletedTask;
             }
 
@@ -49,12 +48,12 @@ namespace Domain.Service.Effect
                 }
                 else
                 {
-                    GameLog.Add(target.IsVisible, $"{target.GetName(map.Player)}はアイテムを落とさなかった");
+                    map.Events.Record(new EffectMissed(target.Entity.Ref, target.Label, EffectMissReason.DidNotDropItem));
                 }
             }
             else
             {
-                GameLog.Add(target.IsVisible, $"{target.GetName(map.Player)}はアイテムを持っていない");
+                map.Events.Record(new EffectMissed(target.Entity.Ref, target.Label, EffectMissReason.HasNoItem));
             }
 
             return UniTask.CompletedTask;
@@ -70,7 +69,7 @@ namespace Domain.Service.Effect
             return 50;
         }
 
-        public override string Info()
+        public override string Description()
         {
             return "対象の持つアイテムを落とさせる\n";
         }

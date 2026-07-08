@@ -1,28 +1,28 @@
 <linker>
   <assembly fullname="Domain.Model, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-    <type fullname="Domain.Model.Character.ConditionTemplate" preserve="all" />
-    <type fullname="Domain.Model.Character.EnemyData" preserve="all" />
-    <type fullname="Domain.Model.Character.PlayerData" preserve="all" />
+    <type fullname="Domain.Model.Character.Data.ConditionTemplate" preserve="all" />
+    <type fullname="Domain.Model.Character.Data.EnemyData" preserve="all" />
+    <type fullname="Domain.Model.Character.Data.PlayerData" preserve="all" />
     <type fullname="Domain.Model.Dungeon.DungeonBluePrintData" preserve="all" />
     <type fullname="Domain.Model.Dungeon.EnemyTableData" preserve="all" />
     <type fullname="Domain.Model.Dungeon.FloorData" preserve="all" />
-    <type fullname="Domain.Model.Dungeon.InfiniteMapNode" preserve="all" />
-    <type fullname="Domain.Model.Dungeon.MapGraph" preserve="all" />
-    <type fullname="Domain.Model.Dungeon.MapNode" preserve="all" />
+    <type fullname="Domain.Model.Dungeon.Graph.InfiniteMapNode" preserve="all" />
+    <type fullname="Domain.Model.Dungeon.Graph.MapGraph" preserve="all" />
+    <type fullname="Domain.Model.Dungeon.Graph.MapNode" preserve="all" />
     <type fullname="Domain.Model.Dungeon.Placeholders" preserve="all" />
     <type fullname="Domain.Model.Dungeon.SectionData" preserve="all" />
-    <type fullname="Domain.Model.Dungeon.StartMapNode" preserve="all" />
+    <type fullname="Domain.Model.Dungeon.Graph.StartMapNode" preserve="all" />
     <type fullname="Domain.Model.Entity.StatueData" preserve="all" />
     <type fullname="Domain.Model.Entity.TrapData" preserve="all" />
-    <type fullname="Domain.Model.Item.ArtifactData" preserve="all" />
-    <type fullname="Domain.Model.Item.DirectWeaponData" preserve="all" />
-    <type fullname="Domain.Model.Item.ItemData" preserve="all" />
-    <type fullname="Domain.Model.Item.ItemMarketPriceTable" preserve="all" />
-    <type fullname="Domain.Model.Item.RangedWeaponData" preserve="all" />
-    <type fullname="Domain.Model.Item.WeaponPrefix" preserve="all" />
-    <type fullname="Domain.Model.Character.BehaviorData" preserve="nothing" serialized="true" />
-    <type fullname="Domain.Model.Character.CharacterSkillWithRuleData" preserve="nothing" serialized="true" />
-    <type fullname="Domain.Model.Character.MimicWeights" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Item.Data.ArtifactData" preserve="all" />
+    <type fullname="Domain.Model.Item.Data.DirectWeaponData" preserve="all" />
+    <type fullname="Domain.Model.Item.Data.ItemData" preserve="all" />
+    <type fullname="Domain.Model.Item.Data.ItemMarketPriceTable" preserve="all" />
+    <type fullname="Domain.Model.Item.Data.RangedWeaponData" preserve="all" />
+    <type fullname="Domain.Model.Item.Data.WeaponPrefix" preserve="all" />
+    <type fullname="Domain.Model.Character.Behavior.BehaviorData" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Data.CharacterSkillWithRuleData" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Character.Data.MimicWeights" preserve="nothing" serialized="true" />
     <type fullname="Domain.Model.Character.Type.Bat" preserve="nothing" serialized="true" />
     <type fullname="Domain.Model.Character.Type.Chest" preserve="nothing" serialized="true" />
     <type fullname="Domain.Model.Character.Type.Cloud" preserve="nothing" serialized="true" />
@@ -57,24 +57,24 @@
     <type fullname="Domain.Model.Dungeon.ItemCategoryWeight" preserve="nothing" serialized="true" />
     <type fullname="Domain.Model.Dungeon.MasterItemDataBase" preserve="nothing" serialized="true" />
     <type fullname="Domain.Model.Dungeon.ShopItemData" preserve="nothing" serialized="true" />
-    <type fullname="Domain.Model.Dungeon.StairsLink" preserve="nothing" serialized="true" />
-    <type fullname="Domain.Model.Dungeon.TeleportLink" preserve="nothing" serialized="true" />
-    <type fullname="Domain.Model.Effect.ActorlessSkillData" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Dungeon.Graph.StairsLink" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Dungeon.Graph.TeleportLink" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Effect.Skill.ActorlessSkillData" preserve="nothing" serialized="true" />
     <type fullname="Domain.Model.Effect.Area.CircleArea" preserve="nothing" serialized="true" />
     <type fullname="Domain.Model.Effect.Area.FanArea" preserve="nothing" serialized="true" />
     <type fullname="Domain.Model.Effect.Area.LineArea" preserve="nothing" serialized="true" />
     <type fullname="Domain.Model.Effect.Area.SelfArea" preserve="nothing" serialized="true" />
-    <type fullname="Domain.Model.Effect.Element" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Effect.Elements.Element" preserve="nothing" serialized="true" />
     <type fullname="Domain.Model.Effect.Position.AllCharacter" preserve="nothing" serialized="true" />
     <type fullname="Domain.Model.Effect.Position.AtFeet" preserve="nothing" serialized="true" />
     <type fullname="Domain.Model.Effect.Position.NearByCharacter" preserve="nothing" serialized="true" />
     <type fullname="Domain.Model.Effect.Position.ProjectileImpact" preserve="nothing" serialized="true" />
-    <type fullname="Domain.Model.Effect.SkillData" preserve="nothing" serialized="true" />
-    <type fullname="Domain.Model.Effect.SkillDataOnThrow" preserve="nothing" serialized="true" />
-    <type fullname="Domain.Model.Effect.SkillDataOnUse" preserve="nothing" serialized="true" />
-    <type fullname="Domain.Model.Item.ArtifactPassiveConditionBundle" preserve="nothing" serialized="true" />
-    <type fullname="Domain.Model.Item.ItemDataSerializable" preserve="nothing" serialized="true" />
-    <type fullname="Domain.Model.Item.RarityWeightTable`1" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Effect.Skill.SkillData" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Effect.Skill.SkillDataOnThrow" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Effect.Skill.SkillDataOnUse" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Item.Data.ArtifactPassiveConditionBundle" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Item.Data.ItemDataSerializable" preserve="nothing" serialized="true" />
+    <type fullname="Domain.Model.Item.Rarities.RarityWeightTable`1" preserve="nothing" serialized="true" />
     <type fullname="Domain.Model.Item.StringSerializableItemFeature" preserve="nothing" serialized="true" />
   </assembly>
   <assembly fullname="FangAutoTile, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
@@ -175,28 +175,28 @@
     <type fullname="UnityEngine.CanvasRenderer" preserve="all" />
   </assembly>
   <assembly fullname="View, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-    <type fullname="View.BonfireView" preserve="all" />
-    <type fullname="View.CharacterArrow" preserve="all" />
-    <type fullname="View.CharacterView" preserve="all" />
-    <type fullname="View.DamageText" preserve="all" />
-    <type fullname="View.EntityView" preserve="all" />
+    <type fullname="View.Entities.BonfireView" preserve="all" />
+    <type fullname="View.Entities.CharacterArrow" preserve="all" />
+    <type fullname="View.Entities.CharacterView" preserve="all" />
+    <type fullname="View.Effects.DamageText" preserve="all" />
+    <type fullname="View.Entities.EntityView" preserve="all" />
     <type fullname="View.ItemView" preserve="all" />
-    <type fullname="View.LifeTimer" preserve="all" />
-    <type fullname="View.OverrideSprite" preserve="all" />
-    <type fullname="View.ParticleController" preserve="all" />
-    <type fullname="View.PopupIconMotion" preserve="all" />
-    <type fullname="View.SpriteHpBar" preserve="all" />
-    <type fullname="View.SpriteView" preserve="all" />
-    <type fullname="View.StairsLock" preserve="all" />
-    <type fullname="View.UI.AutoSelecter" preserve="all" />
-    <type fullname="View.UI.CheckBoxOption" preserve="all" />
-    <type fullname="View.UI.CheckBoxText" preserve="all" />
-    <type fullname="View.UI.ChoiceButton" preserve="all" />
-    <type fullname="View.UI.InventoryItemView" preserve="all" />
-    <type fullname="View.UI.LabeledSliderOption" preserve="all" />
-    <type fullname="View.UI.SliderOption" preserve="all" />
-    <type fullname="View.UI.StatLine" preserve="all" />
-    <type fullname="View.UI.StorageView" preserve="all" />
+    <type fullname="View.Effects.LifeTimer" preserve="all" />
+    <type fullname="View.Entities.OverrideSprite" preserve="all" />
+    <type fullname="View.Effects.ParticleController" preserve="all" />
+    <type fullname="View.Effects.PopupIconMotion" preserve="all" />
+    <type fullname="View.Entities.SpriteHpBar" preserve="all" />
+    <type fullname="View.Entities.SpriteView" preserve="all" />
+    <type fullname="View.Entities.StairsLock" preserve="all" />
+    <type fullname="View.UI.Menus.AutoSelecter" preserve="all" />
+    <type fullname="View.UI.Options.CheckBoxOption" preserve="all" />
+    <type fullname="View.UI.Options.CheckBoxText" preserve="all" />
+    <type fullname="View.UI.Menus.ChoiceButton" preserve="all" />
+    <type fullname="View.UI.Inventory.InventoryItemView" preserve="all" />
+    <type fullname="View.UI.Options.LabeledSliderOption" preserve="all" />
+    <type fullname="View.UI.Options.SliderOption" preserve="all" />
+    <type fullname="View.UI.HUD.StatLine" preserve="all" />
+    <type fullname="View.UI.Inventory.StorageView" preserve="all" />
   </assembly>
   <assembly fullname="Domain.Service">
     <type fullname="Domain.Service.Characters.Conditions.Acceleration" preserve="nothing" serialized="true" />

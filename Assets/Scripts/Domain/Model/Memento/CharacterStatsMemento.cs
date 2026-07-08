@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using Domain.Model.Effect;
+using Domain.Model.Effect.Elements;
 using UnityEngine;
 using Utilities.Serialize;
 using Utilities.Stats;

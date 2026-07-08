@@ -1,4 +1,4 @@
-using Domain.Model.Character;
+using Domain.Model.Character.Data;
 using Domain.Model.Map;
 using Sirenix.OdinInspector;
 using UnityEngine;

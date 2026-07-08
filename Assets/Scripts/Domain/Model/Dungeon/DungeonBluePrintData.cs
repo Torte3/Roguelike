@@ -2,15 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Domain.Model.Character;
+using Domain.Model.Character.Data;
 using Domain.Model.Entity;
-using Domain.Model.Item;
+using Domain.Model.Item.Data;
+using Domain.Model.Item.Rarities;
 using RandomDungeonWithBluePrint;
 using Utilities;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Utilities.Table;
 using Random = UnityEngine.Random;
+
+using Domain.Model.Dungeon.Graph;
 
 namespace Domain.Model.Dungeon
 {

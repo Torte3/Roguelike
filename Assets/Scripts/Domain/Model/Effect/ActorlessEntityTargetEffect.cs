@@ -11,7 +11,7 @@ namespace Domain.Model.Effect
         public abstract Impact Impact { get; }
         public abstract Color Color { get; }
 
-        public UniTask Apply(IActorOfEffect actor, ITargetOfEffect target, Vector2Int position, IMap map)
+        public virtual UniTask Apply(IActorOfEffect actor, ITargetOfEffect target, Vector2Int position, IMap map)
         {
             return Apply(target, position, map);
         }
@@ -50,6 +50,6 @@ namespace Domain.Model.Effect
 
         public abstract float EvaluatePrice();
 
-        public abstract string Info();
+        public abstract string Description();
     }
 }

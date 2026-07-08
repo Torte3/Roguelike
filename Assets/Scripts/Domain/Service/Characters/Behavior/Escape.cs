@@ -9,13 +9,12 @@ using Utilities;
 
 namespace Domain.Service.Characters.Behavior
 {
-    internal static class Escape
+    internal sealed class Escape : IMovement
     {
-        public static IEnumerable<IAction> GenerateMoveActionsDoable(IHasBehavior character, Vector2Int targetPosition,
+        public IEnumerable<IAction> GenerateMoveActionsDoable(IHasBehavior character, Vector2Int targetPosition,
             IMap map)
         {
-            var relativePosition = character.Entity.CurrentPosition - targetPosition;
-            var directions = DirectionMethods.NearDirectionsFromVector(relativePosition);
+            var directions = DirectionsAwayFrom(character, targetPosition);
             IEnumerable<Move> moves;
             if (directions != null)
             {
@@ -28,6 +27,16 @@ namespace Domain.Service.Characters.Behavior
             }
 
             return moves.Where(move => move.Doable(character, map));
+        }
+
+        public Direction8? NextStep(IHasBehavior character, Vector2Int targetPosition, IMap map)
+        {
+            return DirectionsAwayFrom(character, targetPosition)?[0];
+        }
+
+        private static List<Direction8>? DirectionsAwayFrom(IHasBehavior character, Vector2Int targetPosition)
+        {
+            return DirectionMethods.NearDirectionsFromVector(character.Entity.CurrentPosition - targetPosition);
         }
     }
 }

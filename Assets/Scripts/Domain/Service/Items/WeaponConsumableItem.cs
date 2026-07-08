@@ -1,12 +1,16 @@
 #nullable enable
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Domain.Model.Dungeon;
 using Domain.Model.Item;
+using Domain.Model.Item.Data;
 using Domain.Model.Memento;
 using Utilities.Serialize.Option;
 
 namespace Domain.Service.Items
 {
-    public abstract class WeaponConsumableItem : ConsumableItem
+    public abstract class WeaponConsumableItem : ConsumableItem, IWeaponMergeBase
     {
         private protected bool _hasSameEffect;
 
@@ -30,6 +34,31 @@ namespace Domain.Service.Items
         public override bool AutoDestroyWhenDisabled => false;
 
         public override bool CanUpgrade() => UpgradeCount < UpgradeLimit;
+
+        private protected abstract IReadOnlyList<ItemFeature> WeaponFeatures { get; }
+        private protected abstract int WeaponFeatureLimit { get; }
+        private protected abstract FeatureApplicabilityTag WeaponApplicability { get; }
+        private protected abstract IItem MergeWeapon(IEnumerable<ItemFeature> featuresToMergeWeapon, int additionalUpgrade);
+
+        public override bool CanAcceptMergeMaterial(IItem material) => material.CanBeMergedInto(this);
+
+        public override IItem MergeWith(IItem material) => material.MergeInto(this);
+
+        public bool CanTakeFeatures(IReadOnlyList<ItemFeature> features, int upgradeCount)
+        {
+            if (!WeaponFeatures.Merge(features, WeaponFeatureLimit, WeaponApplicability).SequenceEqual(WeaponFeatures))
+                return true;
+            return upgradeCount > 0 && CanUpgrade();
+        }
+
+        public IItem TakeFeatures(IReadOnlyList<ItemFeature> features, int upgradeCount) =>
+            MergeWeapon(features, upgradeCount);
+
+        public override bool CanBeMergedInto(IWeaponMergeBase weapon) =>
+            weapon.CanTakeFeatures(WeaponFeatures, UpgradeCount);
+
+        public override IItem MergeInto(IWeaponMergeBase weapon) => weapon.TakeFeatures(WeaponFeatures, UpgradeCount);
+
         public override bool CanDowngrade() => UpgradeCount > 0;
     }
 }

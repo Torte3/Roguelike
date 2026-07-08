@@ -5,8 +5,13 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
+using Domain.Model.Character.Affiliation;
+using Domain.Model.Character.Behavior;
+using Domain.Model.Character.Message;
 using Domain.Model.Dungeon;
 using Domain.Model.Item;
+using Domain.Model.Item.Rarities;
+using Domain.Model.Item.Slots;
 using Domain.Model.Map;
 using Domain.Model.Memento;
 using Domain.Service.Action;
@@ -28,20 +33,23 @@ namespace Domain.Service.Characters.Behavior
         private readonly Option<Location> _homeLocation = Option.None<Location>();
 
         private readonly float behavioralRandomness = 0.01f;
+        private const float AdvanceAngleLimit = 90;
 
-        private readonly MoveTypeWhenUndiscoveringTarget _wander;
+        private readonly MoveRule _chaseRule = MoveRule.Of(MoveTypeWhenDiscoveringTarget.Chase);
+        private readonly MoveRule _wanderRule = MoveRule.Of(MoveTypeWhenDiscoveringTarget.Wander);
 
-        private MoveTypeWhenDiscoveringTarget _discoveringLeader => BehaviorData.ChaseLeader ? MoveTypeWhenDiscoveringTarget.Chase : MoveTypeWhenDiscoveringTarget.Wander;
-        private readonly MoveTypeWhenDiscoveringTarget _returningHome = MoveTypeWhenDiscoveringTarget.Chase;
-        private readonly MoveTypeWhenDiscoveringTarget _default;
+        private readonly IMovement _wander;
+
+        private MoveRule _discoveringLeader => BehaviorData.ChaseLeader ? _chaseRule : _wanderRule;
+        private readonly MoveRule _default;
         private readonly bool _prioritizeMovement;
 
         private readonly float _distanceTopBound = float.PositiveInfinity;
-        private readonly MoveTypeWhenDiscoveringTarget? _greaterThanTopBound;
+        private readonly MoveRule? _greaterThanTopBound;
         private readonly bool _prioritizeMovementWhenDistanceGreaterThanTopBound;
 
         private readonly float _distanceBottomBound = float.NegativeInfinity;
-        private readonly MoveTypeWhenDiscoveringTarget? _lessThanBottomBound;
+        private readonly MoveRule? _lessThanBottomBound;
         private readonly bool _prioritizeMovementWhenDistanceLessThanBottomBound;
 
         public BehaviorData BehaviorData { get; init; }
@@ -61,19 +69,19 @@ namespace Domain.Service.Characters.Behavior
 
             if (BehaviorData.wanderAround)
             {
-                _wander = MoveTypeWhenUndiscoveringTarget.Wander;
+                _wander = new Wander();
             }
             else
             {
-                _wander = MoveTypeWhenUndiscoveringTarget.NoMove;
+                _wander = new NoMove();
             }
 
-            _default = BehaviorData.Default;
+            _default = MoveRule.Of(BehaviorData.Default);
             _prioritizeMovement = BehaviorData.PrioritizeMovement;
             if (BehaviorData.UseTopBound)
             {
                 _distanceTopBound = BehaviorData.distanceTopBound;
-                _greaterThanTopBound = BehaviorData.greaterThanTopBound;
+                _greaterThanTopBound = MoveRule.Of(BehaviorData.greaterThanTopBound);
                 _prioritizeMovementWhenDistanceGreaterThanTopBound =
                     BehaviorData.PrioritizeMovementWhenDistanceGreaterThanTopBound;
             }
@@ -81,7 +89,7 @@ namespace Domain.Service.Characters.Behavior
             if (BehaviorData.UseBottomBound)
             {
                 _distanceBottomBound = BehaviorData.distanceBottomBound;
-                _lessThanBottomBound = BehaviorData.lessThanBottomBound;
+                _lessThanBottomBound = MoveRule.Of(BehaviorData.lessThanBottomBound);
                 _prioritizeMovementWhenDistanceLessThanBottomBound =
                     BehaviorData.PrioritizeMovementWhenDistanceLessThanBottomBound;
             }
@@ -130,7 +138,7 @@ namespace Domain.Service.Characters.Behavior
 
             foreach (var actionTemp in actions)
             {
-                Log.Debug($"[Think]{actionTemp.action.Info()} {actionTemp.evaluate}");
+                Log.Debug($"[Think]{actionTemp.action} {actionTemp.evaluate}");
             }
 
             var action = await UniTask.FromResult(actions.MaxByOrDefault(
@@ -178,12 +186,11 @@ namespace Domain.Service.Characters.Behavior
 
         private BehaviorResult GenerateNextBehaviorResult(IHasBehavior character, IMap map)
         {
-            var visibleEnemies = map.Characters.ByAffiliation(character, AffiliationType.Enemy)
-                .IsVisible(character.Entity.CurrentPosition);
-            var visibleLeaders = map.Characters
-                .Where(c => c.IsLeader && c.Entity.Id != character.Entity.Id)
-                .ByAffiliation(character, AffiliationType.Ally)
-                .IsVisible(character.Entity.CurrentPosition);
+            var visibleCharacters = map.GetVisibleCharacters(character).ToList();
+            var visibleEnemies = visibleCharacters.ByAffiliation(character, AffiliationType.Enemy);
+            var visibleLeaders = visibleCharacters
+                .Where(c => c.IsLeader)
+                .ByAffiliation(character, AffiliationType.Ally);
             if (character.IsAlly(map.Player.Character))
             {
                 visibleLeaders = visibleLeaders.Append(map.Player.Character);
@@ -216,14 +223,10 @@ namespace Domain.Service.Characters.Behavior
             if (_previousResult.State == BehaviorState.ApproachingToObserve)
             {
                 if (CanReachButNotAtTarget(character, _previousResult.TargetLocation.Value, map)
-                    && !character.VisionRange.IsVisible(_previousResult.TargetLocation.Value.Position))
+                    && !character.IsVisible(_previousResult.TargetLocation.Value.Position))
                 {
                     return _previousResult;
                 }
-            }
-            else if (_homeLocation.HasValue)
-            {
-                return new BehaviorResult(BehaviorState.ReturningHome, _homeLocation);
             }
 
             if (_previousResult.State == BehaviorState.MovingToLastKnownEnemyPosition
@@ -232,8 +235,7 @@ namespace Domain.Service.Characters.Behavior
                 return _previousResult;
             }
 
-            if (_previousResult.State == BehaviorState.DiscoveringEnemy
-                && IsChasingEnemy()
+            if (IsChasingEnemy(character, _previousResult)
                 && CanReachButNotAtTarget(character, _previousResult.TargetLocation.Value, map))
             {
                 return new BehaviorResult(BehaviorState.MovingToLastKnownEnemyPosition, _previousResult.TargetLocation);
@@ -252,23 +254,29 @@ namespace Domain.Service.Characters.Behavior
                     _previousResult.TargetLocation);
             }
 
+            if (_homeLocation.HasValue)
+            {
+                return new BehaviorResult(BehaviorState.ReturningHome, _homeLocation);
+            }
+
             return new BehaviorResult(BehaviorState.Wandering, Option.None<Location>());
         }
 
-        public bool CanReachButNotAtTarget(IHasBehavior character, Location targetLocation, IMap map)
+        private bool CanReachButNotAtTarget(IHasBehavior character, Location targetLocation, IMap map)
         {
             if (targetLocation.MapId != map.Id)
             {
                 return false;
             }
             return character.Entity.CurrentPosition != targetLocation.Position
-                   && map.IsReachable(character.Entity.CurrentPosition, targetLocation.Position, character);
+                   && map.IsReachable(targetLocation.Position, character);
         }
 
-        public bool IsChasingEnemy()
+        private bool IsChasingEnemy(IHasBehavior character, BehaviorResult result)
         {
-            return _default is Chase && (_greaterThanTopBound == null || _greaterThanTopBound is Chase) &&
-                   (_lessThanBottomBound == null || _lessThanBottomBound is Chase);
+            return result.State == BehaviorState.DiscoveringEnemy
+                   && result.TargetLocation.IsSome(out var target)
+                   && GetMoveRule(character, target.Position, result.State).Type == MoveTypeWhenDiscoveringTarget.Chase;
         }
 
         private float GetDistance(IHasBehavior character, Vector2Int targetPosition)
@@ -277,36 +285,35 @@ namespace Domain.Service.Characters.Behavior
             return distance;
         }
 
-        public MoveTypeWhenDiscoveringTarget GetMoveTypeWhenDiscoveringTarget(IHasBehavior character,
-            Vector2Int targetPosition, BehaviorState state)
+        private MoveRule GetMoveRule(IHasBehavior character, Vector2Int targetPosition, BehaviorState state)
         {
             switch (state)
             {
                 case BehaviorState.DiscoveringLeader:
                     return _discoveringLeader;
                 case BehaviorState.ReturningHome:
-                    return _returningHome;
+                    return _chaseRule;
                 case BehaviorState.ApproachingToObserve:
-                    return MoveTypeWhenDiscoveringTarget.Chase;
+                    return _chaseRule;
                 case BehaviorState.DiscoveringEnemy:
                     var distance = GetDistance(character, targetPosition);
                     if (_greaterThanTopBound != null && distance > _distanceTopBound)
                     {
                         Log.Debug($"[Think]Distance is greater than top bound {_distanceTopBound}.");
-                        return _greaterThanTopBound.Value;
+                        return _greaterThanTopBound;
                     }
 
                     if (_lessThanBottomBound != null && distance < _distanceBottomBound)
                     {
                         Log.Debug($"[Think]Distance is less than bottom bound {_distanceBottomBound}.");
-                        return _lessThanBottomBound.Value;
+                        return _lessThanBottomBound;
                     }
 
                     Log.Debug("[Think]Behavior is Default.");
                     return _default;
                 case BehaviorState.MovingToLastKnownEnemyPosition:
                 case BehaviorState.MovingToLastKnownLeaderPosition:
-                    return MoveTypeWhenDiscoveringTarget.Chase;
+                    return _chaseRule;
                 case BehaviorState.Wandering:
                     throw new Exception("Wandering is not a valid state for discovered target behavior.");
                 default:
@@ -336,11 +343,12 @@ namespace Domain.Service.Characters.Behavior
         {
             if (result.TargetLocation.HasValue && result.TargetLocation.Value!.MapId == map.Id)
             {
-                var moveType = GetMoveTypeWhenDiscoveringTarget(character, result.TargetLocation.Value.Position, result.State);
-                return MoveGenerater.GenerateDoableMovesWhenDiscoveringTarget(moveType, character, result.TargetLocation.Value.Position, map);
+                var targetPosition = result.TargetLocation.Value.Position;
+                return GetMoveRule(character, targetPosition, result.State).Movement
+                    .GenerateMoveActionsDoable(character, targetPosition, map);
             }
 
-            return MoveGenerater.GenerateDoableMovesWhenUndiscoveringTarget(_wander, character, map);
+            return _wander.GenerateMoveActionsDoable(character, character.Entity.CurrentPosition, map);
         }
 
         private IEnumerable<(IAction action, float evaluate)> GenerateValidUseSkills(IHasBehavior character, IMap map)
@@ -437,6 +445,20 @@ namespace Domain.Service.Characters.Behavior
                 .Where(action => action.Doable(character, map))
                 .Select(action => (item: (IAction)action, evaluate: action.Evaluate(character, map)))
                 .Where(action => action.evaluate > 0);
+        }
+
+        public bool CanAcceptSwapFrom(IHasBehavior character, Vector2Int requesterPosition, IMap map)
+        {
+            var result = _previousResult;
+            if (!result.TargetLocation.IsSome(out var target) || target.MapId != map.Id)
+                return true;
+
+            var movement = GetMoveRule(character, target.Position, result.State).Movement;
+            if (movement.NextStep(character, target.Position, map) is not { } step)
+                return !IsChasingEnemy(character, result);
+
+            var towardRequester = new Angle(requesterPosition - character.Entity.CurrentPosition).Value;
+            return Mathf.Abs(Mathf.DeltaAngle(step.Angle().Value, towardRequester)) < AdvanceAngleLimit;
         }
 
         public void KnowLocationOf(Location location)

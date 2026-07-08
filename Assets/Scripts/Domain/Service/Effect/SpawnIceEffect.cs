@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Domain.Model.Effect;
 using Domain.Model.Evaluation;
-using Domain.Model.Item;
 using Domain.Model.Map;
 using UnityEngine;
 using Utilities;
@@ -32,7 +31,7 @@ namespace Domain.Service.Effect
             return 50f;
         }
 
-        public override string Info()
+        public override string Description()
         {
             return "水上なら氷を生成\n";
         }

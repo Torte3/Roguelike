@@ -28,20 +28,6 @@ namespace Utilities
                 });
         }
 
-        public static ReadOnlyReactiveProperty<T> AsReactiveProperty<T>(this InputAction action) where T : struct
-        {
-            return AsPerformedOrCanceledObservable(action)
-                .Select(context => context.ReadValue<T>())
-                .ToReadOnlyReactiveProperty();
-        }
-
-        public static ReadOnlyReactiveProperty<bool> AsPressedReactiveProperty(this InputAction action)
-        {
-            return AsPerformedOrCanceledObservable(action)
-                .Select(_ => action.IsPressed())
-                .ToReadOnlyReactiveProperty();
-        }
-
         /// <summary>
         /// 「enabledでなければ必ずfalse」を保証する押下状態ReactivePropertyを返す。
         /// enabledの変化時も即座に再評価される。

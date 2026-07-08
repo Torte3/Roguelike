@@ -1,8 +1,9 @@
 #nullable enable
 using System;
 using Cysharp.Threading.Tasks;
-using Domain.Model.Character;
+using Domain.Model.Character.Data;
 using Domain.Model.Item;
+using Domain.Model.Item.Data;
 using Domain.Model.Memento;
 
 namespace Domain.Service.Items

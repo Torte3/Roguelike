@@ -3,14 +3,17 @@ using System;
 using System.Diagnostics;
 using Domain.Model.Character;
 using Domain.Model.Item;
+using Domain.Model.Item.Data;
+using Domain.Model.WorldEvents;
 using Domain.Service.Items;
 using Game;
 using IngameDebugConsole;
+using Provider.Texts;
 using Unity.Logging;
 using Utilities;
 using VContainer;
 
-namespace Provider
+namespace Provider.Command
 {
     public class ItemCommands
     {
@@ -99,8 +102,7 @@ namespace Provider
                 if (character.Inventory.CanAddToEmpty())
                 {
                     character.Inventory.AddToEmpty(item);
-                    var map = _world.CurrentMap;
-                    Log.Info($"{item.GetName(map.Player, map.ItemPlaceholders)}を{target}のインベントリに追加しました。");
+                    Log.Info($"{new ItemNameText(item.NameIn(_world.CurrentMap)).Text}を{target}のインベントリに追加しました。");
                 }
                 else
                 {
@@ -125,15 +127,18 @@ namespace Provider
                     Log.Info($"インベントリ内の指定したアイテムが見つかりません。");
                     return;
                 }
-                if (!ItemMergeExtension.CanSelectForBaseItem(item) || !ItemMergeExtension.CanSelectForMergedItem(item2 as BaseItem, item))
+                if (!item.CanBeMergeBase || !ItemMergeExtension.CanSelectForMergedItem(item2, item))
                 {
                     Log.Info($"指定したアイテムは合成できません。");
                     return;
                 }
-                var mergedItem = item.Merge(item2);
+                var mergedItem = item.MergeWith(item2);
                 inventory.Replace(mergedItem, index);
                 inventory.Remove(index2);
-                Log.Info($"{mergedItem.GetName(_world.CurrentMap.Player, _world.CurrentMap.ItemPlaceholders)}をプレイヤーのインベントリに追加しました。");
+                var map = _world.CurrentMap;
+                var character = map.Player.Character;
+                _world.Events.Record(new ItemsMerged(character.Label, item.NameIn(map), item2.NameIn(map)));
+                Log.Info($"{new ItemNameText(mergedItem.NameIn(_world.CurrentMap)).Text}をプレイヤーのインベントリに追加しました。");
             }
             catch (Exception e)
             {
@@ -153,8 +158,8 @@ namespace Provider
                     Log.Info($"インベントリ内の指定したアイテムが見つかりません。");
                     return;
                 }
-                item.SetCursed(player, player.Character, _world.CurrentMap.ItemPlaceholders, true);
-                Log.Info($"{item.GetName(player, _world.CurrentMap.ItemPlaceholders)}を呪われた状態にしました。");
+                item.SetCursed(player.Character, _world.CurrentMap, true);
+                Log.Info($"{new ItemNameText(item.NameIn(_world.CurrentMap)).Text}を呪われた状態にしました。");
             }
             catch (Exception e)
             {
@@ -164,7 +169,8 @@ namespace Provider
 
         private void SortInventory(InventorySortingMode sortingMode)
         {
-            _world.CurrentMap.Player.Character.Inventory.Sort(sortingMode, _world.CurrentMap.MarketPriceTable);
+            var map = _world.CurrentMap;
+            map.Player.Character.Inventory.Sort(sortingMode, map.MarketPriceTable);
         }
     }
 }

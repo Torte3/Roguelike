@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Domain.Model.Dungeon;
+using Domain.Model.Dungeon.Graph;
 using Domain.Model.Map;
 using UnityEngine;
 using Utilities;

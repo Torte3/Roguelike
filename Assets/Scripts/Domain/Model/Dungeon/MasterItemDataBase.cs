@@ -1,5 +1,6 @@
 using System;
-using Domain.Model.Item;
+using Domain.Model.Item.Data;
+using Domain.Model.Item.Rarities;
 using Utilities.Table;
 
 namespace Domain.Model.Dungeon

@@ -9,6 +9,8 @@ using Domain.Model.Effect.Area;
 using Domain.Model.Effect.Position;
 using Domain.Model.Evaluation;
 using Domain.Model.Item;
+using Domain.Model.Item.Data;
+using Domain.Model.Item.Description;
 using Domain.Model.Memento;
 using Domain.Service.Effect;
 
@@ -81,7 +83,7 @@ namespace Domain.Service.Items
             return errors;
         }
 
-        public static string FormatDirectWeapon(SkillWithCost skillOnUse, SkillWithCost skillOnThrow,
+        internal static string FormatDirectWeapon(SkillWithCost skillOnUse, SkillWithCost skillOnThrow,
             bool hasSameEffect)
         {
             var useSpawn = (SpawnEffectSkill)skillOnUse.Skill;
@@ -98,7 +100,7 @@ namespace Domain.Service.Items
             return sb.ToString();
         }
 
-        public static string FormatRangedWeapon(SkillWithCost skillOnUse)
+        internal static string FormatRangedWeapon(SkillWithCost skillOnUse)
         {
             var spawn = (SpawnEffectSkill)skillOnUse.Skill;
 
@@ -110,7 +112,7 @@ namespace Domain.Service.Items
             return sb.ToString();
         }
 
-        public static string FormatPotion(SkillWithCost? skillOnUse, SkillWithCost? skillOnThrow,
+        internal static string FormatPotion(SkillWithCost? skillOnUse, SkillWithCost? skillOnThrow,
             bool hasSameEffect, bool hasSameSkill)
         {
             if (skillOnUse == null)
@@ -161,7 +163,7 @@ namespace Domain.Service.Items
             var primaryAttack = spawn.EffectList.OfType<AttackEffect>().FirstOrDefault();
             if (primaryAttack != null)
             {
-                foreach (var line in SplitLines(primaryAttack.Info()).Skip(1))
+                foreach (var line in SplitLines(primaryAttack.Description()).Skip(1))
                     sb.AppendLine(line);
             }
 
@@ -187,10 +189,10 @@ namespace Domain.Service.Items
         {
             var attack = effects.OfType<AttackEffect>().FirstOrDefault();
             if (attack != null)
-                return BuildAttackLine(position, area, FirstLine(attack.Info()), context);
+                return BuildAttackLine(position, area, FirstLine(attack.Description()), context);
             var absorb = effects.OfType<AbsorbsEffect>().FirstOrDefault();
             if (absorb != null)
-                return BuildAttackLine(position, area, FirstLine(absorb.Info()), context);
+                return BuildAttackLine(position, area, FirstLine(absorb.Description()), context);
             return "";
         }
 
@@ -247,7 +249,7 @@ namespace Domain.Service.Items
                 FanArea fan => $"前{ItemDescriptionRichText.RichSpatialCells(fan.Radius)}（扇形）",
                 CircleArea circle => $"周囲{ItemDescriptionRichText.RichSpatialCells(circle.Radius)}",
                 SelfArea => "その場",
-                _ => area.Info()
+                _ => area.Description()
             };
         }
 
@@ -270,7 +272,7 @@ namespace Domain.Service.Items
             {
                 if (e is AttackEffect)
                     continue;
-                var lines = SplitLines(e.Info()).ToList();
+                var lines = SplitLines(e.Description()).ToList();
                 if (e is AbsorbsEffect)
                 {
                     foreach (var extra in lines.Skip(1))

@@ -4,6 +4,8 @@ using Domain.Model.Memento;
 using RandomDungeonWithBluePrint;
 using Utilities;
 
+using Domain.Model.Dungeon.Graph;
+
 namespace Domain.Model.Dungeon
 {
     public interface IDungeonBlueprintData

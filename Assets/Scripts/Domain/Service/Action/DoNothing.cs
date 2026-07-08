@@ -1,18 +1,17 @@
 using Cysharp.Threading.Tasks;
-using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Map;
 
 namespace Domain.Service.Action
 {
-    public class DoNothing : IAction
+    public record DoNothing : IAction
     {
         public bool Doable(IActor actor, IMap map)
         {
             return true;
         }
 
-        public UniTask Do(IActor actor, IMap map, IInput input)
+        public UniTask Do(IActor actor, IMap map)
         {
             actor.DoNothing();
             return UniTask.CompletedTask;
@@ -21,11 +20,6 @@ namespace Domain.Service.Action
         public float Evaluate(IActor actor, IMap map)
         {
             return 0;
-        }
-
-        public string Info()
-        {
-            return "DoNothing";
         }
     }
 }

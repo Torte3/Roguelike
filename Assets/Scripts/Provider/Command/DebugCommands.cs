@@ -1,7 +1,7 @@
 #nullable enable
 using VContainer;
 
-namespace Provider
+namespace Provider.Command
 {
     /// <summary>
     /// デバッグコマンドの統合クラス

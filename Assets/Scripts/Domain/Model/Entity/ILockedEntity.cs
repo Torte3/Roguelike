@@ -1,11 +1,12 @@
 #nullable enable
-using System.Collections.Generic;
 using Utilities;
 
 namespace Domain.Model.Entity
 {
     public interface ILockedEntity : IEntity
     {
-        public List<Id<IEntity>> KeyCharacters { get; }
+        public bool IsLockReleased { get; }
+        public bool IsKeyHolder(Id<IEntity> id);
+        public void ForgetKeyHolder(Id<IEntity> id);
     }
 }

@@ -3,10 +3,13 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Domain.Model.Character;
+using Domain.Model.Character.Affiliation;
+using Domain.Model.Character.Data;
 using Domain.Model.Dungeon;
 using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Item;
+using Domain.Model.WorldEvents;
 using ObservableCollections;
 using R3;
 using UnityEngine;
@@ -14,23 +17,30 @@ using Utilities;
 
 namespace Domain.Model.Map
 {
-    public interface IMap : IPassableChecker
+    public interface IMap : IPassableChecker, IReadOnlyMap
     {
         public Id<IMap> Id { get; }
         public ItemDatabase ItemDatabase { get; }
-        public ItemPlaceholders ItemPlaceholders { get; }
-        public ItemMarketPriceTable MarketPriceTable { get; }
-        public IShop? Shop { get; }
-        public IMonsterHouse? MonsterHouse { get; }
+        public IWorldEventRecorder Events { get; }
+        public new ItemPlaceholders ItemPlaceholders { get; }
         public IPlayer Player { get; }
 
         public IObservableCollection<IEntity> Entities { get; }
         public IObservableCollection<ICharacter> Characters { get; }
+        public IEnumerable<ILockedEntity> LockedEntities { get; }
+        public ITerrain Terrain { get; }
+        public IMapPosition At(Vector2Int position, ITerrain terrain);
         public IObservableCollection<IItemEntity> Items { get; }
 
         public HashSet<Vector2Int> GetAllPositions();
+        public IEnumerable<IMapPosition> GetAllBlankPositions();
+        public IEnumerable<IMapPosition> GetAllBlankPositionsOn(params EntityLayer[] layers);
+        public IEnumerable<IMapPosition> GetAllBlankAndStandablePositions();
+        public IEnumerable<IMapPosition> GetAllBlankAndStandablePositionsOn(params EntityLayer[] layers);
+        public IEnumerable<IMapPosition> GetAllWalkablePositions(IAffiliation affiliation);
 
         public IEntity? GetEntityFastAt(Vector2Int position, EntityLayer layer);
+        public ICharacter? GetCharacterAt(Vector2Int position);
         public IEnumerable<IEntity> GetEntitiesFastAt(Vector2Int position, IEnumerable<EntityLayer> layers);
         public IEnumerable<IEntity> GetEntitiesFastAt(Vector2Int position, params EntityLayer[] layers);
         public IEnumerable<IEntity> GetEntitiesFastAt(Vector2Int position);
@@ -46,13 +56,16 @@ namespace Domain.Model.Map
         public IScheduledEventEntity? GetScheduledEventEntityFastAt(Vector2Int position, EntityLayer layer);
         public IEnumerable<IScheduledEventEntity> GetScheduledEventEntitiesFastAt(Vector2Int position, IEnumerable<EntityLayer> layers);
         public IEnumerable<IScheduledEventEntity> GetScheduledEventEntitiesFastAt(Vector2Int position, params EntityLayer[] layers);
-        public HashSet<Vector2Int> AllCharacterPositionsFast();
+        public IReadOnlyCollection<Vector2Int> AllCharacterPositionsFast();
         public HashSet<Vector2Int> AllItemPositionsFast();
 
         public bool IsInside(Vector2Int position);
-        public bool IsReachable(Vector2Int from, Vector2Int to, IHasBehavior actor);
+        public bool IsReachable(Vector2Int to, IHasBehavior actor);
 
         public IItem? GetItemByIdFromWorldOrInventory(Id<IItem> id);
+        public IEnumerable<IItem> ItemsInWorldAndInventories();
+        public void RecordShopChanges();
+        public void RecordUnderfootChanges();
 
         public UniTask ExecuteEntityTouchEventsAt(Vector2Int position, IEntity triggerEntity);
         public UniTask ExecuteCharacterTouchEventsAt(Vector2Int position, ICharacter character);
@@ -82,14 +95,11 @@ namespace Domain.Model.Map
 
         public void SpawnTrap(TrapData trap, Vector2Int position);
 
-        public UniTask<Vector2Int> ShowThrowAnimation(Sprite icon, Vector2Int position, Direction8 direction,
-            int distance, bool isPiercing, params EntityLayer[] canHitLayer);
-
-        public void SpawnEffect(IEnumerable<Vector2Int> area, Color color);
-
         public IItemEntity? TryPickUpAt(Vector2Int position, bool canPickUpShopItem);
 
         public Vector2Int FindBlankPositionFrom(Vector2Int position, Func<Vector2Int, bool> isBlankFunc);
+        public Vector2Int? FloorLanding(Vector2Int from, Vector2Int destination);
+        public bool IsKeyHolder(Id<IEntity> id);
         public Vector2Int GetThrowDestination(Vector2Int position, Direction8 direction, int distance, params EntityLayer[] canHitLayer);
         public IEnumerable<Vector2Int> GetThrowDestinationPiercing(Vector2Int position, Direction8 direction, int distance, params EntityLayer[] canHitLayer);
 

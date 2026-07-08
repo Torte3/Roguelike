@@ -1,5 +1,6 @@
 using Domain.Model.Condition;
 using Domain.Model.Effect;
+using Domain.Model.Effect.Elements;
 using Domain.Model.Entity;
 using Domain.Model.Evaluation;
 using Sirenix.OdinInspector;

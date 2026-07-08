@@ -2,9 +2,9 @@
 using Sirenix.OdinInspector.Editor.Validation;
 using Utilities.Validation;
 
-[assembly: RegisterValidator(typeof(Utilities.Validation.Editor.RequiredIfShownAttributeValidator))]
+[assembly: RegisterValidator(typeof(Utilities.Editor.Validation.RequiredIfShownAttributeValidator))]
 
-namespace Utilities.Validation.Editor
+namespace Utilities.Editor.Validation
 {
     public sealed class RequiredIfShownAttributeValidator : AttributeValidator<RequiredIfShownAttribute, object>
     {

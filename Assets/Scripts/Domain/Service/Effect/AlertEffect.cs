@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Domain.Model.Dungeon;
 using Domain.Model.Effect;
-using Domain.Model.Item;
 using Domain.Model.Map;
 using UnityEngine;
 using Utilities;
@@ -34,7 +33,7 @@ namespace Domain.Service.Effect
             return 20;
         }
 
-        public override string Info()
+        public override string Description()
         {
             return "警報を鳴らす\n";
         }

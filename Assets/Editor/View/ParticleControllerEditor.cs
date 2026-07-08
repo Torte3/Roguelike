@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using Utilities;
 using Sirenix.OdinInspector.Editor;
-using View;
+using View.Effects;
 
 namespace Editor
 {

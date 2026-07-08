@@ -6144,7 +6144,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2048327891096963396, guid: 894d9ff134f522e4da723175197c1c92, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: View.UI.MainMenu, View
+      value: View.UI.Menus.MainMenu, View
       objectReference: {fileID: 0}
     - target: {fileID: 2048327891096963396, guid: 894d9ff134f522e4da723175197c1c92, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
@@ -6534,7 +6534,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2048327891096963396, guid: 894d9ff134f522e4da723175197c1c92, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: View.UI.MainMenu, View
+      value: View.UI.Menus.MainMenu, View
       objectReference: {fileID: 0}
     - target: {fileID: 2048327891096963396, guid: 894d9ff134f522e4da723175197c1c92, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
@@ -9843,7 +9843,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2048327891096963396, guid: 894d9ff134f522e4da723175197c1c92, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: View.UI.MainMenu, View
+      value: View.UI.Menus.MainMenu, View
       objectReference: {fileID: 0}
     - target: {fileID: 2048327891096963396, guid: 894d9ff134f522e4da723175197c1c92, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
@@ -10028,7 +10028,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2048327891096963396, guid: 894d9ff134f522e4da723175197c1c92, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: View.UI.MainMenu, View
+      value: View.UI.Menus.MainMenu, View
       objectReference: {fileID: 0}
     - target: {fileID: 2048327891096963396, guid: 894d9ff134f522e4da723175197c1c92, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
@@ -14612,7 +14612,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2048327891096963396, guid: 894d9ff134f522e4da723175197c1c92, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: View.UI.MainMenu, View
+      value: View.UI.Menus.MainMenu, View
       objectReference: {fileID: 0}
     - target: {fileID: 2048327891096963396, guid: 894d9ff134f522e4da723175197c1c92, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName

@@ -5,7 +5,7 @@ using Unity.Logging;
 using Utilities;
 using VContainer;
 
-namespace Provider
+namespace Provider.Command
 {
     public class MapCommands
     {

@@ -1,14 +1,17 @@
 #nullable enable
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Domain.Model;
 using Domain.Model.Character;
+using Domain.Model.Character.Affiliation;
+using Domain.Model.Character.Data;
 using Domain.Model.Character.Status;
 using Domain.Model.Dungeon;
 using Domain.Model.Effect;
 using Domain.Model.Effect.Area;
+using Domain.Model.Effect.Elements;
 using Domain.Model.Effect.Position;
+using Domain.Model.Effect.Skill;
 using Domain.Model.Entity;
 using Domain.Model.Evaluation;
 using Domain.Model.Map;
@@ -38,7 +41,7 @@ namespace Domain.Service.Characters
                     new AttackEffect(
                         new List<ElementPower>
                         {
-                            new ElementPower(Element.Physical, 1)
+                            new ElementPower(Element.Physical, CommonSenseParameters.PlayerAttackPowerWhenUnarmed)
                         },
                         0
                     )
@@ -158,90 +161,15 @@ namespace Domain.Service.Characters
             );
         }
 
-        public static IPlayer CreatePlayer(PlayerMemento playerData, CharacterControlInputReceiver receiver, IGameManager gameManager, IMap map)
+        public static IPlayer CreatePlayer(PlayerMemento playerData, CharacterControlInputReceiver receiver, IMap map)
         {
-            return new Player(playerData, receiver, gameManager, map);
+            return new Player(playerData, receiver, map);
         }
 
-        public static ICharacter CreateCharacter(CharacterMemento data, ICharacterBehavior behavior, IGameManager gameManager, IMap map)
+        public static ICharacter CreateCharacter(CharacterMemento data, ICharacterBehavior behavior, IMap map)
         {
-            return new Character(data, behavior, gameManager, map, false);
+            return new Character(data, behavior, map, false);
         }
 
-        public static float EvaluateDamageRate(EnemyData enemyData)
-        {
-            var sum = 0f;
-            foreach (var element in Enum.GetValues(typeof(Element)))
-            {
-                if (enemyData.ElementDamageRateMultiplier.TryGetValue((Element)element, out var multiplier))
-                {
-                    sum += multiplier;
-                }
-                else
-                {
-                    sum += 1;
-                }
-            }
-            return sum / Enum.GetValues(typeof(Element)).Length;
-        }
-        public static float EvaluateSkills(IEnumerable<SkillData> skills)
-        {
-            var virtualSkills = skills.Select(x => new VirtualSkill(x)).ToList();
-            var sum = 0f;
-            var turn = 0;
-            while (turn < 100)
-            {
-                foreach (var skill in virtualSkills)
-                {
-                    skill.Update(1);
-                }
-                var selectedSkill = virtualSkills.Where(x => x.IsReady()).MaxByOrDefault(x => x.Value, null);
-                if (selectedSkill == null)
-                {
-                    turn++;
-                    continue;
-                }
-                if (selectedSkill.ChargeTurn > 0)
-                {
-                    foreach (var skill in virtualSkills)
-                    {
-                        skill.Update(selectedSkill.ChargeTurn);
-                    }
-
-                    sum += selectedSkill.Value * selectedSkill.ChargeTurn;
-                    turn += selectedSkill.ChargeTurn;
-                }
-                selectedSkill.Use();
-                sum += selectedSkill.Value;
-                turn++;
-            }
-            return sum / turn;
-        }
-        private class VirtualSkill
-        {
-            public float Value;
-            public int ChargeTurn;
-            public int CoolTime;
-            private int _remainingCoolTime;
-            public VirtualSkill(SkillData skill)
-            {
-                Value = new SpawnEffectSkill(SpawnEffectSkill.Build(skill)).EvaluatePrice();
-                ChargeTurn = skill.ChargeTurn;
-                CoolTime = skill.CoolTime;
-                _remainingCoolTime = 0;
-            }
-            public void Update(int turnCount)
-            {
-                _remainingCoolTime = Mathf.Max(0, _remainingCoolTime - turnCount);
-            }
-            public void Use()
-            {
-                _remainingCoolTime = 1 + CoolTime;
-            }
-            public bool IsReady()
-            {
-                return _remainingCoolTime == 0;
-            }
-        }
     }
 }

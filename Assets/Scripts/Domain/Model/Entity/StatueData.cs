@@ -1,4 +1,4 @@
-using Domain.Model.Effect;
+using Domain.Model.Effect.Skill;
 using Sirenix.OdinInspector;
 using UnityEngine;
 

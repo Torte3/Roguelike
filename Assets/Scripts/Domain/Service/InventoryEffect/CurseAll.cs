@@ -1,17 +1,16 @@
-using Domain.Model.Character;
-using Domain.Model.Dungeon;
 using Domain.Model.Entity;
 using Domain.Model.Item;
+using Domain.Model.Map;
 
 namespace Domain.Service.InventoryEffect
 {
     public class CurseAll : IInventoryEffect
     {
-        public void Apply(IPlayer player, IStorage storage, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
+        public void Apply(IStorage storage, IEntity itemHolder, IMap map)
         {
             foreach (var item in storage.AllItems)
             {
-                item.SetCursed(player, itemHolder, itemPlaceholders, true);
+                item.SetCursed(itemHolder, map, true);
             }
         }
 
@@ -20,7 +19,7 @@ namespace Domain.Service.InventoryEffect
             return 100 * 5;
         }
 
-        public string Info()
+        public string Description()
         {
             return "呪い付与(全て)";
         }

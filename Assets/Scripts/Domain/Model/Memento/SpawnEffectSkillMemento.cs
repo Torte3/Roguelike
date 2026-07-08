@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Domain.Model.Effect;
 using Domain.Model.Effect.Area;
+using Domain.Model.Effect.Position;
 using UnityEngine;
 
 namespace Domain.Model.Memento

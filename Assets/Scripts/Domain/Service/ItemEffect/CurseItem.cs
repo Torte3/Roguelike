@@ -1,20 +1,21 @@
 using Domain.Model.Character;
-using Domain.Model.Dungeon;
 using Domain.Model.Entity;
 using Domain.Model.Item;
+using Domain.Model.Item.Slots;
+using Domain.Model.Map;
 
 namespace Domain.Service.ItemEffect
 {
     public class CurseItem : IItemEffect
     {
-        public bool CanApplyTo(IPlayer player, IItem item)
+        public bool CanApplyTo(IItem item, IActor player)
         {
-            return !item.IsCursed || (!player.Character.IsKnownItem(item) && !item.IsCurseIdentified);
+            return !item.IsCursed || (!player.IsKnownItem(item) && !item.IsCurseIdentified);
         }
 
-        public void Apply(IPlayer player, IItem item, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
+        public void Apply(IItemSlot slot, IEntity itemHolder, IActor player, IMap map)
         {
-            item.SetCursed(player, itemHolder, itemPlaceholders, true);
+            slot.Item.SetCursed(itemHolder, map, true);
         }
 
         public float EvaluatePrice()
@@ -22,6 +23,6 @@ namespace Domain.Service.ItemEffect
             return 100;
         }
 
-        public string Info() => "呪い付与";
+        public string Description() => "呪い付与";
     }
 }

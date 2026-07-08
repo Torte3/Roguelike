@@ -6,6 +6,7 @@ using Domain.Model.Entity;
 using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using UnityEngine;
 using Utilities;
 
@@ -24,13 +25,12 @@ namespace Domain.Service.Items
 
         public IItem Item { get; init; }
 
-        public Sprite Icon => Item.Icon;
 
         public bool ShouldRevealMimic(IMap map)
         {
             if (Item.ShouldRevealMimic(map.Player.Character, Entity.CurrentPosition, map))
             {
-                Entity.Destroy("モンスターが正体を表した");
+                Entity.Destroy();
                 return true;
             }
             return false;
@@ -71,20 +71,28 @@ namespace Domain.Service.Items
             return item.EvaluateWhenThrown(actor, destination, direction, map);
         }
 
+        public bool CanBeBrokenBy(BreakTargets targets) => targets.HasFlag(BreakTargets.Item);
+
+        public EntityLabel LabelIn(IMap map)
+        {
+            return Item.LabelIn(map);
+        }
+
+        public WorldEvent Appeared(IMap map)
+        {
+            return new EntityAppeared(Entity.Ref, Entity.AppearanceOf(EntityKind.Item, Item.Icon, Item.IsShiny));
+        }
+
         public async UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)
         {
             var destination = GetThrowDestination(Entity.CurrentPosition, direction, distance, map);
-            if (Entity.IsVisible && destination != Entity.CurrentPosition)
-            {
-                Entity.SetVisibility(false);
-                await map.ShowThrowAnimation(Icon, Entity.CurrentPosition, direction, distance, false, EntityLayer.Middle);
-                Entity.Teleport(map.FindBlankPositionFrom(destination,
-                    position => map.At(position).IsBlankAndStandable(EntityLayer.Bottom)));
-            }
+            var landing = map.FloorLanding(Entity.CurrentPosition, destination);
+            if (landing.HasValue)
+                Entity.BlowTo(landing.Value);
 
             if (Item.CanActivateWhenThrown)
             {
-                var result = await Item.UseWhenThrown(actor, destination, direction, map);
+                var result = await Item.UseWhenThrown(actor, destination, direction, map, new ThrownItemSkillSource(Item.NameIn(map)));
             }
         }
     }

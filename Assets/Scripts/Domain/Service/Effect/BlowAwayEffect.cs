@@ -5,7 +5,6 @@ using Domain.Model.Character.Status;
 using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Evaluation;
-using Domain.Model.Item;
 using Domain.Model.Map;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -59,7 +58,7 @@ namespace Domain.Service.Effect
             return CommonSenseParameters.BlowAwayPrice(_distance);
         }
 
-        public override string Info()
+        public override string Description()
         {
             return $"{_distance}マス吹き飛ばす\n";
         }

@@ -4,12 +4,13 @@ using System.Linq;
 using Domain.Model.Character;
 using Game;
 using IngameDebugConsole;
+using Provider.Texts;
 using Unity.Logging;
 using UnityEngine;
 using VContainer;
 using R3;
 
-namespace Provider
+namespace Provider.Command
 {
     public class CharacterCommands
     {
@@ -39,7 +40,7 @@ namespace Provider
 
         private void ShowCharacter(ICharacter character)
         {
-            var info = $"{character.GetNameIgnoreVisibility(_world.CurrentMap.Player)}\n"
+            var info = $"{new CharacterNameText(character.Label).Text}\n"
                        + $"Id: {character.Entity.Id}\n"
                        + $"Position: {character.Entity.CurrentPosition}\n"
                        + $"CharacterType: {character.CharacterType.SubtypeName()}";

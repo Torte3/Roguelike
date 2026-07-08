@@ -43,12 +43,7 @@ MonoBehaviour:
     - rid: 3794997653850030132
       type: {class: BreakEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:
-        ApplyToCharacter: 0
-        ApplyToItem: 1
-        ApplyToMoney: 1
-        ApplyToTrap: 1
-        ApplyToChest: 1
-        ApplyToStatue: 0
+        _targets: 30
     - rid: 3794997653850030133
       type: {class: DigEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data: 

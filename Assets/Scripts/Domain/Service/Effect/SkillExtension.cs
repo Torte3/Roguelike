@@ -1,7 +1,7 @@
 #nullable enable
 using System;
 using Cysharp.Threading.Tasks;
-using Domain.Model.Effect;
+using Domain.Model.Effect.Skill;
 using Domain.Model.Memento;
 
 namespace Domain.Service.Effect

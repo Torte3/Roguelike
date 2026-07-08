@@ -1,5 +1,6 @@
 #nullable enable
 using Domain.Model.Effect;
+using Domain.Model.Effect.Skill;
 
 namespace Domain.Service.Effect
 {

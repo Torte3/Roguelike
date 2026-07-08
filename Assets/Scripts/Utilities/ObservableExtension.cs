@@ -1,7 +1,6 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using ObservableCollections;
 using R3;
 
@@ -12,11 +11,6 @@ namespace Utilities
         public static Observable<T> SkipLatestValueOnSubscribe<T>(this ReadOnlyReactiveProperty<T> source)
         {
             return source.Skip(1);
-        }
-
-        public static IDisposable RelayTo<T>(this Observable<T> source, Observer<T> target)
-        {
-            return source.Subscribe(item => target.OnNext(item));
         }
 
         public static Observable<T> WhereNotNull<T>(this Observable<T?> source) where T : struct
@@ -108,30 +102,6 @@ namespace Utilities
                 });
         }
 
-        public static void SynchronizeWith<T>(this ObservableHashSet<T> collectionA, IEnumerable<T> collectionB)
-            where T : notnull
-        {
-            var itemsToRemove = collectionA.Except(collectionB).ToList();
-            foreach (var item in itemsToRemove)
-            {
-                collectionA.Remove(item);
-            }
-
-            var itemsToAdd = collectionB.Except(collectionA).ToList();
-            foreach (var item in itemsToAdd)
-            {
-                collectionA.Add(item);
-            }
-        }
-
-        public static IDisposable LiveSynchronizeWith<T>(this ObservableHashSet<T> collectionA,
-            IObservableCollection<T> collectionB) where T : notnull
-        {
-            collectionA.SynchronizeWith(collectionB);
-
-            return collectionB.SubscribeIncludingCurrentItems(add => collectionA.Add(add), remove => collectionA.Remove(remove));
-        }
-
         public static IDisposable AddWith<T, U>(this ObservableList<U> collectionA,
             IObservableCollection<T> collectionB) where T : notnull, U
         {
@@ -145,14 +115,6 @@ namespace Utilities
                 add => collectionA.Add(selector(add)),
                 remove => collectionA.Remove(selector(remove))
             );
-        }
-
-        public static IDisposable LiveSynchronizeWith<T>(this ICollection<T> collectionA,
-            IObservableCollection<T> collectionB) where T : notnull
-        {
-            collectionA.SynchronizeWith(collectionB);
-
-            return collectionB.SubscribeIncludingCurrentItems(add => collectionA.Add(add), remove => collectionA.Remove(remove));
         }
     }
 }

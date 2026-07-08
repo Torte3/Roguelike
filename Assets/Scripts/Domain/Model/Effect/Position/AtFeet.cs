@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Domain.Model.Item;
 using Domain.Model.Map;
 using UnityEngine;
 using Utilities;
@@ -22,7 +21,7 @@ namespace Domain.Model.Effect.Position
             return 1;
         }
 
-        public string Info()
+        public string Description()
         {
             return "発動場所";
         }

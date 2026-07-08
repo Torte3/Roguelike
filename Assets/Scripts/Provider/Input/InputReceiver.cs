@@ -8,16 +8,17 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using Utilities;
+using View.Playback;
 
 namespace Provider.Input
 {
-    public class InputReceiver : IDisposable
+    public class InputReceiver : IDisposable, IDashInput
     {
         private readonly MyInputAction _actions = new();
         private readonly CompositeDisposable _disposables = new();
         private readonly ReactiveProperty<bool> _isUsingKeyboard = new(Gamepad.current == null);
 
-        public ReadOnlyReactiveProperty<bool> IsUsingKeyboard => _isUsingKeyboard;
+        internal ReadOnlyReactiveProperty<bool> IsUsingKeyboard => _isUsingKeyboard;
 
         public InputReceiver()
         {
@@ -50,18 +51,18 @@ namespace Provider.Input
             { "<Gamepad>/buttonNorth", "<Gamepad>/buttonWest" },
         };
 
-        public Observable<Vector2> OnMovePerformed =>
+        internal Observable<Vector2> OnMovePerformed =>
             _actions.Field.Move.AsObservable().Select(context => context.ReadValue<Vector2>());
 
-        public Vector2 MoveVector => _actions.Field.Move.ReadValue<Vector2>();
+        internal Vector2 MoveVector => _actions.Field.Move.ReadValue<Vector2>();
 
-        public Vector2 NavigateVector => _actions.UI.Navigate.ReadValue<Vector2>();
+        private Vector2 NavigateVector => _actions.UI.Navigate.ReadValue<Vector2>();
 
-        public Vector2 SelectItemVector => _actions.Field.SelectItem.ReadValue<Vector2>();
+        private Vector2 SelectItemVector => _actions.Field.SelectItem.ReadValue<Vector2>();
 
-        public bool IsSelectItemModifier => _actions.Field.SelectItemModifier.IsPressed();
+        internal bool IsSelectItemModifier => _actions.Field.SelectItemModifier.IsPressed();
 
-        public Vector2 InventoryNavigateVector
+        internal Vector2 InventoryNavigateVector
         {
             get
             {
@@ -70,34 +71,33 @@ namespace Provider.Input
                 return IsSelectItemModifier ? MoveVector : SelectItemVector;
             }
         }
-        public ReadOnlyReactiveProperty<bool> IsDash => _actions.Field.Dash.AsEnabledPressedReactiveProperty();
-        public ReadOnlyReactiveProperty<bool> IsNoMove => _actions.Field.TurnOnly.AsEnabledPressedReactiveProperty();
-        public ReadOnlyReactiveProperty<bool> IsDiagonalOnly => _actions.Field.DiagonalOnly.AsEnabledPressedReactiveProperty();
+        internal ReadOnlyReactiveProperty<bool> IsNoMove => _actions.Field.TurnOnly.AsEnabledPressedReactiveProperty();
 
         public bool IsDashPressed => IsPressed(_actions.Field.Dash);
-        public bool IsNoMovePressed => IsPressed(_actions.Field.TurnOnly);
-        public bool IsDiagonalOnlyPressed => IsPressed(_actions.Field.DiagonalOnly);
+        internal bool IsNoMovePressed => IsPressed(_actions.Field.TurnOnly);
+        internal bool IsDiagonalOnlyPressed => IsPressed(_actions.Field.DiagonalOnly);
 
-        public Observable<Unit> OnAttackPerformed =>
+        internal Observable<Unit> OnAttackPerformed =>
             _actions.Field.Attack.AsObservable().Select(context => Unit.Default);
 
-        public Observable<Unit> OnSubmitPerformed =>
+        internal Observable<Unit> OnSubmitPerformed =>
             _actions.UI.Submit.AsObservable().Select(_ => Unit.Default);
 
-        public Observable<Unit> OnThrowPerformed => _actions.Field.Throw.AsObservable().Select(context => Unit.Default);
-        public Observable<Unit> OnSwapItemPerformed => _actions.Field.SwapItem.AsObservable().Select(context => Unit.Default);
+        internal Observable<Unit> OnThrowPerformed => _actions.Field.Throw.AsObservable().Select(context => Unit.Default);
+        internal Observable<Unit> OnSwapItemPerformed => _actions.Field.SwapItem.AsObservable().Select(context => Unit.Default);
 
-        public Observable<Unit> OnDoNothingPerformed =>
+        internal Observable<Unit> OnDoNothingPerformed =>
             _actions.Field.DoNothing.AsObservable().Select(context => Unit.Default);
 
-        public bool IsDoNothingPerformed => _actions.Field.DoNothing.IsPressed();
+        internal bool IsDoNothingPerformed => _actions.Field.DoNothing.IsPressed();
+        internal ReadOnlyReactiveProperty<bool> IsDoNothingPressed => _actions.Field.DoNothing.AsEnabledPressedReactiveProperty();
 
-        public Observable<Unit> OnRenamePerformed =>
+        internal Observable<Unit> OnRenamePerformed =>
             _actions.Field.Rename.AsObservable().Select(context => Unit.Default);
 
-        public Observable<Unit> OnMainMenuOpening => _actions.Field.OpenMainMenu.AsObservable().Select(context => Unit.Default);
-        public Observable<Unit> OnMenuCanceling => _actions.Menu.Cancel.AsObservable().Select(context => Unit.Default);
-        public Observable<Unit> OnMenuClosing => _actions.Menu.Close.AsObservable().Select(context => Unit.Default);
+        internal Observable<Unit> OnMainMenuOpening => _actions.Field.OpenMainMenu.AsObservable().Select(context => Unit.Default);
+        internal Observable<Unit> OnMenuCanceling => _actions.Menu.Cancel.AsObservable().Select(context => Unit.Default);
+        internal Observable<Unit> OnMenuClosing => _actions.Menu.Close.AsObservable().Select(context => Unit.Default);
 
         public void Dispose()
         {
@@ -109,24 +109,24 @@ namespace Provider.Input
         private enum InputMode { Field, Menu }
         private InputMode _mode = InputMode.Field;
 
-        public void Enable()
+        internal void Enable()
         {
             ApplyMode();
         }
 
-        public void Disable()
+        internal void Disable()
         {
             _actions.Disable();
         }
 
-        public void SwitchMenu()
+        internal void SwitchMenu()
         {
             Log.Info("[Input] Switch input to Menu");
             _mode = InputMode.Menu;
             ApplyMode();
         }
 
-        public void SwitchField()
+        internal void SwitchField()
         {
             Log.Info("[Input] Switch input to Field");
             _mode = InputMode.Field;
@@ -149,14 +149,14 @@ namespace Provider.Input
             }
         }
 
-        public void ApplyFaceButtonSwap(bool enabled)
+        internal void ApplyFaceButtonSwap(bool enabled)
         {
             ApplyFaceButtonSwapToAsset(_actions.asset, enabled);
         }
 
         private static bool IsPressed(InputAction action) => action.enabled && action.IsPressed();
 
-        public void BindToUIModule()
+        internal void BindToUIModule()
         {
             var uiModule = EventSystem.current != null
                 ? EventSystem.current.GetComponent<InputSystemUIInputModule>()

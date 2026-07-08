@@ -1,5 +1,8 @@
 #nullable enable
 using Domain.Model.Item;
+using Domain.Model.Item.Data;
+using Domain.Model.Map;
+using Domain.Model.WorldEvents;
 
 namespace Domain.Model.Character
 {
@@ -16,5 +19,6 @@ namespace Domain.Model.Character
         public bool CanReplaceOrRemove(IItem? item, int index);
         public IItem ReplaceOrRemove(IItem? item, int index);
         public void Sort(InventorySortingMode sortingMode, ItemMarketPriceTable market);
+        public InventoryContents ContentsIn(IReadOnlyMap map);
     }
 }

@@ -1,8 +1,11 @@
 using System;
 using Domain.Model.Character;
-using Domain.Model.Dungeon;
 using Domain.Model.Entity;
 using Domain.Model.Item;
+using Domain.Model.Item.Data;
+using Domain.Model.Item.Slots;
+using Domain.Model.Map;
+using Domain.Model.WorldEvents;
 using Domain.Service.Items;
 using UnityEngine;
 using Utilities.Serialize;
@@ -14,14 +17,19 @@ namespace Domain.Service.ItemEffect
     {
         [SerializeField] private ScriptableObjectSerializable<ItemData> _item;
 
-        public bool CanApplyTo(IPlayer player, IItem item)
+        public bool CanApplyTo(IItem item, IActor player)
         {
             return true;
         }
 
-        public void Apply(IPlayer player, IItem item, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
+        public void Apply(IItemSlot slot, IEntity itemHolder, IActor player, IMap map)
         {
-            player.Character.Inventory.Replace(new Item(_item.Value), player.Character.Inventory.GetItemIndex(item).Value);
+            var name = slot.Item.NameIn(map);
+            var changed = new Item(_item.Value);
+            slot.Replace(changed);
+            map.RecordUnderfootChanges();
+            map.Events.Record(new ItemChanged(itemHolder.Entity.IsVisible, name, ItemChangeKind.Transformed, changed.LookIn(map)));
+            map.RecordShopChanges();
         }
 
         public float EvaluatePrice()
@@ -29,7 +37,7 @@ namespace Domain.Service.ItemEffect
             return 100;
         }
 
-        public string Info()
+        public string Description()
         {
             return $"変化({_item.Value.name})";
         }

@@ -1,6 +1,7 @@
 #nullable enable
 using System.Collections.Generic;
 using System.Linq;
+using Domain.Model.Entity;
 using Domain.Model.Item;
 using UnityEngine;
 using Utilities;
@@ -28,8 +29,9 @@ namespace Domain.Model.Memento
             _discoveredCursedItemIds.Select(id => new Id<IItem>(id)).ToHashSet();
         [SerializeField] private SerializableDictionary<string, int> _itemUsedCountByBaseName;
         public Dictionary<string, int> ItemUsedCountByBaseName => _itemUsedCountByBaseName.ToDictionary();
-        [SerializeField] private SerializableDictionary<string, int> _deathCountByCause;
-        public Dictionary<string, int> DeathCountByCause => _deathCountByCause.ToDictionary();
+        [SerializeField] private List<DeathCountMemento> _deathCounts;
+        public Dictionary<DeathRecord, int> DeathCounts =>
+            _deathCounts.ToDictionary(death => death.Deserialize(), death => death.Count);
         [SerializeField] private SerializableDictionary<string, int> _enemyTypeKilledCount;
         public Dictionary<string, int> EnemyTypeKilledCount => _enemyTypeKilledCount.ToDictionary();
         public StatisticsMemento(
@@ -47,7 +49,7 @@ namespace Domain.Model.Memento
             int monsterHouseEnterCount,
             IEnumerable<Id<IItem>> discoveredCursedItemIds,
             Dictionary<string, int> itemUsedCountByBaseName,
-            Dictionary<string, int> deathCountByCause,
+            Dictionary<DeathRecord, int> deathCounts,
             Dictionary<string, int> enemyTypeKilledCount)
         {
             PlayTime = playTime;
@@ -65,7 +67,7 @@ namespace Domain.Model.Memento
             _discoveredCursedItemIds = discoveredCursedItemIds.Select(id => id.ToString()).ToList();
             CursedItemDiscoverCount = _discoveredCursedItemIds.Count;
             _itemUsedCountByBaseName = itemUsedCountByBaseName.ToSerializable();
-            _deathCountByCause = deathCountByCause.ToSerializable();
+            _deathCounts = deathCounts.Select(death => new DeathCountMemento(death.Key, death.Value)).ToList();
             _enemyTypeKilledCount = enemyTypeKilledCount.ToSerializable();
         }
     }

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Domain.Model.Entity;
-using Domain.Model.Item;
 using Domain.Model.Map;
 using UnityEngine;
 
@@ -41,6 +40,6 @@ namespace Domain.Model.Effect
 
         public abstract float EvaluatePrice();
 
-        public abstract string Info();
+        public abstract string Description();
     }
 }

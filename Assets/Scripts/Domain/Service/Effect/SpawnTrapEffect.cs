@@ -49,7 +49,7 @@ namespace Domain.Service.Effect
             return 30f;
         }
 
-        public override string Info()
+        public override string Description()
         {
             return $"{_trap.Value.name}を{_count}個設置\n";
         }

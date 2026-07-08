@@ -1,5 +1,5 @@
 ﻿using System;
-using Domain.Model.Character;
+using Domain.Model.Character.Data;
 using UnityEngine;
 using Utilities.Serialize;
 

@@ -1,5 +1,5 @@
 using Domain.Model.Dungeon;
-using Domain.Model.Item;
+using Domain.Model.Item.Data;
 using Domain.Service.Items;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
@@ -98,7 +98,7 @@ namespace Editor
             ItemInspectorPreviewEditor.DrawSafe(() =>
             {
                 var item = new Item(itemData);
-                ItemDescriptionPreviewEditor.DrawIdentifiedLikeInventory(item.FullInfoGenericSkillDescription(), 120f);
+                ItemDescriptionPreviewEditor.DrawIdentifiedLikeInventory(ItemDescriptionPreviewEditor.GenericDescriptionOf(item), 120f);
             });
         }
     }

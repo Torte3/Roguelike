@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
-using Domain.Model.Character;
+using Domain.Model.Character.Data;
 using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Evaluation;
-using Domain.Model.Item;
 using Domain.Model.Map;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -75,7 +74,7 @@ namespace Domain.Service.Effect
             return 50f;
         }
 
-        public override string Info()
+        public override string Description()
         {
             return $"{_character.Value.Name}を{_count}体召喚\n";
         }

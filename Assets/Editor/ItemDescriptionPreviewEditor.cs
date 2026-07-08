@@ -1,3 +1,5 @@
+using Domain.Service.Items;
+using Provider.Texts;
 using UnityEditor;
 using UnityEngine;
 
@@ -24,6 +26,9 @@ namespace Editor
 
         public static void DrawIdentifiedLikeInventory(string description, float minHeight = 80f) =>
             DrawRichText(description, minHeight);
+
+        public static string GenericDescriptionOf(BaseItem item) =>
+            new ItemDescriptionText(item.DescribeIdentifiedWithoutSkillTemplate()).Text;
 
         public static void DrawRichText(string richText, float minHeight = 80f)
         {

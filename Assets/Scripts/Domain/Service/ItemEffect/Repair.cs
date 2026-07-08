@@ -1,20 +1,21 @@
 using Domain.Model.Character;
-using Domain.Model.Dungeon;
 using Domain.Model.Entity;
 using Domain.Model.Item;
+using Domain.Model.Item.Slots;
+using Domain.Model.Map;
 
 namespace Domain.Service.ItemEffect
 {
     public class Repair : IItemEffect
     {
-        public bool CanApplyTo(IPlayer player, IItem item)
+        public bool CanApplyTo(IItem item, IActor player)
         {
             return item.RemainingUses.CurrentValue < item.MaxUsages;
         }
 
-        public void Apply(IPlayer player, IItem item, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
+        public void Apply(IItemSlot slot, IEntity itemHolder, IActor player, IMap map)
         {
-            item.Repair(player, itemHolder, itemPlaceholders);
+            slot.Item.Repair(itemHolder, map);
         }
 
         public float EvaluatePrice()
@@ -22,7 +23,7 @@ namespace Domain.Service.ItemEffect
             return 500;
         }
 
-        public string Info()
+        public string Description()
         {
             return "修理";
         }

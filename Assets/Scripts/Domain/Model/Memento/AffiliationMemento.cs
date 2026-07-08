@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Domain.Model.Character;
+using Domain.Model.Character.Affiliation;
 using Domain.Model.Entity;
 using UnityEngine;
 using Utilities;
