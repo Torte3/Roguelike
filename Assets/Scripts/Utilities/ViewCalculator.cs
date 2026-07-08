@@ -85,7 +85,7 @@ namespace Utilities
         }
 
         [Serializable]
-        public class __Line
+        private class __Line
         {
             public int xi, yi, xf, yf;
 
@@ -142,7 +142,7 @@ namespace Utilities
         }
 
         [Serializable]
-        public class __ViewBump
+        private class __ViewBump
         {
             public int x, y;
             public __ViewBump parent;
@@ -161,7 +161,7 @@ namespace Utilities
         }
 
         [Serializable]
-        public class __View
+        private class __View
         {
             public __Line shallowLine, steepLine;
             public __ViewBump shallowBump, steepBump;
@@ -184,7 +184,7 @@ namespace Utilities
             }
         }
 
-        public static void __checkQuadrant(HashSet<Vector2Int> visited, Vector2Int start, int dx, int dy, int extentX,
+        private static void __checkQuadrant(HashSet<Vector2Int> visited, Vector2Int start, int dx, int dy, int extentX,
             int extentY, Func<Vector2Int, bool> funcTileBlocked)
         {
             List<__View> activeViews = new();
@@ -214,7 +214,7 @@ namespace Utilities
             }
         }
 
-        public static void __visitCoord(HashSet<Vector2Int> visited, Vector2Int start, int x, int y, int dx, int dy,
+        private static void __visitCoord(HashSet<Vector2Int> visited, Vector2Int start, int x, int y, int dx, int dy,
             int viewIndex, List<__View> activeViews, Func<Vector2Int, bool> funcTileBlocked)
         {
             var topLeft = new Vector2Int(x, y + 1);
@@ -275,7 +275,7 @@ namespace Utilities
             }
         }
 
-        public static void __addShallowBump(int x, int y, List<__View> activeViews, int viewIndex)
+        private static void __addShallowBump(int x, int y, List<__View> activeViews, int viewIndex)
         {
             activeViews[viewIndex].shallowLine.xf = x;
             activeViews[viewIndex].shallowLine.yf = y;
@@ -295,7 +295,7 @@ namespace Utilities
             }
         }
 
-        public static void __addSteepBump(int x, int y, List<__View> activeViews, int viewIndex)
+        private static void __addSteepBump(int x, int y, List<__View> activeViews, int viewIndex)
         {
             activeViews[viewIndex].steepLine.xf = x;
             activeViews[viewIndex].steepLine.yf = y;
@@ -315,7 +315,7 @@ namespace Utilities
             }
         }
 
-        public static bool __checkView(List<__View> activeViews, int viewIndex)
+        private static bool __checkView(List<__View> activeViews, int viewIndex)
         {
             var shallowLine = activeViews[viewIndex].shallowLine;
             var steepLine = activeViews[viewIndex].steepLine;

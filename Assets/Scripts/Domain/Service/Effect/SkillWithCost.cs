@@ -1,16 +1,17 @@
 #nullable enable
 using Cysharp.Threading.Tasks;
 using Domain.Model.Character;
-using Domain.Model.Character.Status;
 using Domain.Model.Effect;
-using Domain.Model.Evaluation;
+using Domain.Model.Effect.Skill;
 using Domain.Model.Item;
+using Domain.Model.Item.Description;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using R3;
-using Unity.Logging;
 using UnityEngine;
 using Utilities;
+using Utilities.Result;
 
 namespace Domain.Service.Effect
 {
@@ -59,16 +60,34 @@ namespace Domain.Service.Effect
             return Build(SpawnEffectSkill.Build(skillData), skillData.Cost, skillData.ChargeTurn, skillData.CoolTime);
         }
 
-        public UniTask<ISkillResult> Use(IActor actor, IItem item, Vector2Int position, Direction8 direction, IMap map)
+        public async UniTask<ISkillResult> Use(IActor actor, IItem item, Vector2Int position, Direction8 direction, IMap map,
+            SkillSource source)
+        {
+            var preparation = await Prepare(actor, item, position, direction, map, source);
+            if (!preparation.IsOk(out var execution))
+            {
+                return SkillOutcome.NotRun(preparation);
+            }
+
+            return await execution();
+        }
+
+        public UniTask<Result<SkillExecution, Unit>> Prepare(IActor actor, IItem item, Vector2Int position, Direction8 direction,
+            IMap map, SkillSource source)
         {
             _remainingCoolTime.Value = CoolTime + 1;
 
             return Skill.Match(
-                spawnEffectSkill => spawnEffectSkill.Use(actor, item, position, direction, map),
-                itemTargetSkill => itemTargetSkill.Use(map.Player, item, actor, map),
-                inventoryTargetSkill => inventoryTargetSkill.Use(actor.Inventory, actor, map),
-                equipToggleSkill => equipToggleSkill.Use(actor, item!, position, direction, map)
+                spawnEffectSkill => Prepared(() => spawnEffectSkill.Use(actor, item, position, direction, map, source)),
+                itemTargetSkill => itemTargetSkill.Prepare(item, actor, map, source),
+                inventoryTargetSkill => Prepared(() => inventoryTargetSkill.Use(actor.Inventory, actor, map)),
+                equipToggleSkill => Prepared(() => equipToggleSkill.Use(actor, item!, position, direction, map))
             );
+        }
+
+        private static UniTask<Result<SkillExecution, Unit>> Prepared(SkillExecution execution)
+        {
+            return UniTask.FromResult(Result<SkillExecution, Unit>.Ok(execution));
         }
 
         public float Evaluate(IActorOfEffect actor, Vector2Int position, Direction8 direction, IMap map,
@@ -95,39 +114,14 @@ namespace Domain.Service.Effect
             }
         }
 
-        public string Info()
+        public string Description()
         {
-            return InfoOnUse();
-        }
-
-        public string InfoOnUse(bool omitProbabilityOfSuccess = false, bool useOrThrowCombinedTargets = false)
-        {
-            var info = Skill.Match(
-                spawnEffectSkill => spawnEffectSkill.InfoOnUse(omitProbabilityOfSuccess, useOrThrowCombinedTargets),
-                itemTargetSkill => itemTargetSkill.Info(),
-                inventoryTargetSkill => inventoryTargetSkill.Info(),
-                equipToggleSkill => equipToggleSkill.Info()
-            );
+            var description = Skill.Description();
             if (ChargeTurn > 0)
-                info += $"発動には{ItemDescriptionRichText.RichTurns(ChargeTurn + 1)}ターンかかる\n";
+                description += $"発動には{ItemDescriptionRichText.RichTurns(ChargeTurn + 1)}ターンかかる\n";
             if (CoolTime > 0)
-                info += $"発動後に{ItemDescriptionRichText.RichTurns(CoolTime)}ターンは再使用不能\n";
-            return info;
-        }
-
-        public string InfoOnThrow(bool omitEffects = false)
-        {
-            var info = Skill.Match(
-                spawnEffectSkill => spawnEffectSkill.InfoOnThrow(omitEffects),
-                itemTargetSkill => itemTargetSkill.Info(),
-                inventoryTargetSkill => inventoryTargetSkill.Info(),
-                equipToggleSkill => equipToggleSkill.Info()
-            );
-            if (ChargeTurn > 0)
-                info += $"発動には{ItemDescriptionRichText.RichTurns(ChargeTurn + 1)}ターンかかる\n";
-            if (CoolTime > 0)
-                info += $"発動後に{ItemDescriptionRichText.RichTurns(CoolTime)}ターンは再使用不能\n";
-            return info;
+                description += $"発動後に{ItemDescriptionRichText.RichTurns(CoolTime)}ターンは再使用不能\n";
+            return description;
         }
     }
 }

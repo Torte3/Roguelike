@@ -1,8 +1,8 @@
 #nullable enable
 using System.Collections.Generic;
 using System.Linq;
-using Domain.Model.Character;
-using Domain.Model.Item;
+using Domain.Model.Character.Data;
+using Domain.Model.Item.Data;
 using Sirenix.OdinInspector;
 using UnityEngine;
 

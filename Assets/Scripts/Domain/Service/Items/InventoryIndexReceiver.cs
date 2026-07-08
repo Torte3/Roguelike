@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using Domain.Model.Item;
+using Domain.Model.Item.Slots;
 
 namespace Domain.Service.Items
 {

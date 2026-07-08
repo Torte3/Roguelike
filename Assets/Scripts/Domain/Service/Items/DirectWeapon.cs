@@ -1,20 +1,23 @@
 #nullable enable
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Domain.Model;
-using Domain.Model.Character;
+using Domain.Model.Character.Data;
 using Domain.Model.Dungeon;
 using Domain.Model.Effect;
 using Domain.Model.Effect.Area;
 using Domain.Model.Effect.Position;
+using Domain.Model.Effect.Skill;
 using Domain.Model.Entity;
 using Domain.Model.Evaluation;
 using Domain.Model.Item;
+using Domain.Model.Item.Data;
+using Domain.Model.Item.Description;
+using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using Domain.Service.Characters;
 using Domain.Service.Effect;
-using Domain.Service.Logs;
 using R3;
 using UnityEngine;
 using Utilities;
@@ -26,8 +29,10 @@ namespace Domain.Service.Items
     {
         private readonly int _defaultPower;
         private readonly List<ItemFeature> _features;
-        public IReadOnlyList<ItemFeature> Features => _features;
-        public readonly int FeatureLimit;
+        private protected override IReadOnlyList<ItemFeature> WeaponFeatures => _features;
+        private protected override int WeaponFeatureLimit => _featureLimit;
+        private protected override FeatureApplicabilityTag WeaponApplicability => FeatureApplicabilityTag.DirectWeapons;
+        private readonly int _featureLimit;
         private ISkillWithCost _skillOnUse;
         private ISkillWithCost _skillOnThrow;
         public override Option<ISkillWithCost> SkillOnUse => _skillOnUse.ToOption();
@@ -41,7 +46,7 @@ namespace Domain.Service.Items
             _hasSameEffect = data.HasSameEffect;
             _defaultPower = data.DefaultPower;
             _features = data.Features;
-            FeatureLimit = data.FeatureLimit;
+            _featureLimit = data.FeatureLimit;
             _skillOnUse = new SkillWithCost(data.SkillOnUse);
             _skillOnThrow = new SkillWithCost(data.SkillOnThrow);
         }
@@ -54,7 +59,7 @@ namespace Domain.Service.Items
                 prefix: WeaponPrefix,
                 defaultPower: _defaultPower,
                 features: _features,
-                featureLimit: FeatureLimit,
+                featureLimit: _featureLimit,
                 skillOnUse: _skillOnUse.Serialize(),
                 skillOnThrow: _skillOnThrow.Serialize(),
                 hasSameEffect: _hasSameEffect
@@ -62,30 +67,36 @@ namespace Domain.Service.Items
             return JsonUtility.FromJson<DirectWeaponMemento>(json);
         }
 
-        public override void Upgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true)
+        public override void Upgrade(IEntity itemHolder, IMap map)
         {
-            if (log)
-                GameLog.Add(itemHolder.IsVisible, $"{GetName(player, itemPlaceholders)}は強化された");
-            UpgradeCount++;
-            var (skillOnUse, skillOnThrow, hasSameEffect) = BuildSkills(_defaultPower, UpgradeCount, _features, WeaponPrefix.Value);
-            _skillOnUse = new SkillWithCost(skillOnUse);
-            _skillOnThrow = new SkillWithCost(skillOnThrow);
-            _hasSameEffect = hasSameEffect;
-            _onItemUpdated.OnNext(Unit.Default);
+            var name = this.NameIn(map);
+            SetUpgradeCount(UpgradeCount + 1);
+            RecordChange(itemHolder, map, ItemChangeKind.Upgraded, name);
         }
 
-        public override void Downgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true)
+        public override void Downgrade(IEntity itemHolder, IMap map)
         {
-            if (log)
-                GameLog.Add(itemHolder.IsVisible, $"{GetName(player, itemPlaceholders)}は強化が解除された");
-            UpgradeCount--;
+            var name = this.NameIn(map);
+            SetUpgradeCount(UpgradeCount - 1);
+            RecordChange(itemHolder, map, ItemChangeKind.Downgraded, name);
+        }
+
+        public override IReadOnlyItem PreviewUpgrade()
+        {
+            var upgraded = (DirectWeapon)this.Clone();
+            upgraded.SetUpgradeCount(UpgradeCount + 1);
+            return upgraded;
+        }
+
+        private void SetUpgradeCount(int upgradeCount)
+        {
+            UpgradeCount = upgradeCount;
             var (skillOnUse, skillOnThrow, hasSameEffect) = BuildSkills(_defaultPower, UpgradeCount, _features, WeaponPrefix.Value);
             _skillOnUse = new SkillWithCost(skillOnUse);
             _skillOnThrow = new SkillWithCost(skillOnThrow);
             _hasSameEffect = hasSameEffect;
-            _onItemUpdated.OnNext(Unit.Default);
         }
-        public static (SkillWithCostMemento skillOnUse, SkillWithCostMemento skillOnThrow, bool hasSameEffect) BuildSkills(int power, int upgradeCount, List<ItemFeature> features, WeaponPrefix? prefix = null)
+        private static (SkillWithCostMemento skillOnUse, SkillWithCostMemento skillOnThrow, bool hasSameEffect) BuildSkills(int power, int upgradeCount, List<ItemFeature> features, WeaponPrefix? prefix = null)
         {
             var range = features.Contains(ItemFeature.TwoRangeAttack) ? 2 : 1;
             var area = (IArea)new LineArea(range, false, false);
@@ -192,10 +203,10 @@ namespace Domain.Service.Items
             return item;
         }
 
-        private DirectWeapon Merge(IEnumerable<ItemFeature> featuresToMergeWeapon, int additionalUpgrade)
+        private protected override IItem MergeWeapon(IEnumerable<ItemFeature> featuresToMergeWeapon, int additionalUpgrade)
         {
             var memento = Serialize();
-            var features = memento.Features.Merge(featuresToMergeWeapon, memento.FeatureLimit, FeatureApplicabilityTag.DirectWeapons).ToList();
+            var features = memento.Features.Merge(featuresToMergeWeapon, memento.FeatureLimit, WeaponApplicability).ToList();
 
             var (skillOnUse, skillOnThrow, hasSameEffect) = BuildSkills(memento.DefaultPower, memento.BaseItem.UpgradeCount + additionalUpgrade, features, memento.Prefix.Value);
             var multiplyPrice = WeaponFeatureSkillBuilder.GetMultiplyPrice(features);
@@ -214,34 +225,13 @@ namespace Domain.Service.Items
             return item;
         }
 
-        public DirectWeapon Merge(IItem mergedItem) => mergedItem.Match(
-            item => Merge(item.FeaturesToMergeWeapon, item.UpgradeCount),
-            directWeapon => Merge(directWeapon.Features, directWeapon.UpgradeCount),
-            rangedWeapon => Merge(rangedWeapon.Features, rangedWeapon.UpgradeCount),
-            _ => throw new ArgumentException(
-                "Invalid merge target: only another weapon or an item with mergeable weapon features is allowed.")
-        );
-
         protected override string? BuildTemplatedActivatableSkillInfo() =>
             ItemDescriptionTemplate.FormatDirectWeapon(
                 (SkillWithCost)SkillOnUse.Expect("SkillOnUse is null"),
                 (SkillWithCost)SkillOnThrow.Expect("SkillOnThrow is null"),
                 _hasSameEffect);
 
-        protected override string FullInfoImpl()
-        {
-            var info = "";
-
-            info += $"能力 ({_features.Count}/{FeatureLimit})\n";
-
-            foreach (var feature in _features)
-            {
-                info += $"{feature.GetName()}\n";
-            }
-
-            info += "\n";
-
-            return info;
-        }
+        protected override ItemAbilities? Abilities =>
+            new(ItemAbilityKind.Features, _featureLimit, _features.Select(feature => feature.GetName()).ToList());
     }
 }

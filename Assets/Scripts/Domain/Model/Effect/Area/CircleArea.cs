@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Domain.Model.Entity;
 using Domain.Model.Evaluation;
-using Domain.Model.Item;
+using Domain.Model.Item.Description;
 using Domain.Model.Map;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -42,12 +42,12 @@ namespace Domain.Model.Effect.Area
             return CommonSenseParameters.CircleAreaEvaluate(CanIgnoreWalls, Radius);
         }
 
-        public string Info()
+        public string Description()
         {
-            var info = $"周囲{ItemDescriptionRichText.RichSpatialCells(Radius)}";
-            if (ContainsSelf) info += "(中心含む)";
-            if (CanIgnoreWalls) info += "(壁無視)";
-            return info;
+            var description = $"周囲{ItemDescriptionRichText.RichSpatialCells(Radius)}";
+            if (ContainsSelf) description += "(中心含む)";
+            if (CanIgnoreWalls) description += "(壁無視)";
+            return description;
         }
     }
 }

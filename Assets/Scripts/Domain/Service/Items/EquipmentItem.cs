@@ -4,31 +4,34 @@ using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
-using Domain.Model.Character;
+using Domain.Model.Character.Data;
 using Domain.Model.Condition;
 using Domain.Model.Dungeon;
 using Domain.Model.Effect;
+using Domain.Model.Effect.Skill;
 using Domain.Model.Entity;
 using Domain.Model.Item;
+using Domain.Model.Item.Data;
+using Domain.Model.Item.Description;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using Domain.Service.Effect;
-using Domain.Service.Logs;
 using R3;
 using UnityEngine;
 using Utilities;
+using Utilities.Result;
 using Utilities.Serialize.Option;
 
 namespace Domain.Service.Items
 {
-    public sealed class EquipmentItem : BaseItem, IEquipmentToggleTarget, ISerializable<EquipmentItemMemento>
+    public sealed class EquipmentItem : BaseItem, IEquipmentToggleTarget, ISerializable<EquipmentItemMemento>, IEquipmentMergeBase
     {
         private readonly ReactiveProperty<bool> _equippedState;
         private readonly List<ArtifactPassiveConditionBundle> _passiveConditionSlots;
 
         public int SlotLimit { get; }
 
-        public IReadOnlyList<ArtifactPassiveConditionBundle> PassiveConditionSlots => _passiveConditionSlots;
 
         public override string RevealedName => BaseName;
         public override ItemCategory Category => ItemCategory.Artifacts;
@@ -79,29 +82,28 @@ namespace Domain.Service.Items
                     remainingTurn: 0)));
         public override Option<ISkillWithCost> SkillOnThrow => Option.None<ISkillWithCost>();
 
-        public override void LogWhyCannotActivateWhenUsed(IActor actor, IMap map)
+        public override Result<Unit, ItemActionFailure> ActivationCheckWhenUsed()
         {
-            if (IsCursed && _equippedState.CurrentValue)
-            {
-                LogCannotUnequipWhileCursed(actor, map);
-            }
+            return UnequipCheck();
         }
 
-        private void LogCannotUnequipWhileCursed(IActorOfEffect actor, IMap map)
+        private Result<Unit, ItemActionFailure> UnequipCheck()
         {
-            GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は呪われていて外せない");
+            return Result<Unit, ItemActionFailure>.OkIf(!(IsCursed && _equippedState.CurrentValue), Unit.Default,
+                ItemActionFailure.Cursed);
         }
 
         public bool TryToggleEquipped(IActorOfEffect actor, IMap map)
         {
-            if (IsCursed && _equippedState.CurrentValue)
+            if (UnequipCheck().IsFailed(out var failure))
             {
-                LogCannotUnequipWhileCursed(actor, map);
+                map.Events.Record(new ItemActionFailed(actor.Entity.IsVisible, this.NameIn(map), EquipState, ItemAction.Use, failure));
                 return false;
             }
 
+            var nameBefore = this.NameIn(map);
             _equippedState.Value = !_equippedState.CurrentValue;
-            _onItemUpdated.OnNext(Unit.Default);
+            RecordChange(actor, map, _equippedState.CurrentValue ? ItemChangeKind.Equipped : ItemChangeKind.Unequipped, nameBefore);
             return true;
         }
 
@@ -111,100 +113,21 @@ namespace Domain.Service.Items
                 return;
 
             _equippedState.Value = false;
-            _onItemUpdated.OnNext(Unit.Default);
         }
 
-        public override void Repair(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
+        public override void Repair(IEntity itemHolder, IMap map)
         {
         }
 
-        public override async UniTask<ISkillResult> Use(IActor actor, Vector2Int position, Direction8 direction,
-            IMap map)
+        private protected override void FinishUse(IActorOfEffect actor, IMap map, bool isConsumed)
         {
-            if (ShouldRevealMimic(actor, position, map))
+            var nameBefore = this.NameIn(map);
+            if (State == ItemState.ShopItem)
             {
-                return SpawnEffectSkillResult.Failed;
+                SetState(ItemState.UsedShopItem);
             }
 
-            actor.KnowCurse(this, true);
-
-            if (!actor.CanReadItem && RequiresLiteracy)
-            {
-                GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は文字が読めない");
-                return SpawnEffectSkillResult.Failed;
-            }
-
-            var skill = SkillOnUse.Expect("SkillOnUse is null");
-
-            if (!skill.IsUsable())
-            {
-                GameLog.Add(actor.IsVisible, $"しかしうまくいかなかった");
-                return SpawnEffectSkillResult.Failed;
-            }
-
-            var result = await skill.Use(actor, this, position, direction, map);
-            if (result.Result != SkillResult.Cancelled)
-            {
-                if (State == ItemState.ShopItem)
-                {
-                    SetState(ItemState.UsedShopItem);
-                }
-
-                _onItemUpdated.OnNext(Unit.Default);
-            }
-
-            return result;
-        }
-
-        public override async UniTask<ISkillResult> UseWhenThrown(IActorOfEffect actor, Vector2Int position,
-            Direction8 direction, IMap map)
-        {
-            if (ShouldRevealMimic(actor, position, map))
-            {
-                return SpawnEffectSkillResult.Failed;
-            }
-
-            if (actor is IHasInventory holder)
-                holder.KnowCurse(this, true);
-
-            if (!actor.CanReadItem && RequiresLiteracy)
-            {
-                GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は文字が読めない");
-                return SpawnEffectSkillResult.Failed;
-            }
-
-            if (!SkillOnThrow.HasValue)
-            {
-                return SpawnEffectSkillResult.Failed;
-            }
-
-            var skill = SkillOnThrow.Expect("SkillOnThrow is null");
-
-            if (!skill.IsUsable())
-            {
-                return SpawnEffectSkillResult.Failed;
-            }
-
-            var result = await SkillExtension.Match(
-                skill.Skill,
-                spawnEffectSkill => spawnEffectSkill.Use(actor, this, position, direction, map),
-                itemTargetSkill => throw new Exception(
-                    "The item is not configured to activate this type of skill when thrown."),
-                inventoryTargetSkill => throw new Exception(
-                    "The item is not configured to activate this type of skill when thrown."),
-                equipToggleSkill => equipToggleSkill.Use(actor, this, position, direction, map)
-            );
-            if (result.Result != SkillResult.Cancelled)
-            {
-                if (State == ItemState.ShopItem)
-                {
-                    SetState(ItemState.UsedShopItem);
-                }
-
-                _onItemUpdated.OnNext(Unit.Default);
-            }
-
-            return result;
+            RecordChange(actor, map, ItemChangeKind.Used, nameBefore);
         }
 
         public EquipmentItemMemento Serialize()
@@ -257,20 +180,25 @@ namespace Domain.Service.Items
             return JsonUtility.FromJson<EquipmentItemMemento>(json);
         }
 
-        public bool CanMergeFrom(EquipmentItem material) =>
-            _passiveConditionSlots.Count < SlotLimit
-            && material.PassiveConditionSlots.Count > 0;
+        public override bool CanAcceptMergeMaterial(IItem material) => material.CanBeMergedInto(this);
 
-        public EquipmentItem Merge(IItem mergedItem)
+        public override IItem MergeWith(IItem material) => material.MergeInto(this);
+
+        public override bool CanBeMergedInto(IEquipmentMergeBase equipment) =>
+            equipment.CanTakePassiveSlots(_passiveConditionSlots);
+
+        public override IItem MergeInto(IEquipmentMergeBase equipment) => equipment.TakePassiveSlots(_passiveConditionSlots);
+
+        public bool CanTakePassiveSlots(IReadOnlyList<ArtifactPassiveConditionBundle> slots)
         {
-            if (mergedItem is not EquipmentItem other)
-            {
-                throw new ArgumentException("Equipment item can only be merged with other equipment items");
-            }
+            return _passiveConditionSlots.Count < SlotLimit && slots.Count > 0;
+        }
 
+        public IItem TakePassiveSlots(IReadOnlyList<ArtifactPassiveConditionBundle> materialSlots)
+        {
             var memento = Serialize();
             var newSlots = memento.PassiveConditionSlots.Select(b => b.Clone()).ToList();
-            foreach (var bundle in other.PassiveConditionSlots)
+            foreach (var bundle in materialSlots)
             {
                 if (newSlots.Count >= memento.SlotLimit)
                     break;
@@ -298,21 +226,19 @@ namespace Domain.Service.Items
         public override bool CanUpgrade() => false;
         public override bool CanDowngrade() => false;
 
-        public override void Upgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true) =>
+        public override void Upgrade(IEntity itemHolder, IMap map) =>
             throw new Exception("Cannot upgrade equipment item");
 
-        public override void Downgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true) =>
+        public override void Downgrade(IEntity itemHolder, IMap map) =>
             throw new Exception("Cannot downgrade equipment item");
+
+        public override IReadOnlyItem PreviewUpgrade() =>
+            throw new Exception("Cannot upgrade equipment item");
 
         protected override string? BuildTemplatedActivatableSkillInfo() => null;
 
-        protected override string FullInfoImpl()
-        {
-            var info = $"\nパッシブスキル ({_passiveConditionSlots.Count}/{SlotLimit})\n";
-
-            foreach (var bundle in _passiveConditionSlots)
-                info += $"{bundle.DisplayName}\n";
-            return info;
-        }
+        protected override ItemAbilities? Abilities =>
+            new(ItemAbilityKind.PassiveSkills, SlotLimit,
+                _passiveConditionSlots.Select(bundle => bundle.DisplayName).ToList());
     }
 }

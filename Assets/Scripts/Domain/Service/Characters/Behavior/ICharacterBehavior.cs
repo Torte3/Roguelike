@@ -1,11 +1,16 @@
 ﻿using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
+using Domain.Model.Character.Behavior;
+using Domain.Model.Character.Message;
 using Domain.Model.Dungeon;
-using Domain.Model.Item;
+using Domain.Model.Item.Slots;
 using Domain.Model.Map;
 using Domain.Model.Memento;
 using R3;
+using UnityEngine;
+using Utilities;
+using Utilities.Serialize.Option;
 
 #nullable enable
 
@@ -21,6 +26,8 @@ namespace Domain.Service.Characters.Behavior
             IInput input);
 
         public void KnowLocationOf(Location location);
+
+        public bool CanAcceptSwapFrom(IHasBehavior character, Vector2Int requesterPosition, IMap map);
 
         // 旧 IItemSelector。合成元がこのIFのみで独立利用が無かったため統合した。
         public UniTask<ItemFocus> SelectItem(string text, ItemFocus[] disabledItems);

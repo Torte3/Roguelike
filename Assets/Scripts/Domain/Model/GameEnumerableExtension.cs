@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Domain.Model.Character;
+using Domain.Model.Character.Affiliation;
 using Domain.Model.Entity;
 using Domain.Model.Item;
 using Domain.Model.Map;
@@ -56,11 +57,6 @@ namespace Domain.Model
         public static IItem? ById(this IEnumerable<IItem> ie, Id<IItem> id)
         {
             return ie.FirstOrDefault(item => item.Id == id);
-        }
-
-        public static IEnumerable<T> IsVisible<T>(this IEnumerable<T> ie, Vector2Int position) where T : ICharacter
-        {
-            return ie.Where(item => item.VisionRange.IsVisible(position));
         }
 
         public static IEnumerable<Vector2Int> Positions<T>(this IEnumerable<T> ie) where T : IEntity

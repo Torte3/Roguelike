@@ -1,6 +1,6 @@
 #nullable enable
-using Domain.Model.Character;
-using Domain.Model.Effect;
+using Domain.Model.Character.Data;
+using Domain.Model.Effect.Skill;
 using Domain.Model.Memento;
 using Domain.Service.Effect;
 

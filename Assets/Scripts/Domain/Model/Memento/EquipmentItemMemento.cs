@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using Domain.Model.Item;
+using Domain.Model.Item.Data;
 using UnityEngine;
 
 namespace Domain.Model.Memento

@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4fa5fd60aa0d2c24bba053555fad3ebb, type: 3}
   m_Name: Map
-  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.MapNode
+  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.Graph.MapNode
   graph: {fileID: 11400000}
   position: {x: 1400, y: 360}
   ports:
@@ -23,7 +23,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: -8828215430129327242}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -32,7 +32,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: -8828215430129327242}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _teleportOut
@@ -44,7 +44,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: -8828215430129327242}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -53,7 +53,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: -8828215430129327242}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -142,7 +142,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: -8415772247081253821}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -151,7 +151,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: -8415772247081253821}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -160,7 +160,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: -8415772247081253821}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _prevMap
@@ -172,7 +172,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: -8415772247081253821}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _nextMap
@@ -485,7 +485,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4fa5fd60aa0d2c24bba053555fad3ebb, type: 3}
   m_Name: Map
-  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.MapNode
+  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.Graph.MapNode
   graph: {fileID: 11400000}
   position: {x: 1144, y: 632}
   ports:
@@ -497,7 +497,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: -5694984428929691559}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -506,7 +506,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: -5694984428929691559}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _teleportOut
@@ -518,7 +518,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: -5694984428929691559}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -527,7 +527,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: -5694984428929691559}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -565,7 +565,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4fa5fd60aa0d2c24bba053555fad3ebb, type: 3}
   m_Name: Map
-  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.MapNode
+  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.Graph.MapNode
   graph: {fileID: 11400000}
   position: {x: 296, y: 72}
   ports:
@@ -577,7 +577,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: -5128896849670103603}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _teleportIn
@@ -589,7 +589,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: -5128896849670103603}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -598,7 +598,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: -5128896849670103603}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _prevMap
@@ -610,7 +610,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: -5128896849670103603}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _nextMap
@@ -650,7 +650,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: -5074951448736568055}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _teleportIn
@@ -662,7 +662,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: -5074951448736568055}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -671,7 +671,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: -5074951448736568055}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _prevMap
@@ -683,7 +683,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: -5074951448736568055}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _nextMap
@@ -711,7 +711,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4fa5fd60aa0d2c24bba053555fad3ebb, type: 3}
   m_Name: Map
-  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.MapNode
+  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.Graph.MapNode
   graph: {fileID: 11400000}
   position: {x: 1400, y: 904}
   ports:
@@ -723,7 +723,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: -4774477168991558682}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -732,7 +732,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: -4774477168991558682}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _teleportOut
@@ -744,7 +744,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: -4774477168991558682}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -753,7 +753,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: -4774477168991558682}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -803,7 +803,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: -4483304813621188059}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _teleportIn
@@ -815,7 +815,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: -4483304813621188059}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -824,7 +824,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: -4483304813621188059}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _prevMap
@@ -836,7 +836,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: -4483304813621188059}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _nextMap
@@ -1023,7 +1023,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4fa5fd60aa0d2c24bba053555fad3ebb, type: 3}
   m_Name: Map
-  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.MapNode
+  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.Graph.MapNode
   graph: {fileID: 11400000}
   position: {x: 1144, y: 72}
   ports:
@@ -1035,7 +1035,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: -3908742665158575060}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -1044,7 +1044,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: -3908742665158575060}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _teleportOut
@@ -1056,7 +1056,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: -3908742665158575060}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -1065,7 +1065,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: -3908742665158575060}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -1103,7 +1103,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4fa5fd60aa0d2c24bba053555fad3ebb, type: 3}
   m_Name: Map
-  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.MapNode
+  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.Graph.MapNode
   graph: {fileID: 11400000}
   position: {x: 568, y: 360}
   ports:
@@ -1115,7 +1115,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: -3215648688688740827}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _teleportIn
@@ -1127,7 +1127,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: -3215648688688740827}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -1136,7 +1136,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: -3215648688688740827}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _prevMap
@@ -1148,7 +1148,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: -3215648688688740827}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _nextMap
@@ -1232,7 +1232,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: -1809702279880884196}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _teleportIn
@@ -1244,7 +1244,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: -1809702279880884196}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -1253,7 +1253,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: -1809702279880884196}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _prevMap
@@ -1265,7 +1265,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: -1809702279880884196}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _nextMap
@@ -1422,7 +1422,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: 132433583354238991}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -1431,7 +1431,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: 132433583354238991}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -1440,7 +1440,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: 132433583354238991}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _prevMap
@@ -1452,7 +1452,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: 132433583354238991}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _firstMap
@@ -1492,7 +1492,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: 761465357129200511}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -1501,7 +1501,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: 761465357129200511}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -1510,7 +1510,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: 761465357129200511}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _prevMap
@@ -1522,7 +1522,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: 761465357129200511}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _nextMap
@@ -1550,7 +1550,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a7c3e91f4b2d4f6e9a1c8d5e3b7f2041, type: 3}
   m_Name: Start Map
-  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.StartMapNode
+  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.Graph.StartMapNode
   graph: {fileID: 11400000}
   position: {x: -152, y: -168}
   ports:
@@ -1559,7 +1559,7 @@ MonoBehaviour:
     values:
     - _fieldName: _firstMap
       _node: {fileID: 2914065978341068129}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _prevMap
@@ -1580,7 +1580,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4fa5fd60aa0d2c24bba053555fad3ebb, type: 3}
   m_Name: Map
-  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.MapNode
+  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.Graph.MapNode
   graph: {fileID: 11400000}
   position: {x: 1400, y: 1448}
   ports:
@@ -1592,7 +1592,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: 3398057440443913114}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -1601,7 +1601,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: 3398057440443913114}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _teleportOut
@@ -1613,7 +1613,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: 3398057440443913114}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -1622,7 +1622,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: 3398057440443913114}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -1672,7 +1672,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: 3614882459956434054}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -1681,7 +1681,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: 3614882459956434054}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -1690,7 +1690,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: 3614882459956434054}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _prevMap
@@ -1702,7 +1702,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: 3614882459956434054}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -1762,7 +1762,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a8f3c2e14b9d6a74e8c1f205d3b47e91, type: 3}
   m_Name: Infinite Map
-  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.InfiniteMapNode
+  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.Graph.InfiniteMapNode
   graph: {fileID: 11400000}
   position: {x: 1768, y: -264}
   ports:
@@ -1772,7 +1772,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportIn
       _node: {fileID: 4272659106180525192}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -1781,7 +1781,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: 4272659106180525192}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _nextMap
@@ -1934,7 +1934,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: 5015381014945603743}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _teleportIn
@@ -1946,7 +1946,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: 5015381014945603743}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -1955,7 +1955,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: 5015381014945603743}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _prevMap
@@ -1967,7 +1967,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: 5015381014945603743}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _nextMap
@@ -2048,7 +2048,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: 5647552165553658979}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -2057,7 +2057,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: 5647552165553658979}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -2066,7 +2066,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: 5647552165553658979}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _prevMap
@@ -2078,7 +2078,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: 5647552165553658979}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _nextMap
@@ -2118,7 +2118,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: 5670028076644485680}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -2127,7 +2127,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: 5670028076644485680}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -2136,7 +2136,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: 5670028076644485680}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _prevMap
@@ -2148,7 +2148,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: 5670028076644485680}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _nextMap
@@ -2188,7 +2188,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: 5720250255583208601}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -2197,7 +2197,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: 5720250255583208601}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -2206,7 +2206,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: 5720250255583208601}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -2215,7 +2215,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: 5720250255583208601}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _nextMap
@@ -2318,7 +2318,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: 6127507261749728469}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -2327,7 +2327,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: 6127507261749728469}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -2336,7 +2336,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: 6127507261749728469}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _prevMap
@@ -2348,7 +2348,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: 6127507261749728469}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _nextMap
@@ -2376,7 +2376,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4fa5fd60aa0d2c24bba053555fad3ebb, type: 3}
   m_Name: Map
-  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.MapNode
+  m_EditorClassIdentifier: Domain.Model::Domain.Model.Dungeon.Graph.MapNode
   graph: {fileID: 11400000}
   position: {x: 1144, y: 1176}
   ports:
@@ -2388,7 +2388,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: 6538425615805754453}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -2397,7 +2397,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: 6538425615805754453}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _teleportOut
@@ -2409,7 +2409,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: 6538425615805754453}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -2418,7 +2418,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: 6538425615805754453}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -2613,7 +2613,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: 8353191741393840923}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -2622,7 +2622,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: 8353191741393840923}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -2631,7 +2631,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: 8353191741393840923}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _prevMap
@@ -2643,7 +2643,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: 8353191741393840923}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _nextMap
@@ -2871,7 +2871,7 @@ MonoBehaviour:
     values:
     - _fieldName: _teleportOut
       _node: {fileID: 9031898349937062684}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 1
@@ -2880,7 +2880,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _teleportIn
       _node: {fileID: 9031898349937062684}
-      _typeQualifiedName: Domain.Model.Dungeon.TeleportLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.TeleportLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections: []
       _direction: 0
@@ -2889,7 +2889,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _nextMap
       _node: {fileID: 9031898349937062684}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _prevMap
@@ -2901,7 +2901,7 @@ MonoBehaviour:
       _dynamic: 0
     - _fieldName: _prevMap
       _node: {fileID: 9031898349937062684}
-      _typeQualifiedName: Domain.Model.Dungeon.StairsLink, Domain.Model, Version=0.0.0.0,
+      _typeQualifiedName: Domain.Model.Dungeon.Graph.StairsLink, Domain.Model, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: _nextMap

@@ -4,7 +4,6 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using Domain.Model.Effect;
 using Domain.Model.Entity;
-using Domain.Model.Item;
 using Domain.Model.Map;
 using UnityEngine;
 using Utilities;
@@ -21,6 +20,8 @@ namespace Domain.Service.Effect
         public Color Color => _index == -1 ? Colors.White : Effects[_index].Color;
 
         public Impact Impact => Impact.Neutral;
+
+        public IEffect ChosenEffect => _index == -1 ? null : Effects[_index];
 
         public UniTask Apply(IActorOfEffect actor, ITargetOfEffect target, Vector2Int position, IMap map)
         {
@@ -83,7 +84,7 @@ namespace Domain.Service.Effect
             return Effects.Average(effect => effect.EvaluatePrice());
         }
 
-        public string Info()
+        public string Description()
         {
             return "何らかの効果を発動\n";
         }

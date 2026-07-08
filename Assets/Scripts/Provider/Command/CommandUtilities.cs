@@ -2,14 +2,14 @@
 using System;
 using System.Linq;
 using Domain.Model.Character;
-using Game;
+using Game.Map;
 
-namespace Provider
+namespace Provider.Command
 {
     /// <summary>
     /// デバッグコマンドで使用する共通ユーティリティ
     /// </summary>
-    public static class CommandUtilities
+    internal static class CommandUtilities
     {
         /// <summary>
         /// ターゲット文字列からキャラクターを取得します

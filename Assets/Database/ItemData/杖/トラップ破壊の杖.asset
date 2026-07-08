@@ -62,12 +62,7 @@ MonoBehaviour:
     - rid: 3119344251661451265
       type: {class: BreakEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:
-        ApplyToCharacter: 0
-        ApplyToItem: 0
-        ApplyToMoney: 0
-        ApplyToTrap: 1
-        ApplyToChest: 0
-        ApplyToStatue: 0
+        _targets: 8
     - rid: 5486256292201496578
       type: {class: ProjectileImpact, ns: Domain.Model.Effect.Position, asm: Domain.Model}
       data:

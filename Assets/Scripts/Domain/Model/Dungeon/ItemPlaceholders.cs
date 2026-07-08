@@ -1,11 +1,10 @@
 using System.Collections.Generic;
-using Domain.Model.Item;
+using Domain.Model.Item.Data;
 using Domain.Model.Memento;
-using R3;
 
 namespace Domain.Model.Dungeon
 {
-    public class ItemPlaceholders : ISerializable<ItemPlaceholdersMemento>
+    public class ItemPlaceholders : ISerializable<ItemPlaceholdersMemento>, IItemPlaceholderAssigner
     {
         private Placeholders _placeholderData;
         private Dictionary<string, string> _placeholders = new();
@@ -15,8 +14,6 @@ namespace Domain.Model.Dungeon
         private PlaceholderIndexes _bookPlaceholderIndexes;
         private PlaceholderIndexes _wandPlaceholderIndexes;
         private PlaceholderIndexes _artifactPlaceholderIndexes;
-        private Subject<Unit> _onItemRenamed = new();
-        public Observable<Unit> OnItemRenamed => _onItemRenamed;
 
         public ItemPlaceholders(ItemPlaceholdersMemento memento, Placeholders placeholders)
         {
@@ -56,12 +53,12 @@ namespace Domain.Model.Dungeon
             );
         }
 
-        public string GetPlaceholder(ItemData item)
+        public string GetOrAssignPlaceholder(ItemData item)
         {
-            return GetPlaceholder(item.name, item.Category);
+            return GetOrAssignPlaceholder(item.name, item.Category);
         }
 
-        public string GetPlaceholder(string baseName, ItemCategory category)
+        public string GetOrAssignPlaceholder(string baseName, ItemCategory category)
         {
             if (_playerAssignedNames.ContainsKey(baseName))
                 return _playerAssignedNames[baseName];
@@ -92,7 +89,6 @@ namespace Domain.Model.Dungeon
             if (newName == "")
                 return;
             _playerAssignedNames[baseName] = newName;
-            _onItemRenamed.OnNext(Unit.Default);
         }
 
         public void ClearPlayerAssignedNames()

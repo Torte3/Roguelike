@@ -65,12 +65,7 @@ MonoBehaviour:
     - rid: 3794997484628475917
       type: {class: BreakEffect, ns: Domain.Service.Effect, asm: Domain.Service}
       data:
-        ApplyToCharacter: 0
-        ApplyToItem: 0
-        ApplyToMoney: 0
-        ApplyToTrap: 1
-        ApplyToChest: 0
-        ApplyToStatue: 0
+        _targets: 8
     - rid: 4425516923575599136
       type: {class: CircleArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
       data:

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace UI
+namespace Utilities
 {
     [RequireComponent(typeof(ScrollRect))]
     public class FollowSelectedNodeHorizontal : MonoBehaviour

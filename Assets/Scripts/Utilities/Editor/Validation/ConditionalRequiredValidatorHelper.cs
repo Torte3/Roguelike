@@ -6,7 +6,7 @@ using Sirenix.OdinInspector.Editor.Validation;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Utilities.Validation.Editor
+namespace Utilities.Editor.Validation
 {
     internal static class ConditionalRequiredValidatorHelper
     {

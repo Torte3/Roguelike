@@ -1,5 +1,5 @@
 using System;
-using Domain.Model.Effect;
+using Domain.Model.Effect.Skill;
 using UnityEngine;
 
 namespace Domain.Model.Entity

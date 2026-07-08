@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Domain.Model.Effect;
 using Domain.Model.Effect.Area;
+using Domain.Model.Effect.Position;
 using UnityEngine;
 
 namespace Domain.Model.Memento
@@ -15,22 +16,19 @@ namespace Domain.Model.Memento
         [field: SerializeReference] public List<IActorlessEffect> Effects { get; private set; }
         [field: SerializeField] public int Repeats { get; private set; }
         [field: SerializeField] public float ProbabilityOfSuccess { get; private set; }
-        [field: SerializeField] public string Log { get; private set; }
 
         public SpawnActorlessEffectSkillMemento(
             IPositionOnlyDependentEffectPosition position,
             INotDirectionalArea area,
             List<IActorlessEffect> effects,
             int repeats,
-            float probabilityOfSuccess,
-            string log)
+            float probabilityOfSuccess)
         {
             Position = position;
             Area = area;
             Effects = effects;
             Repeats = repeats;
             ProbabilityOfSuccess = probabilityOfSuccess;
-            Log = log;
         }
 
         public SpawnActorlessEffectSkillMemento CopyWith(
@@ -38,16 +36,14 @@ namespace Domain.Model.Memento
             INotDirectionalArea? area = null,
             List<IActorlessEffect>? effect = null,
             int? repeats = null,
-            float? probabilityOfSuccess = null,
-            string? log = null)
+            float? probabilityOfSuccess = null)
         {
             return new SpawnActorlessEffectSkillMemento(
                 position ?? Position,
                 area ?? Area,
                 effect ?? Effects,
                 repeats ?? Repeats,
-                probabilityOfSuccess ?? ProbabilityOfSuccess,
-                log ?? Log
+                probabilityOfSuccess ?? ProbabilityOfSuccess
             );
         }
     }

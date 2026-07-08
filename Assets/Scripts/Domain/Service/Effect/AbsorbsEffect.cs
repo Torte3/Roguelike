@@ -6,9 +6,10 @@ using Cysharp.Threading.Tasks;
 using Domain.Model.Character;
 using Domain.Model.Character.Status;
 using Domain.Model.Effect;
-using Domain.Model.Item;
+using Domain.Model.Effect.Elements;
+using Domain.Model.Entity;
+using Domain.Model.Item.Description;
 using Domain.Model.Map;
-using Domain.Service.Logs;
 using UnityEngine;
 using Utilities;
 
@@ -49,16 +50,14 @@ namespace Domain.Service.Effect
             if (RandUtils.IsLessThanProbability(GetEffectiveCriticalRate(actor)))
             {
                 var value = Formula.Calc(actor, target, _elementPowers, true);
-                GameLog.AddAppend(target.IsVisible, $"<color=red>クリティカル！{target.GetName(map.Player)}に{value}のダメージ。</color>");
-                var loseValue = await target.LoseHp(value, $"は{actor.GetName(map.Player)}の攻撃で殺された", actor as ICharacter);
-                actor.GainHp(Mathf.RoundToInt(loseValue * _fixedRate * 2));
+                var loseValue = await target.LoseHp(value, new AttackDamage(Opponent.Of(actor), true), actor as ICharacter);
+                actor.GainHp(Mathf.RoundToInt(loseValue * _fixedRate * 2), HealCause.Absorb);
             }
             else
             {
                 var value = Formula.Calc(actor, target, _elementPowers);
-                GameLog.AddAppend(target.IsVisible, $"{target.GetName(map.Player)}に{value}のダメージ。");
-                var loseValue = await target.LoseHp(value, $"は{actor.GetName(map.Player)}の攻撃で殺された", actor as ICharacter);
-                actor.GainHp(Mathf.RoundToInt(loseValue * _fixedRate));
+                var loseValue = await target.LoseHp(value, new AttackDamage(Opponent.Of(actor), false), actor as ICharacter);
+                actor.GainHp(Mathf.RoundToInt(loseValue * _fixedRate), HealCause.Absorb);
             }
         }
 
@@ -109,18 +108,18 @@ namespace Domain.Service.Effect
                          Formula.EvaluateDamage(_elementPowers, true) * _fixedCriticalRate) * (1 + _fixedRate);
         }
 
-        public override string Info()
+        public override string Description()
         {
             var powers = string.Join("/", _elementPowers.Select(e => $"{e.Element.Name()}{e.Power}"));
-            var info = $"攻撃[{ItemDescriptionRichText.RichAttackPowerSummary(powers)}]\n";
+            var description = $"攻撃[{ItemDescriptionRichText.RichAttackPowerSummary(powers)}]\n";
             if (_fixedCriticalRate > 0)
             {
-                info += "そのとき" + ItemDescriptionRichText.ColorPercentagesInPlainText($"{_fixedCriticalRate:P0}") +
+                description += "そのとき" + ItemDescriptionRichText.ColorPercentagesInPlainText($"{_fixedCriticalRate:P0}") +
                         "の確率でクリティカルを発生させる\n";
             }
 
-            info += "与ダメの" + ItemDescriptionRichText.ColorPercentagesInPlainText($"{_fixedRate:P0}") + "吸収\n";
-            return info;
+            description += "与ダメの" + ItemDescriptionRichText.ColorPercentagesInPlainText($"{_fixedRate:P0}") + "吸収\n";
+            return description;
         }
     }
 }

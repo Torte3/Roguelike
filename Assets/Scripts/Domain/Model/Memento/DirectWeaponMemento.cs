@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Domain.Model.Item;
+using Domain.Model.Item.Data;
 using UnityEngine;
 using Utilities.Serialize;
 using Utilities.Serialize.Option;

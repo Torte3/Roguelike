@@ -22,7 +22,7 @@ MonoBehaviour:
   Aggression: 1
   Behavior:
     wanderAround: 1
-    Default: 1
+    Default: 2
     PrioritizeMovement: 0
     UseTopBound: 0
     greaterThanTopBound: 1
@@ -95,22 +95,6 @@ MonoBehaviour:
       <ChargeTurn>k__BackingField: 0
       <CoolTime>k__BackingField: 2
       <Log>k__BackingField: "\u306F\u8DB3\u6255\u3044\u3092\u653E\u3063\u305F\u3002"
-    Priority: 0
-  - Skill:
-      <Position>k__BackingField:
-        rid: 5486256464210165760
-      <Area>k__BackingField:
-        rid: 5486256464210165761
-      <Effects>k__BackingField:
-      - rid: 8023009177181097618
-      <Repeats>k__BackingField: 1
-      <ProbabilityOfSuccess>k__BackingField: 0.95
-      <Cost>k__BackingField: 0
-      <RushDistance>k__BackingField: 10
-      <BackStepDistance>k__BackingField: 0
-      <ChargeTurn>k__BackingField: 0
-      <CoolTime>k__BackingField: 10
-      <Log>k__BackingField: "\u306F\u6025\u63A5\u8FD1\u3057\u305F\u3002"
     Priority: 0
   HasLastSkill: 0
   LastSkill:
@@ -200,22 +184,3 @@ MonoBehaviour:
       type: {class: Witch, ns: Domain.Model.Character.Type, asm: Domain.Model}
       data:
         Type: 0
-    - rid: 5486256464210165760
-      type: {class: NearByCharacter, ns: Domain.Model.Effect.Position, asm: Domain.Model}
-      data:
-        NumberOfTarget: 1
-        TargetAlly: 0
-        TargetEnemy: 1
-        TargetNeutral: 0
-        TargetSelf: 0
-    - rid: 5486256464210165761
-      type: {class: SelfArea, ns: Domain.Model.Effect.Area, asm: Domain.Model}
-      data: 
-    - rid: 8023009177181097618
-      type: {class: AttackEffect, ns: Domain.Service.Effect, asm: Domain.Service}
-      data:
-        _elementPowers:
-        - _element: 0
-          _power: 8
-        _criticalRate: 0
-        _isWeaponAttack: 0

@@ -1,17 +1,20 @@
 #nullable enable
 using System;
-using Domain.Service.Logs;
 using IngameDebugConsole;
 using Unity.Logging;
 using Unity.Logging.Sinks;
+using View.UI.HUD;
 using Logger = Unity.Logging.Logger;
 
-namespace Provider
+namespace Provider.Command
 {
     public class LogCommands
     {
-        public LogCommands()
+        private readonly LogView _log;
+
+        public LogCommands(LogView log)
         {
+            _log = log;
             DebugLogConsole.AddCommandInstance(
                 "log",
                 "画面にログを出力します。",
@@ -26,7 +29,7 @@ namespace Provider
 
         private void AddLog(string log)
         {
-            GameLog.AddIgnoreVisibility(log);
+            _log.AddLog(log, false);
         }
 
         private void SetLogLevel(LogLevel level)

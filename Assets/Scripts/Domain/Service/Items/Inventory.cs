@@ -7,7 +7,10 @@ using Domain.Model.Character;
 using Domain.Model.Character.Message;
 using Domain.Model.Entity;
 using Domain.Model.Item;
+using Domain.Model.Item.Data;
+using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using R3;
 using Utilities;
 
@@ -21,6 +24,7 @@ namespace Domain.Service.Items
         private readonly Dictionary<IItem, CompositeDisposable> _itemDisposables = new();
 
         private ICharacter _character;
+        private readonly IInventoryRecorder _recorder;
 
         public IEnumerable<IItem> AllItems => _storage.AllItems;
         public IEnumerable<(IItem Item, int Index)> AllItemsWithIndex => _storage.AllItemsWithIndex;
@@ -28,15 +32,14 @@ namespace Domain.Service.Items
         public ReadOnlyReactiveProperty<int> Capacity => _storage.Capacity;
         public bool CanAddItem => _storage.CanAddItem;
         public bool CanRemoveItem => _storage.CanRemoveItem;
-        public Observable<OnItemInserted> OnItemInserted => _storage.OnItemInserted;
-        public Observable<OnItemRemoved> OnItemRemoved => _storage.OnItemRemoved;
-        public Observable<OnItemReplaced> OnItemReplaced => _storage.OnItemReplaced;
-        public Observable<OnItemUpdated> OnItemUpdated => _storage.OnItemUpdated;
 
-        public Inventory(StorageMemento data, ICharacter character)
+        public Inventory(StorageMemento data, ICharacter character, IInventoryRecorder recorder)
         {
             _storage = new Storage(data);
             _character = character;
+            _recorder = recorder;
+            _storage.OnItemInserted.Subscribe(inserted => recorder.RowInserted(inserted.Index, inserted.NewItem)).AddTo(_disposables);
+            _storage.OnItemRemoved.Subscribe(removed => recorder.RowRemoved(removed.Index)).AddTo(_disposables);
 
             foreach (var item in _storage.AllItems)
             {
@@ -69,12 +72,12 @@ namespace Domain.Service.Items
             _itemDisposables[item] = new CompositeDisposable();
             if (item.IdentifyIfGot || _character.AutoIdentify.CurrentValue)
             {
-                _character.KnowItem(item, false);
+                _character.KnowItem(item, DiscoveryCause.Automatic);
             }
 
             if (_character.CurseAutoIdentify.CurrentValue)
             {
-                _character.KnowCurse(item, false);
+                _character.KnowCurse(item, DiscoveryCause.Automatic);
             }
 
             if (item.IsPassiveActive.CurrentValue)
@@ -144,16 +147,22 @@ namespace Domain.Service.Items
 
                 if (currentIndex.Value != i)
                 {
-                    _storage.Swap(currentIndex.Value, i);
+                    Swap(currentIndex.Value, i);
                 }
             }
         }
 
-        public void UpdateTurn()
+        public InventoryContents ContentsIn(IReadOnlyMap map)
         {
-            foreach (var item in AllItems)
+            return new InventoryContents(AllItems.Select(item => item.LookIn(map)).ToList(), Capacity.CurrentValue,
+                CanRemoveItem);
+        }
+
+        public void UpdateTurn(IMap map)
+        {
+            foreach (var item in AllItems.ToList())
             {
-                item.UpdateTurn();
+                item.UpdateTurn(_character, map);
             }
         }
 
@@ -175,12 +184,12 @@ namespace Domain.Service.Items
                 _storage.AddToEmpty(item);
                 if (item.IdentifyIfGot || _character.AutoIdentify.CurrentValue)
                 {
-                    _character.KnowItem(item, false);
+                    _character.KnowItem(item, DiscoveryCause.Automatic);
                 }
 
                 if (_character.CurseAutoIdentify.CurrentValue)
                 {
-                    _character.KnowCurse(item, false);
+                    _character.KnowCurse(item, DiscoveryCause.Automatic);
                 }
             }
             else
@@ -222,12 +231,12 @@ namespace Domain.Service.Items
             {
                 if (item.IdentifyIfGot || _character.AutoIdentify.CurrentValue)
                 {
-                    _character.KnowItem(item, false);
+                    _character.KnowItem(item, DiscoveryCause.Automatic);
                 }
 
                 if (_character.CurseAutoIdentify.CurrentValue)
                 {
-                    _character.KnowCurse(item, false);
+                    _character.KnowCurse(item, DiscoveryCause.Automatic);
                 }
 
                 var replacedItem = _storage.Replace(item, index);
@@ -242,7 +251,11 @@ namespace Domain.Service.Items
             _storage.Replace(newItem, index);
         }
         public bool CanSwap(int index1, int index2) => _storage.CanSwap(index1, index2);
-        public void Swap(int index1, int index2) => _storage.Swap(index1, index2);
+        public void Swap(int index1, int index2)
+        {
+            _storage.Swap(index1, index2);
+            _recorder.RowsSwapped(index1, index2);
+        }
         public bool CanReplaceOrRemove(IItem? item, int index)
         {
             if (item == null)

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Domain.Model.Entity;
-using Domain.Model.Item;
+using Domain.Model.Item.Description;
 using Domain.Model.Map;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -41,12 +41,12 @@ namespace Domain.Model.Effect.Area
             return Mathf.Sqrt(Length);
         }
 
-        public string Info()
+        public string Description()
         {
-            var info = $"前{ItemDescriptionRichText.RichSpatialCells(Length)}";
-            if (ContainsSelf) info += "(原点含む)";
-            if (CanIgnoreWalls) info += "(壁無視)";
-            return info;
+            var description = $"前{ItemDescriptionRichText.RichSpatialCells(Length)}";
+            if (ContainsSelf) description += "(原点含む)";
+            if (CanIgnoreWalls) description += "(壁無視)";
+            return description;
         }
     }
 }

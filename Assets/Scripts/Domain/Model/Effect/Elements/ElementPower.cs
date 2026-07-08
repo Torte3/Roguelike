@@ -1,0 +1,27 @@
+using System;
+using System.Collections.Generic;
+using Sirenix.OdinInspector;
+using UnityEngine;
+
+namespace Domain.Model.Effect.Elements
+{
+    [Serializable]
+    public class ElementPower
+    {
+        [SerializeField] private Element _element;
+        [MinValue(1)] [SerializeField] private int _power;
+        public Element Element => _element;
+        public int Power => _power;
+
+        public ElementPower(Element element, int power)
+        {
+            _element = element;
+            _power = power;
+        }
+
+        public ElementPower MultiplyPower(float multiplier)
+        {
+            return new ElementPower(Element, Mathf.RoundToInt(_power * multiplier));
+        }
+    }
+}

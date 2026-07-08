@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using Domain.Model.Character;
+using Domain.Model.Character.Data;
 using Domain.Model.Entity;
-using Domain.Model.Item;
+using Domain.Model.Item.Data;
 using Domain.Model.Map;
 using Domain.Model.Memento;
 using RandomDungeonWithBluePrint;

@@ -4,43 +4,49 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
+using Domain.Model.Character.Affiliation;
+using Domain.Model.Character.Data;
 using Domain.Model.Character.Status;
 using Domain.Model.Entity;
 using Domain.Model.Item;
+using Domain.Model.Item.Data;
+using Domain.Model.Item.Rarities;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using Domain.Service.Events;
 using Domain.Service.Items;
-using Domain.Service.Logs;
-using R3;
 using UnityEngine;
 using Utilities;
 
 namespace Domain.Service.Rooms
 {
-    public class Shop : Room<ShopMemento>, IShop
+    public class Shop : Room<ShopMemento>, IReadOnlyShop
     {
         private readonly ICharacter _clerk;
         private record ShopItemCache(Id<IItem> Id, int Price);
 
         private HashSet<ShopItemCache> _shopItems = new();
-        private ReactiveProperty<bool> _isStolen = new(false);
-        public ReadOnlyReactiveProperty<bool> IsStolen => _isStolen;
+        private bool _isStolen;
+        private ShopTotalsChanged? _recordedTotals;
+        private readonly Dictionary<Id<IItem>, ItemPriceChanged> _recordedPrices = new();
+        public bool IsStolen => _isStolen;
+        public ShopRelation Relation =>
+            _isStolen ? new ShopAfterTheft() : IsInside.CurrentValue ? new InsideShop() : new OutsideShop();
 
-        public Shop(ShopMemento data, ICharacter clerk, IGameManager gameManager, IMap map) : base(data.Room,
+        public Shop(ShopMemento data, ICharacter clerk, IMap map) : base(data.Room,
             map.Player.Character.Entity.CurrentPosition)
         {
             _clerk = clerk;
             clerk.AddEvent(new PlayerEvent(
-                null,
                 new List<PlayerChoiceEvent>
                 {
                     new(
                         "代金を支払う",
                         (player, map) => CanExecute && (GetSalePrice(map) > 0 || GetPurchasePrice(map) > 0),
-                        (gameManager, map) =>
+                        (_, map) =>
                         {
-                            Purchase(gameManager, map);
+                            Purchase(map);
                             return UniTask.CompletedTask;
                         }
                     )
@@ -50,11 +56,34 @@ namespace Domain.Service.Rooms
             _shopItems = data.Items.Select(item => new ShopItemCache(item.Id, item.Price)).ToHashSet();
             if (data.IsStolen)
             {
-                _isStolen.Value = true;
+                _isStolen = true;
                 CanExecute = false;
                 MarkItemsAsStolen(map);
-                gameManager.PlayBGM(BGM.Stolen);
             }
+        }
+
+        public void RecordChanges(IMap map)
+        {
+            var totals = new ShopTotalsChanged(GetPurchasePrice(map), GetSalePrice(map));
+            if (totals != _recordedTotals)
+            {
+                _recordedTotals = totals;
+                map.Events.Record(totals);
+            }
+
+            _clerk.RecordInteractableChange();
+            foreach (var item in GetItemsInRoom(map).Concat(map.Player.Character.Inventory.AllItems))
+                RecordPrice(item, map);
+        }
+
+        private void RecordPrice(IReadOnlyItem item, IMap map)
+        {
+            var price = new ItemPriceChanged(item.Id, GetPrice(item, map), item.State == ItemState.ShopItem);
+            if (_recordedPrices.TryGetValue(item.Id, out var recorded) && recorded == price)
+                return;
+
+            _recordedPrices[item.Id] = price;
+            map.Events.Record(price);
         }
 
         public static ShopMemento Build(RectInt rect, Id<IEntity> clerkId, List<ItemEntityMemento> items, ItemMarketPriceTable market)
@@ -97,13 +126,18 @@ namespace Domain.Service.Rooms
                     item.Id,
                     item.Price
                 )).ToList(),
-                _isStolen.Value
+                _isStolen
             );
         }
 
-        private IEnumerable<IItem> GetItemsInRoom(IMap map)
+        private IEnumerable<IItem> GetWritableItemsInRoom(IMap map)
         {
             return map.Items.In(Rect.RectRange()).Select(item => item.Item);
+        }
+
+        private IEnumerable<IReadOnlyItem> GetItemsInRoom(IReadOnlyMap map)
+        {
+            return map.ItemsIn(Rect.RectRange());
         }
 
         private void SetShopItems(IMap map, IEnumerable<IItem> items)
@@ -115,84 +149,103 @@ namespace Domain.Service.Rooms
             }
         }
 
-        private void RemoveMark(IMap map, IEnumerable<ShopItemCache> items)
+        private void RemoveMark(IEnumerable<IItem> items)
         {
             foreach (var item in items)
             {
-                map.GetItemByIdFromWorldOrInventory(item.Id)?.SetState(ItemState.None);
+                item.SetState(ItemState.None);
             }
         }
 
         private void MarkItemsAsStolen(IMap map)
         {
-            foreach (var item in _shopItems)
+            foreach (var item in ItemsOf(_shopItems, map))
             {
-                map.GetItemByIdFromWorldOrInventory(item.Id)?.SetState(ItemState.Stolen);
+                item.SetState(ItemState.Stolen);
             }
         }
 
-        private IEnumerable<ShopItemCache> GetMissingItems(IMap map)
+        private IEnumerable<IItem> ItemsOf(IEnumerable<ShopItemCache> items, IMap map)
+        {
+            return items.Select(item => map.GetItemByIdFromWorldOrInventory(item.Id)).OfType<IItem>();
+        }
+
+        private void RecordUpdates(IEnumerable<IItem> items, IMap map)
+        {
+            foreach (var item in items)
+            {
+                map.Events.Record(new ItemUpdated(item.LookIn(map)));
+            }
+        }
+
+        private IEnumerable<ShopItemCache> GetMissingItems(IReadOnlyMap map)
         {
             var itemsInRoom = GetItemsInRoom(map).Where(item => item.State == ItemState.ShopItem);
             var purchaseItems = _shopItems.Except(itemsInRoom.Select(item => new ShopItemCache(item.Id, item.GetPrice(map.MarketPriceTable))));
             return purchaseItems;
         }
 
-        public int GetPurchasePrice(IMap map)
+        public int GetPurchasePrice(IReadOnlyMap map)
         {
-            var purchaseItems = GetMissingItems(map);
-            if (map.Player.Character.Status.IsFlagStat(FlagStatType.Negotiator))
-            {
-                return Mathf.RoundToInt(purchaseItems.Sum(item => item.Price) / 2f);
-            }
-
-            return purchaseItems.Sum(item => item.Price);
+            return PurchasePriceOf(GetMissingItems(map).Sum(item => item.Price), map);
         }
 
-        private IEnumerable<ShopItemCache> GetAddedItems(IMap map)
+        private IEnumerable<ShopItemCache> GetAddedItems(IReadOnlyMap map)
         {
             var saleItems = GetItemsInRoom(map).Where(item => item.State != ItemState.ShopItem);
             return saleItems.Select(item => new ShopItemCache(item.Id, item.GetPrice(map.MarketPriceTable)));
         }
 
-        public int GetSalePrice(IMap map)
+        public int GetSalePrice(IReadOnlyMap map)
         {
-            var saleItems = GetAddedItems(map);
-            return Mathf.RoundToInt(saleItems.Sum(item => item.Price) / 2f);
+            return SalePriceOf(GetAddedItems(map).Sum(item => item.Price));
         }
 
-        public void Purchase(IGameManager gameManager, IMap map)
+        public int GetPrice(IReadOnlyItem item, IReadOnlyMap map)
         {
-            if (map.Player.Money.CurrentValue + GetSalePrice(map) >= GetPurchasePrice(map))
+            var basePrice = item.GetPrice(map.MarketPriceTable);
+            return item.State == ItemState.ShopItem ? PurchasePriceOf(basePrice, map) : SalePriceOf(basePrice);
+        }
+
+        private int PurchasePriceOf(int basePrice, IReadOnlyMap map)
+        {
+            return map.PlayerCharacter.Status.IsFlagStat(FlagStatType.Negotiator)
+                ? Mathf.RoundToInt(basePrice / 2f)
+                : basePrice;
+        }
+
+        private static int SalePriceOf(int basePrice)
+        {
+            return Mathf.RoundToInt(basePrice / 2f);
+        }
+
+        private void Purchase(IMap map)
+        {
+            if (map.Player.Money + GetSalePrice(map) >= GetPurchasePrice(map))
             {
-                if (GetSalePrice(map) > 0)
-                {
-                    GameLog.AddIgnoreVisibility(
-                        $"{map.Player.Character.GetName(map.Player)}は<color=green>{GetSalePrice(map)}G</color>受け取った");
-                    map.Player.AddMoney(GetSalePrice(map));
-                }
-                if (GetPurchasePrice(map) > 0)
-                {
-                    GameLog.AddIgnoreVisibility(
-                        $"{map.Player.Character.GetName(map.Player)}は<color=yellow>{GetPurchasePrice(map)}G</color>支払った");
-                    map.Player.ReduceMoney(GetPurchasePrice(map));
-                }
-                var purchaseItems = GetMissingItems(map);
-                RemoveMark(map, purchaseItems);
-                SetShopItems(map, GetItemsInRoom(map));
-                gameManager.PlaySE(SE.ShopCheckout);
+                var received = GetSalePrice(map);
+                var paid = GetPurchasePrice(map);
+                if (received > 0)
+                    map.Player.AddMoney(received);
+                if (paid > 0)
+                    map.Player.ReduceMoney(paid);
+                var purchaseItems = ItemsOf(GetMissingItems(map), map).ToList();
+                var roomItems = GetWritableItemsInRoom(map).ToList();
+                RemoveMark(purchaseItems);
+                SetShopItems(map, roomItems);
+                RecordUpdates(purchaseItems.Concat(roomItems).Distinct(), map);
+                map.Events.Record(new ShopSettled(map.Player.Character.Label, received, paid, map.Player.Money));
+                RecordChanges(map);
             }
             else
             {
-                GameLog.AddIgnoreVisibility(
-                    $"{map.Player.Character.GetName(map.Player)}は<color=yellow>{GetPurchasePrice(map) - GetSalePrice(map)}G</color>持っていなかった");
+                map.Events.Record(new ShopPaymentRefused(map.Player.Character.Label, GetPurchasePrice(map) - GetSalePrice(map)));
             }
         }
 
-        public void Stolen(IGameManager gameManager, IMap map)
+        private void Stolen(IMap map)
         {
             map.Player.RecordSteal();
-            GameLog.AddIgnoreVisibility("<color=red>どろぼう！</color>");
             _clerk.Affiliation.AddForceAffiliation(map.Player.Character.Entity.Id, AffiliationType.Enemy);
             _clerk.AddCondition(
                 Id<IEntity>.Empty,
@@ -200,31 +253,34 @@ namespace Domain.Service.Rooms
             );
             MarkItemsAsStolen(map);
             CanExecute = false;
-            _isStolen.Value = true;
-            gameManager.PlayBGM(BGM.Stolen);
+            _isStolen = true;
+            RecordUpdates(ItemsOf(_shopItems, map), map);
+            map.Events.Record(new TheftDetected());
+            RecordChanges(map);
         }
 
         protected override async UniTask EveryTimeEnter(IGameManager gameManager, IMap map)
         {
-            gameManager.PlayBGM(BGM.Shop);
+            map.Events.Record(new ShopEntered());
             // 初めて店に入ったときにチュートリアルを表示する。
             await gameManager.ShowTutorialIfNeeded(TutorialType.Shop);
         }
 
         protected override UniTask EveryTimeExit(IGameManager gameManager, IMap map)
         {
-            gameManager.PlayBGM(BGM.Normal);
+            map.Events.Record(new ShopExited());
             return UniTask.CompletedTask;
         }
 
-        protected override async UniTask UpdateTurnIfNotInside(IGameManager gameManager, IMap map)
+        protected override UniTask UpdateTurnIfNotInside(IGameManager gameManager, IMap map)
         {
             var missingItems = GetMissingItems(map);
             if (missingItems.Any())
             {
-                Stolen(gameManager, map);
-                await UniTask.Delay(1000);
+                Stolen(map);
             }
+
+            return UniTask.CompletedTask;
         }
     }
 }

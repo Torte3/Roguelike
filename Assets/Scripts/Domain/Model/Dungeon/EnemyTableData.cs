@@ -1,4 +1,4 @@
-using Domain.Model.Character;
+using Domain.Model.Character.Data;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Utilities.Table;

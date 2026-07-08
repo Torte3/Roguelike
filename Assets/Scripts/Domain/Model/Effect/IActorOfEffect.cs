@@ -1,12 +1,15 @@
 using System.Collections.Generic;
 using Domain.Model.Character;
+using Domain.Model.Character.Affiliation;
 using Domain.Model.Entity;
+using Domain.Model.Item;
+using Domain.Model.WorldEvents;
 using UnityEngine;
 using Utilities;
 
 namespace Domain.Model.Effect
 {
-    public interface IActorOfEffect : IHasName, IHasStatus, IHasAffiliation, IEntity
+    public interface IActorOfEffect : IHasLabel, IHasStatus, IHasAffiliation, IEntity
     {
         public bool CanReadItem { get; }
         public bool IsShiny { get; }
@@ -18,5 +21,6 @@ namespace Domain.Model.Effect
         public bool CanMove(Direction8 direction, IPassableChecker map);
         public bool CanMoveIgnoreEntity(Direction8 direction, IPassableChecker map);
         public Aggression Aggression { get; }
+        public void KnowCurse(IItem item, DiscoveryCause cause);
     }
 }

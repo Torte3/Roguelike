@@ -3,13 +3,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Domain.Model;
-using Domain.Model.Character;
+using Domain.Model.Character.Data;
 using Domain.Model.Dungeon;
 using Domain.Model.Entity;
-using Domain.Model.Item;
+using Domain.Model.Item.Data;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using Domain.Service.Characters.Behavior;
+using Game.Map;
+using Game.Messages;
 using R3;
 using Unity.Logging;
 using UnityEngine;
@@ -19,7 +22,7 @@ using VContainer;
 
 namespace Game
 {
-    public class World : ISerializable<WorldMemento>
+    public class World : ISerializable<WorldMemento>, IReadOnlyWorld
     {
         private ReactiveProperty<MapManager> _activeMap = new();
         private Id<IMap> _activeMapId => _activeMap.CurrentValue.Id;
@@ -32,11 +35,13 @@ namespace Game
         private Placeholders _placeholders;
         private ItemMarketPriceTable _marketPriceTable;
         private CharacterControlInputReceiver _receiver;
+        public WorldEventStream Events { get; } = new();
 
         [Inject]
         public World(CharacterControlInputReceiver receiver)
         {
             _receiver = receiver;
+            Events.OnRecorded.Subscribe(worldEvent => Log.Debug($"[WorldEvent]{worldEvent}"));
             _placeholders = Addressables.LoadAssetAsync<Placeholders>("Assets/Database/ItemData/Placeholders.asset")
                 .WaitForCompletion();
             _marketPriceTable = Addressables.LoadAssetAsync<ItemMarketPriceTable>("Assets/Database/ItemData/ItemMarketPriceTable.asset")
@@ -48,7 +53,7 @@ namespace Game
             });
         }
 
-        public void CreateNew()
+        internal void CreateNew()
         {
             var blueprint = ObjectLoader.Load<DungeonBluePrintData>("Dungeon");
             _dungeon = new Dungeon(blueprint);
@@ -75,7 +80,7 @@ namespace Game
             );
         }
 
-        public List<MapMemento> SerializeUpdatedMaps()
+        internal List<MapMemento> SerializeUpdatedMaps()
         {
             var activeMapMemento = _activeMap.CurrentValue.SerializeWithoutPartyMembers();
             _maps[_activeMapId] = activeMapMemento;
@@ -87,7 +92,11 @@ namespace Game
         }
 
         public MapManager? CurrentMap => _isLoaded.CurrentValue ? _activeMap.CurrentValue : null;
-        public Observable<OnActiveMapChangedMessage> OnActiveMapChanged => _onActiveMapChanged;
+        internal Observable<OnActiveMapChangedMessage> OnActiveMapChanged => _onActiveMapChanged;
+        IReadOnlyMap? IReadOnlyWorld.CurrentMap => CurrentMap;
+        IReadOnlyWorldEventStream IReadOnlyWorld.Events => Events;
+        Observable<OnActiveReadOnlyMapChangedMessage> IReadOnlyWorld.OnActiveMapChanged =>
+            _onActiveMapChanged.Select(changed => new OnActiveReadOnlyMapChangedMessage(changed.Map));
 
         private MapMemento GetMapMemento(Id<IMap> mapId)
         {
@@ -143,15 +152,14 @@ namespace Game
             return new MovementData(type, destination, idOnCurrent, idOnDestination);
         }
 
-        public void SetActiveMap(MapManager map, bool isNewWorld)
+        private void SetActiveMap(MapManager map)
         {
             _isLoaded.Value = true;
-            var previousMap = _activeMap.CurrentValue;
             _activeMap.Value = map;
-            _onActiveMapChanged.OnNext(new OnActiveMapChangedMessage(map, previousMap, isNewWorld));
+            _onActiveMapChanged.OnNext(new OnActiveMapChangedMessage(map));
         }
 
-        public MapManager LoadWorld(WorldMemento memento, Dictionary<Id<IMap>, MapMemento> maps, IGameManager gameManager, bool isNewWorld)
+        internal MapManager LoadWorld(WorldMemento memento, Dictionary<Id<IMap>, MapMemento> maps, IGameManager gameManager)
         {
             _dungeon = new Dungeon(memento.Dungeon);
             _itemPlaceholders = new ItemPlaceholders(memento.ItemPlaceholders, _placeholders);
@@ -168,29 +176,29 @@ namespace Game
             MapManager map = CreateMapManagerFromSave(mapMemento, memento.CurrentMapId, memento.Player, memento.PartyMembers,
                 memento.Player.Character.Entity.Position, false, gameManager);
 
-            SetActiveMap(map, isNewWorld);
+            SetActiveMap(map);
 
             return map;
         }
 
-        public MapManager LoadStartMap(PlayerData playerData, IGameManager gameManager)
+        internal MapManager LoadStartMap(PlayerData playerData, IGameManager gameManager)
         {
             return LoadMap(_dungeon.StartMapId, playerData, gameManager);
         }
 
-        public MapManager LoadMap(Id<IMap> mapId, PlayerData playerData, IGameManager gameManager)
+        internal MapManager LoadMap(Id<IMap> mapId, PlayerData playerData, IGameManager gameManager)
         {
             Log.Debug($"LoadMap mapId:{mapId}");
             var mapMemento = GetMapMemento(mapId);
 
             var map = CreateMapManagerForNewGame(mapMemento, mapId, playerData, gameManager);
 
-            SetActiveMap(map, true);
+            SetActiveMap(map);
 
             return map;
         }
 
-        public MapManager LoadMap(Id<IMap> mapId, Id<IEntity>? destination, IGameManager gameManager)
+        internal MapManager LoadMap(Id<IMap> mapId, Id<IEntity>? destination, IGameManager gameManager)
         {
             Log.Debug($"LoadMap mapId:{mapId}");
 
@@ -211,7 +219,7 @@ namespace Game
 
             var map = CreateMapManagerFromSave(mapMemento, mapId, playerMemento, partyMembers, initialPosition, true, gameManager);
 
-            SetActiveMap(map, false);
+            SetActiveMap(map);
 
             return map;
         }
@@ -225,7 +233,7 @@ namespace Game
             var spec = _dungeon.GetFloorSpec(mapId);
             var depth = _dungeon.GetDepth(mapId);
             var progress = _dungeon.GetProgress(mapId);
-            return new MapManager(mapMemento, spec, depth, progress, playerData, gameManager, _receiver, _itemPlaceholders, _marketPriceTable);
+            return new MapManager(mapMemento, spec, depth, progress, playerData, gameManager, _receiver, _itemPlaceholders, _marketPriceTable, Events);
         }
 
         private MapManager CreateMapManagerFromSave(
@@ -241,7 +249,8 @@ namespace Game
             var depth = _dungeon.GetDepth(mapId);
             var progress = _dungeon.GetProgress(mapId);
             return new MapManager(mapMemento, spec, depth, progress, playerMemento,
-                partyMembers, initialPosition, resetPartyPositions, gameManager, _receiver, _itemPlaceholders, _marketPriceTable);
+                partyMembers, initialPosition, resetPartyPositions, gameManager, _receiver, _itemPlaceholders, _marketPriceTable, Events,
+                !resetPartyPositions);
         }
     }
 }

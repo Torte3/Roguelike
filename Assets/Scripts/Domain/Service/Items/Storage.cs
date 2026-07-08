@@ -5,6 +5,7 @@ using System.Linq;
 using Domain.Model;
 using Domain.Model.Character.Message;
 using Domain.Model.Item;
+using Domain.Model.Item.Rarities;
 using Domain.Model.Memento;
 using ObservableCollections;
 using R3;
@@ -36,8 +37,6 @@ namespace Domain.Service.Items
         public Observable<OnItemReplaced> OnItemReplaced => _items.ObserveReplace().Select(itemChanged =>
             new OnItemReplaced(itemChanged.NewValue, itemChanged.OldValue, itemChanged.Index)
         );
-        private readonly Subject<OnItemUpdated> _onItemUpdated = new();
-        public Observable<OnItemUpdated> OnItemUpdated => _onItemUpdated;
         private readonly CompositeDisposable _disposables = new();
         private readonly Dictionary<IItem, CompositeDisposable> _itemDisposables = new();
 
@@ -55,10 +54,6 @@ namespace Domain.Service.Items
                     _itemDisposables[itemAdded] = new CompositeDisposable();
                     if (itemAdded != null)
                     {
-                        itemAdded.OnItemUpdated.Subscribe(
-                            _ => _onItemUpdated.OnNext(new OnItemUpdated(itemAdded))
-                        ).AddTo(_itemDisposables[itemAdded]);
-
                         itemAdded.RemainingUses.SkipLatestValueOnSubscribe().Subscribe(
                             remainingUses =>
                             {
@@ -90,7 +85,6 @@ namespace Domain.Service.Items
 
         public void Dispose()
         {
-            _onItemUpdated.Dispose();
             _disposables.Dispose();
             foreach (var disposable in _itemDisposables)
                 disposable.Value.Dispose();

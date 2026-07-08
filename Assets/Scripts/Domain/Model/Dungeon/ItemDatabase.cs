@@ -1,4 +1,4 @@
-using Domain.Model.Item;
+using Domain.Model.Item.Data;
 using Utilities.Table;
 
 namespace Domain.Model.Dungeon

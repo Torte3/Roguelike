@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Domain.Model.Effect;
-using Domain.Model.Item;
 using Domain.Model.Map;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -34,7 +33,7 @@ namespace Domain.Service.Effect
             return 100;
         }
 
-        public override string Info()
+        public override string Description()
         {
             return $"好感度を上昇させる\n";
         }

@@ -5,9 +5,10 @@ using Cysharp.Threading.Tasks;
 using Domain.Model.Character;
 using Domain.Model.Character.Status;
 using Domain.Model.Effect;
-using Domain.Model.Item;
+using Domain.Model.Effect.Elements;
+using Domain.Model.Entity;
+using Domain.Model.Item.Description;
 using Domain.Model.Map;
-using Domain.Service.Logs;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Utilities;
@@ -50,14 +51,12 @@ namespace Domain.Service.Effect
             if (RandUtils.IsLessThanProbability(GetEffectiveCriticalRate(actor)))
             {
                 var damage = Formula.Calc(actor, target, _elementPowers, true);
-                GameLog.AddAppend(target.IsVisible, $"<color=red>クリティカル！{target.GetName(map.Player)}に{damage}のダメージ。</color>");
-                await target.LoseHp(damage, $"は{actor.GetName(map.Player)}の攻撃で殺された", actor as ICharacter);
+                await target.LoseHp(damage, new AttackDamage(Opponent.Of(actor), true), actor as ICharacter);
             }
             else
             {
                 var damage = Formula.Calc(actor, target, _elementPowers);
-                GameLog.AddAppend(target.IsVisible, $"{target.GetName(map.Player)}に{damage}のダメージ。");
-                await target.LoseHp(damage, $"は{actor.GetName(map.Player)}の攻撃で殺された", actor as ICharacter);
+                await target.LoseHp(damage, new AttackDamage(Opponent.Of(actor), false), actor as ICharacter);
             }
         }
 
@@ -91,17 +90,17 @@ namespace Domain.Service.Effect
             return _fixedCriticalRate;
         }
 
-        public override string Info()
+        public override string Description()
         {
             var powers = string.Join("/", _elementPowers.Select(e => $"{e.Element.Name()}{e.Power}"));
-            var info = $"攻撃[{ItemDescriptionRichText.RichAttackPowerSummary(powers)}]\n";
+            var description = $"攻撃[{ItemDescriptionRichText.RichAttackPowerSummary(powers)}]\n";
             if (_fixedCriticalRate > 0)
             {
-                info += "そのとき" + ItemDescriptionRichText.ColorPercentagesInPlainText($"{_fixedCriticalRate:P0}") +
+                description += "そのとき" + ItemDescriptionRichText.ColorPercentagesInPlainText($"{_fixedCriticalRate:P0}") +
                         "の確率でクリティカルを発生させる\n";
             }
 
-            return info;
+            return description;
         }
     }
 }

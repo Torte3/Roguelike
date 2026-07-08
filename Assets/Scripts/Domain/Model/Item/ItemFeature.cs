@@ -150,7 +150,7 @@ namespace Domain.Model.Item
                 _ => throw new Exception("Invalid DirectWeaponFeature")
             };
         }
-        public static ApplicabilityTag GetApplicability(this ItemFeature feature)
+        private static ApplicabilityTag GetApplicability(this ItemFeature feature)
         {
             return feature switch
             {
@@ -197,7 +197,7 @@ namespace Domain.Model.Item
                 _ => throw new Exception("Invalid DirectWeaponFeature")
             };
         }
-        public static bool CanAdd(this IEnumerable<ItemFeature> features, ItemFeature feature, ApplicabilityTag targetApplicability)
+        private static bool CanAdd(this IEnumerable<ItemFeature> features, ItemFeature feature, ApplicabilityTag targetApplicability)
         {
             var featureApplicability = feature.GetApplicability();
             if ((featureApplicability & targetApplicability) == 0)

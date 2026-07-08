@@ -1,6 +1,6 @@
 #nullable enable
 using System;
-using Domain.Model.Character;
+using Domain.Model.Character.Behavior;
 using Domain.Model.Dungeon;
 using Domain.Model.Map;
 using UnityEngine;

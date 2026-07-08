@@ -1,4 +1,4 @@
-using Domain.Model.Character;
+using Domain.Model.Character.Data;
 using Domain.Model.Character.Type;
 using Domain.Service.Characters;
 using Sirenix.OdinInspector.Editor;

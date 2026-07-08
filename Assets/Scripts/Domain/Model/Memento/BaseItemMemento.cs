@@ -2,9 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Domain.Model.Character;
+using Domain.Model.Character.Data;
 using Domain.Model.Condition;
 using Domain.Model.Item;
+using Domain.Model.Item.Rarities;
 using UnityEngine;
 using Utilities;
 using Utilities.Serialize;

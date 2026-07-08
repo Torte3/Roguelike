@@ -50,7 +50,7 @@ namespace Domain.Service.Events
                 if (choices.Count > 1)
                 {
                     choiceIndex = await gameManager.GetChoice(
-                        playerEvents[index].ChoiceMessage, cancelChoiceIndex, choices.ToArray());
+                        playerEvents[index].GetChoiceMessage(map), cancelChoiceIndex, choices.ToArray());
                 }
 
                 if (choiceIndex == cancelChoiceIndex)
@@ -111,7 +111,7 @@ namespace Domain.Service.Events
                 if (choices.Count > 1)
                 {
                     choiceIndex = await gameManager.GetChoice(
-                        playerEvents[index].ChoiceMessage, cancelChoiceIndex, choices.ToArray());
+                        playerEvents[index].GetChoiceMessage(map), cancelChoiceIndex, choices.ToArray());
                 }
 
                 if (choiceIndex == cancelChoiceIndex)

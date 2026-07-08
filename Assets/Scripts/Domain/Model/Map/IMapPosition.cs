@@ -1,5 +1,5 @@
 #nullable enable
-using Domain.Model.Character;
+using Domain.Model.Character.Affiliation;
 using Domain.Model.Entity;
 using UnityEngine;
 

@@ -2,7 +2,7 @@
 
 namespace Provider
 {
-    public static class ObjectResolverExtensions
+    internal static class ObjectResolverExtensions
     {
         public static RegistrationBuilder RegisterPlainEntryPoint<T>(this IContainerBuilder builder,
             Lifetime lifetime = Lifetime.Singleton)
