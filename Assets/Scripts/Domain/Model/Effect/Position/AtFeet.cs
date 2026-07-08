@@ -8,6 +8,8 @@ namespace Domain.Model.Effect.Position
 {
     public class AtFeet : IPositionOnlyDependentEffectPosition
     {
+        public bool IsAtFeet => true;
+
         public bool IsDirectional => false;
 
         public IEnumerable<Vector2Int> Get(IActorOfEffect actor, Vector2Int position, Direction8 direction, IMap map) => Get(position, map);
@@ -22,7 +24,7 @@ namespace Domain.Model.Effect.Position
             return 1;
         }
 
-        public string Info()
+        public string Description()
         {
             return "発動場所";
         }

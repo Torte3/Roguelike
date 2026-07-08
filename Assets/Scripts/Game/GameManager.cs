@@ -2,18 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Configuration;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
-using Domain.Model.Character.Message;
 using Domain.Model.Character;
 using Domain.Model.Dungeon;
 using Domain.Model.Entity;
 using Domain.Model.Item;
 using Domain.Model.Map;
-using Domain.Model.Setting;
+using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using Domain.Service.Characters.Behavior;
 using Domain.Service.Events;
-using Domain.Service.Logs;
 using R3;
 using Unity.Logging;
 using UnityEngine;
@@ -32,21 +32,11 @@ namespace Game
         private readonly TextInputReceiver _textInputReceiver;
         private readonly CharacterControlInputReceiver _receiver;
         private readonly TutorialReceiver _tutorialReceiver;
-        public Observable<Unit> OnTurnChanged => _turnController.OnTurnChanged;
         public ReadOnlyReactiveProperty<int> Turn => _turnController.TurnInLevel;
         private GlobalStatistics _globalStatistics;
         public GlobalStatistics GlobalStatistics => _globalStatistics;
         private readonly ReactiveProperty<WorldStatistics?> _activeStatistics = new();
         public ReadOnlyReactiveProperty<WorldStatistics?> ActiveStatistics => _activeStatistics;
-        private readonly Subject<BGM> _onPlayBGM = new();
-        public Observable<BGM> OnPlayBGM => _onPlayBGM;
-        private BGM? _currentBgm;
-        private readonly Subject<SE> _onPlaySE = new();
-        public Observable<SE> OnPlaySE => _onPlaySE;
-        private readonly Subject<ItemCategory> _onPlayItemUseSE = new();
-        public Observable<ItemCategory> OnPlayItemUseSE => _onPlayItemUseSE;
-        private readonly Subject<OnWorldIconPopupRequestedMessage> _onWorldIconPopupRequested = new();
-        public Observable<OnWorldIconPopupRequestedMessage> OnWorldIconPopupRequested => _onWorldIconPopupRequested;
         private readonly ReactiveProperty<GameState> _state = new();
         public ReadOnlyReactiveProperty<GameState> State => _state;
         private readonly SerialDisposable _disposable = new();
@@ -71,14 +61,21 @@ namespace Game
 
             _world.OnActiveMapChanged.Subscribe(mapChanged =>
             {
-                _disposable.Disposable = mapChanged.Map.Player.Character.Entity.OnDestroyed
-                    .Where(_ => State.CurrentValue == GameState.Dungeon)
-                    .Subscribe(async _ =>
-                {
-                    await StopMap();
-                    Save();
-                    GameOver();
-                });
+                var player = mapChanged.Map.Player.Character;
+                DeathRecord? death = null;
+                _disposable.Disposable = new CompositeDisposable(
+                    player.OnPerished.Subscribe(record => death = record),
+                    player.Entity.OnDestroyed
+                        .Where(_ => State.CurrentValue == GameState.Dungeon)
+                        .Subscribe(async _ =>
+                        {
+                            if (death == null)
+                                Log.Error("[Game]The player was removed without dying or being broken.");
+
+                            await StopMap();
+                            Save();
+                            GameOver(death ?? new DeathRecord(player.Label, new DamageSource(DamageCause.Unknown)));
+                        }));
             });
 
             var globalSaveData = _saveDataManager.LoadGlobal() ?? new GlobalSaveData(GlobalStatistics.Build(), new());
@@ -97,28 +94,21 @@ namespace Game
             );
         }
 
-        public UniTask<int> GetChoiceWithInfo(
-            string? text,
-            int defaultIndex = 0,
-            bool clearPreviousMenus = false,
-            params (string choice, string infoTitle, string info)[] choices) =>
-            _choiceReceiver.GetChoiceWithInfo(text, defaultIndex, clearPreviousMenus, choices);
-
-        public UniTask<int> GetChoiceWithItemPreview(string? text, IMap map, params (string choice, IItem item)[] choices) =>
-            _choiceReceiver.GetChoiceWithItemPreview(text, map, choices);
+        public UniTask<int> GetChoiceWithItemPreview(ChoiceMessage? message, IMap map, params IItem[] items) =>
+            _choiceReceiver.GetChoiceWithItemPreview(message, map, items);
 
         public UniTask<int> GetChoiceWithItemPreview(
-            string? text,
+            ChoiceMessage? message,
             IMap map,
             int cancelChoiceIndex,
-            params (string choice, IItem item)[] choices) =>
-            _choiceReceiver.GetChoiceWithItemPreview(text, map, cancelChoiceIndex, choices);
+            params IItem[] items) =>
+            _choiceReceiver.GetChoiceWithItemPreview(message, map, cancelChoiceIndex, items);
 
-        public UniTask<int> GetChoice(string? text, params string[] choices) =>
-            _choiceReceiver.GetChoice(text, choices);
+        public UniTask<int> GetChoice(ChoiceMessage? message, params string[] choices) =>
+            _choiceReceiver.GetChoice(message, choices);
 
-        public UniTask<int> GetChoice(string? text, int cancelChoiceIndex, params string[] choices) =>
-            _choiceReceiver.GetChoice(text, cancelChoiceIndex, choices);
+        public UniTask<int> GetChoice(ChoiceMessage? message, int cancelChoiceIndex, params string[] choices) =>
+            _choiceReceiver.GetChoice(message, cancelChoiceIndex, choices);
 
         private async UniTask<PlayerData?> GetPlayerData()
         {
@@ -129,52 +119,37 @@ namespace Game
             var totalDamageDealt = _globalStatistics.TotalDamageDealt;
             var maxMapLevel = _globalStatistics.MaxMapLevel;
 
-            var players = new List<(PlayerData data, string unlockCondition, bool usable)> {
+            var players = new List<(PlayerData data, UnlockCondition unlock)> {
                 (ObjectLoader.Load<PlayerData>("Adventurer"),
-                FormatUnlockCondition("最初から", true), true),
+                new UnlockCondition("最初から", 0, 0)),
                 (ObjectLoader.Load<PlayerData>("knight"),
-                FormatUnlockCondition("モンスターハウスに3回入る", monsterHouseEnterCount >= 3, monsterHouseEnterCount, 3), monsterHouseEnterCount >= 3),
+                new UnlockCondition("モンスターハウスに3回入る", monsterHouseEnterCount, 3)),
                 (ObjectLoader.Load<PlayerData>("Priest"),
-                FormatUnlockCondition("呪われたアイテムを10個発見", cursedItemDiscoverCount >= 10, cursedItemDiscoverCount, 10), cursedItemDiscoverCount >= 10),
+                new UnlockCondition("呪われたアイテムを10個発見", cursedItemDiscoverCount, 10)),
                 (ObjectLoader.Load<PlayerData>("Thief"),
-                FormatUnlockCondition("泥棒を3回行う", stealCount >= 3, stealCount, 3),
-                stealCount >= 3),
+                new UnlockCondition("泥棒を3回行う", stealCount, 3)),
                 (ObjectLoader.Load<PlayerData>("Witch"),
-                FormatUnlockCondition("アイテム50種類発見", knownItemCount >= 50, knownItemCount, 50),
-                knownItemCount >= 50),
+                new UnlockCondition("アイテム50種類発見", knownItemCount, 50)),
                 (ObjectLoader.Load<PlayerData>("Doctor"),
-                FormatUnlockCondition("アイテム70種類発見", knownItemCount >= 70, knownItemCount, 70),
-                knownItemCount >= 70),
+                new UnlockCondition("アイテム70種類発見", knownItemCount, 70)),
                 (ObjectLoader.Load<PlayerData>("Samurai"),
-                FormatUnlockCondition("累計1万ダメージ", totalDamageDealt >= 10000, totalDamageDealt, 10000),
-                totalDamageDealt >= 10000),
+                new UnlockCondition("累計1万ダメージ", totalDamageDealt, 10000)),
                 (ObjectLoader.Load<PlayerData>("Rabbit"),
-                FormatUnlockCondition("10Fまで踏破", maxMapLevel >= 10, maxMapLevel, 10),
-                maxMapLevel >= 10),
+                new UnlockCondition("10Fまで踏破", maxMapLevel, 10)),
                 (ObjectLoader.Load<PlayerData>("Fairy"),
-                FormatUnlockCondition("20Fまで踏破", maxMapLevel >= 20, maxMapLevel, 20),
-                maxMapLevel >= 20),
+                new UnlockCondition("20Fまで踏破", maxMapLevel, 20)),
                 (ObjectLoader.Load<PlayerData>("Demon Load"),
-                FormatUnlockCondition("30Fまで踏破", maxMapLevel >= 30, maxMapLevel, 30),
-                maxMapLevel >= 30),
+                new UnlockCondition("30Fまで踏破", maxMapLevel, 30)),
             };
             var index = await _characterSelectReceiver.GetCharacter(
                 players.Select(player => (
                     player.data.name,
                     player.data.CharacterType.SubtypeName(),
-                    $"解放条件\n{player.unlockCondition}\n\n{player.data.InfoWithoutName()}",
-                    player.usable)).ToList());
+                    player.unlock,
+                    player.data.DescriptionWithoutName())).ToList());
             if (index == null)
                 return null;
             return players[index.Value].data;
-        }
-
-        private static string FormatUnlockCondition(string description, bool usable, int current = 0, int required = 0)
-        {
-            if (usable || required <= 0)
-                return description;
-
-            return $"{description}\n進捗: {Math.Min(current, required)}/{required}";
         }
 
         public UniTask<string?> GetTextInput(bool canCancel = false)
@@ -184,12 +159,11 @@ namespace Game
 
         public async UniTask Title()
         {
-            GameLog.Clear();
+            _world.Events.AnnounceCleared();
             await StopGame();
             var saveData = _saveDataManager.Load();
             if (saveData != null)
             {
-                PlayBGM(saveData.Bgm);
                 var revivePlayer = false;
                 LoadPreview(saveData);
                 var firstWaitTime = saveData.TurnWaitTime;
@@ -252,7 +226,6 @@ namespace Game
             }
             else
             {
-                PlayBGM(BGM.Normal);
                 var playerData = ObjectLoader.Load<PlayerData>("Adventurer");
                 var map = CreateSaveData(playerData);
                 var _ = await GetChoice(null, "New Game");
@@ -271,20 +244,25 @@ namespace Game
 
         private MapManager CreateSaveData(PlayerData playerData)
         {
-            PlayBGM(BGM.Normal);
-            _activeStatistics.Value = new WorldStatistics(WorldStatistics.Build(), this, _world, _globalStatistics);
+            StartStatistics(WorldStatistics.Build());
             Settings.WorldSettings.Reset();
 
             _world.CreateNew();
             return _world.LoadStartMap(playerData, this);
         }
 
+        private void StartStatistics(StatisticsMemento memento)
+        {
+            _activeStatistics.Value?.Dispose();
+            _activeStatistics.Value = new WorldStatistics(memento, this, _world, _globalStatistics);
+        }
+
         private async UniTask ChoiceDifficulty()
         {
-            var choice = await GetChoiceWithInfo(text: null, defaultIndex: 1, clearPreviousMenus: true,
-                ("Easy", "<color=#00BFFF>- Easy -</color>", "復活できます\nアイテムは自動で鑑定されます"),
-                ("Normal", "<color=#FFFF00>- Normal -</color>", "復活できません\nアイテムは自動で鑑定されます"),
-                ("Hard", "<color=#FF4500>- Hard -</color>", "復活できません\nアイテムの詳細は鑑定するまで不明です")
+            var choice = await _choiceReceiver.GetChoiceWithInfo(message: null, defaultIndex: 1, clearPreviousMenus: true,
+                ("Easy", new ChoiceMessage("- Easy -", TextTone.Calm), "復活できます\nアイテムは自動で鑑定されます"),
+                ("Normal", new ChoiceMessage("- Normal -", TextTone.Caution), "復活できません\nアイテムは自動で鑑定されます"),
+                ("Hard", new ChoiceMessage("- Hard -", TextTone.Danger), "復活できません\nアイテムの詳細は鑑定するまで不明です")
             );
             switch (choice)
             {
@@ -313,8 +291,7 @@ namespace Game
 
         private MapManager LoadSaveData(SaveData saveData)
         {
-            PlayBGM(saveData.Bgm);
-            _activeStatistics.Value = new WorldStatistics(saveData.Statistics, this, _world, _globalStatistics);
+            StartStatistics(saveData.Statistics);
             Settings.SetValues(saveData.Settings);
             if (saveData.IsRollbacked)
             {
@@ -363,7 +340,6 @@ namespace Game
         {
             Log.Debug("[Game]Start LoadMap");
             await StopMap();
-            PlayBGM(BGM.Normal);
             var map = _world.LoadMap(mapId, destination, this);
             Save();
             // 初めて30Fに到達したときにチュートリアルを表示する（map.Depth が階層）。
@@ -371,29 +347,6 @@ namespace Game
                 await ShowTutorialIfNeeded(TutorialType.Floor30);
             StartMap(map, 0);
             Log.Debug("[Game]End LoadMap");
-        }
-
-        public void PlayBGM(BGM bgm)
-        {
-            if (_currentBgm == bgm)
-                return;
-            _currentBgm = bgm;
-            _onPlayBGM.OnNext(bgm);
-        }
-
-        public void PlaySE(SE se)
-        {
-            _onPlaySE.OnNext(se);
-        }
-
-        public void PlayItemUseSE(ItemCategory category)
-        {
-            _onPlayItemUseSE.OnNext(category);
-        }
-
-        public void RequestWorldIconPopup(Sprite icon, Vector2Int position)
-        {
-            _onWorldIconPopupRequested.OnNext(new OnWorldIconPopupRequestedMessage(icon, position));
         }
 
         public void SaveLight()
@@ -412,7 +365,7 @@ namespace Game
             var maps = _world.SerializeUpdatedMaps().ToDictionary(map => map.Id, map => map);
             var statistics = _activeStatistics.Value.Serialize();
             var settings = Settings.WorldSettings.GetValues();
-            var saveData = new SaveData(world, maps, statistics, settings, _turnController.GetWaitTime(), false, _currentBgm ?? BGM.Normal);
+            var saveData = new SaveData(world, maps, statistics, settings, _turnController.GetWaitTime(), false);
             _saveDataManager.SaveFull(globalSaveData, saveData);
             Log.Info("[Game]End Save");
         }
@@ -422,8 +375,9 @@ namespace Game
             _state.Value = GameState.Title;
         }
 
-        public void GameOver()
+        private void GameOver(DeathRecord death)
         {
+            _world.Events.Record(new GameOver(death, _activeStatistics.Value!.MaxMapLevel, GetScore()));
             _state.Value = GameState.Title;
         }
 
@@ -453,7 +407,7 @@ namespace Game
             score += Mathf.Pow(_globalStatistics.MaxMapLevel - 1, 2) * 100;
 
             var player = _world.CurrentMap.Player;
-            score += player.Money.CurrentValue;
+            score += player.Money;
             foreach (var item in player.Character.Inventory.AllItems)
             {
                 score += item.GetPrice(_world.CurrentMap.MarketPriceTable);

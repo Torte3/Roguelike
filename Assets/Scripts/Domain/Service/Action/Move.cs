@@ -1,5 +1,4 @@
 ﻿using Cysharp.Threading.Tasks;
-using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Character.Status;
 using Domain.Model.Map;
@@ -15,20 +14,15 @@ namespace Domain.Service.Action
                    !actor.Status.IsFlagStat(FlagStatType.CannotMove) && actor.CanMove(Direction, map);
         }
 
-        public UniTask Do(IActor actor, IMap map, IInput input)
+        public UniTask Do(IActor actor, IMap map)
         {
-            actor.Move(Direction, input).Forget();
+            actor.Move(Direction);
             return UniTask.CompletedTask;
         }
 
         public float Evaluate(IActor actor, IMap map)
         {
             return Score;
-        }
-
-        public string Info()
-        {
-            return $"Move: Direction:{Direction}";
         }
     }
 }

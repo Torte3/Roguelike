@@ -9,7 +9,7 @@ namespace Provider
     /// <summary>
     /// デバッグコマンドで使用する共通ユーティリティ
     /// </summary>
-    public static class CommandUtilities
+    internal static class CommandUtilities
     {
         /// <summary>
         /// ターゲット文字列からキャラクターを取得します

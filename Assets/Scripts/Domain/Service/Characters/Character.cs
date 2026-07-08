@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Configuration;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
@@ -17,13 +18,12 @@ using Domain.Model.Evaluation;
 using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
-using Domain.Model.Setting;
+using Domain.Model.WorldEvents;
 using Domain.Service.Action;
 using Domain.Service.Characters.Behavior;
 using Domain.Service.Characters.Conditions;
 using Domain.Service.Effect;
 using Domain.Service.Items;
-using Domain.Service.Logs;
 using ObservableCollections;
 using R3;
 using Unity.Logging;
@@ -33,7 +33,7 @@ using Utilities.Serialize.Option;
 
 namespace Domain.Service.Characters
 {
-    internal sealed class Character : ICharacter
+    internal sealed class Character : ICharacter, IReadOnlyPlayerCharacter
     {
         private readonly string _name;
         private readonly CharacterAffiliationManager _affiliationManager;
@@ -42,25 +42,22 @@ namespace Domain.Service.Characters
         public EntityBase Entity { get; init; }
         private readonly Inventory _inventory;
         private readonly ObservableHashSet<string> _knownItemNames = new();
-        private readonly Subject<Unit> _onAttacked = new();
         private readonly List<CharacterSkillWithRule> _skills;
         private readonly SpawnEffectSkill? _lastSkill;
         private readonly CharacterStatusManager _statusManager;
         private readonly ObservableList<IPlayerEvent> _events = new();
         private IMap _map;
-        private readonly Subject<Unit> _onDead = new();
-        private readonly Subject<string> _onItemUsed = new();
+        private readonly KnownTerrain _knownTerrain;
         private Option<IAction> _chargeAction = Option.None<IAction>();
-        private Option<ISkillWithCost> _chargeSkill = Option.None<ISkillWithCost>();
+        private EffectArea? _chargeArea;
         private Option<Vector2Int> _chargeStartPosition = Option.None<Vector2Int>();
-        private ReactiveProperty<int> _chargeTurn = new(0);
+        private int _chargeTurn;
         private IDisposable? _chargePositionCancelSubscription;
-        private readonly IGameManager _gameManager;
         private readonly CompositeDisposable _disposables = new();
+        private readonly Subject<DeathRecord> _onPerished = new();
 
-        internal Character(CharacterMemento data, ICharacterBehavior behavior, IGameManager gameManager, IMap map, bool isPlayer)
+        internal Character(CharacterMemento data, ICharacterBehavior behavior, IMap map, bool isPlayer)
         {
-            _gameManager = gameManager;
             IsPlayer = isPlayer;
             _name = data.Name;
             CharacterType = data.CharacterType;
@@ -73,7 +70,8 @@ namespace Domain.Service.Characters
             _knownItemNames = new ObservableHashSet<string>(data.KnownItemNames);
             _behavior = behavior;
             _canThroughWalls = data.CanThroughWalls;
-            _affiliationManager = new CharacterAffiliationManager(Entity.Id, data.Affiliation, map.Player);
+            _affiliationManager = new CharacterAffiliationManager(Entity.Id, data.Affiliation, map.Player,
+                affiliation => Entity.Record(new AffiliationChanged(Entity.Ref, affiliation, ((IEntity)this).AppearsInteractable(_map))));
             _aggression = data.Aggression;
             IsLeader = data.IsLeader;
             IsShiny = data.IsShiny;
@@ -84,10 +82,11 @@ namespace Domain.Service.Characters
             CanReceivePlayerGift = data.CanReceivePlayerGift;
 
             _map = map;
+            _knownTerrain = new KnownTerrain(data.TerrainMemory, map);
 
             HasEvent = _events.ObserveCountChanged().Select(x => x > 0).ToReadOnlyReactiveProperty();
 
-            AutoIdentify.Subscribe(autoIdentify =>
+            AutoIdentify.SkipLatestValueOnSubscribe().Subscribe(autoIdentify =>
             {
                 if (autoIdentify)
                 {
@@ -98,18 +97,20 @@ namespace Domain.Service.Characters
                 }
             }).AddTo(_disposables);
 
-            CurseAutoIdentify.Subscribe(_ =>
+            CurseAutoIdentify.SkipLatestValueOnSubscribe().Subscribe(curseAutoIdentify =>
             {
-                foreach (var item in Inventory.AllItems)
+                if (curseAutoIdentify)
                 {
-                    KnowCurse(item, false);
+                    foreach (var item in Inventory.AllItems)
+                    {
+                        KnowCurse(item, false);
+                    }
                 }
             }).AddTo(_disposables);
 
-            _chargePositionCancelSubscription = Observable.Merge(
-                Entity.OnMove.Select(_ => Unit.Default),
-                Entity.OnTeleport.Select(_ => Unit.Default)
-            ).Subscribe(_ =>
+            VisionRange.OnVisibleAreaChanged.Subscribe(_ => _knownTerrain.Update(VisionRange)).AddTo(_disposables);
+
+            _chargePositionCancelSubscription = Entity.Position.Skip(1).Subscribe(_ =>
                 {
                     if (_chargeAction.HasValue
                         && _chargeStartPosition.IsSome(out var start)
@@ -121,6 +122,7 @@ namespace Domain.Service.Characters
         public Location CurrentLocation => new(_map.Id, Entity.CurrentPosition);
         public bool IsDead => _statusManager.IsDead || Entity.IsDestroyed;
         private ICharacterBehavior _behavior { get; }
+        public IPassableChecker KnownTerrain => _knownTerrain;
         public string Name => _name;
         public bool IsPlayer { get; init; }
         public bool IsLeader { get; init; }
@@ -151,72 +153,93 @@ namespace Domain.Service.Characters
             State = CharacterState.Wait;
         }
 
-        public string GetName(IPlayer player)
-        {
-            return GetName(player, false);
-        }
-
-        public string GetNameIgnoreVisibility(IPlayer player)
-        {
-            return GetName(player, true);
-        }
-
-        public string GetName(IPlayer player, bool ignoreVisibility)
-        {
-            if (!ignoreVisibility && !Entity.IsVisible)
-            {
-                return "何者か";
-            }
-
-            return Affiliation.GetAffiliationType(player.Character.Affiliation) switch
-            {
-                AffiliationType.Ally => _name.SetColored(Colors.Green),
-                AffiliationType.Enemy => _name.SetColored(Colors.Red),
-                _ => _name.SetColored(Colors.SkyBlue)
-            };
-        }
-
         public ReadOnlyReactiveProperty<Direction8> Direction => _direction;
-        public Observable<Unit> OnAttacked => _onAttacked;
         public Observable<OnStartItemSelectMessage> OnStartItemSelect => _behavior.OnStartItemSelect;
         public Observable<Unit> OnSelectedItemSelect => _behavior.OnSelectedItemSelect;
         public IObservableCollection<string> KnownItemNames => _knownItemNames;
-        public Observable<OnChargeActionUpdatedMessage> OnChargeActionUpdated =>
-            _chargeTurn
-                .Select(x => new OnChargeActionUpdatedMessage(
-                    x,
-                    _chargeSkill.Map(
-                        skill => skill.Skill.Match<ChargedActionPreviewEffectData?>(
-                            spawnEffectSkill => new ChargedActionPreviewEffectData(
-                                spawnEffectSkill.GetArea(
-                                    this,
-                                    Entity.CurrentPosition,
-                                    _chargeAction.Value switch
-                                    {
-                                        UseSkill useSkill => useSkill.Direction,
-                                        UseItem useItem => useItem.Direction,
-                                        _ => throw new InvalidOperationException()
-                                    }, _map,
-                                    true),
-                                spawnEffectSkill.Color
-                            ),
-                            itemTargetSkill => null,
-                            inventoryTargetSkill => null,
-                            _ => null
-                        )
-                    ).Value
-                ));
+        private ChargeState? Charge => _chargeTurn > 0 && _chargeArea != null ? new ChargeState(_chargeTurn, _chargeArea) : null;
+        public CharacterLabel Label => new(_name, IsPlayer, AffiliationTowardPlayer);
+        public Health Health => new(CurrentHp, CurrentMaxHp);
+
+        private AffiliationType AffiliationTowardPlayer =>
+            _affiliationManager.GetAffiliationType(_map.Player.Character.Affiliation);
+
+        public bool CanBeBrokenBy(BreakTargets targets) => targets.HasFlag(BreakTargets.Character);
+
+        public Observable<DeathRecord> OnPerished => _onPerished;
+
+        public void Break(IMap map)
+        {
+            Entity.Record(new CharacterBroken(Entity.Ref, Label, map.ShopLookIn()));
+            _onPerished.OnNext(new DeathRecord(Label, new DamageSource(DamageCause.Break)));
+            Entity.Destroy();
+        }
+
+        public EntityLabel LabelIn(IMap map)
+        {
+            return new CharacterEntityLabel(Label);
+        }
+
+        public WorldEvent Appeared(IMap map)
+        {
+            return new CharacterAppeared(
+                Entity.Ref,
+                new Appearance(EntityKind.Character, Entity.Layer, null, IsShiny),
+                new CharacterLooks(CharacterType.TypeName(), CharacterType.SubtypeName(), IsBoss, IsFlying),
+                Label,
+                CurrentDirection,
+                Health,
+                _statusManager.Particles,
+                Charge,
+                map.IsKeyHolder(Entity.Id),
+                ((IEntity)this).AppearsInteractable(map));
+        }
+
+        public InventoryLook? HeldItemsIn(IMap map, params IReadOnlyItem[] changedItems) => this.InventoryLookIn(map, changedItems);
+
+        public Underfoot? UnderfootAfterMove(IMap map, Vector2Int destination)
+        {
+            return IsPlayer ? new Underfoot(map.ItemAt(destination)?.LookIn(map)) : null;
+        }
+
         public ICharacterType CharacterType { get; init; }
         public IStatusManager Status => _statusManager;
+        IReadOnlyStatus IHasStatus.Status => _statusManager;
+        IReadOnlyStatus IReadOnlyPlayerCharacter.Status => _statusManager;
         public Aggression Aggression => _aggression;
         public IAffiliation Affiliation => _affiliationManager;
         public Direction8 CurrentDirection => Direction.CurrentValue;
         public IInventory Inventory => _inventory;
-        public Observable<Unit> OnDead => _onDead;
-        public Observable<string> OnItemUsed => _onItemUsed;
+        IReadOnlyStorage IReadOnlyPlayerCharacter.Inventory => _inventory;
+
+        public EffectArea? PreviewEffectArea(ItemFocus focus)
+        {
+            var item = focus.GetItem(Inventory, _map);
+            if (item == null || !IsKnownItem(item) || !item.SkillOnUse.IsSome(out var skill))
+                return null;
+
+            return skill.AreaOf(this, Entity.CurrentPosition, CurrentDirection, _map, true);
+        }
+
+        public Vector2Int Position => Entity.CurrentPosition;
         public IReadOnlyList<ICharacterSkillWithRule> Skills => _skills;
         public IVisionRange VisionRange => _statusManager.VisionRange;
         public IEnumerable<Vector2Int> VisibleArea => _statusManager.VisionRange.VisibleArea;
+
+        public void RememberTerrainBefore(IReadOnlyList<(Vector2Int Position, TileData Tile)> previousTiles)
+        {
+            _knownTerrain.Remember(previousTiles, VisionRange);
+        }
+
+        public Route RouteTo(Vector2Int destination, IMap map)
+        {
+            return AStar.FindRoute(new MoveCostCalculator(this, map, true).Calculate, Entity.CurrentPosition, destination);
+        }
+
+        public bool AcceptsSwapFrom(Vector2Int requesterPosition, IMap map)
+        {
+            return _behavior.AcceptsSwapFrom(this, requesterPosition, map);
+        }
 
         #region CanMove
 
@@ -267,7 +290,7 @@ namespace Domain.Service.Characters
         public bool CanSwap(Vector2Int position, Direction8 direction, IMap map)
         {
             var destination = position + direction.Vector();
-            var target = map.Characters.At(destination).FirstOrDefault();
+            var target = map.GetCharacterAt(destination);
             if (target == null)
                 return false;
             if (target.IsEnemy(this))
@@ -301,27 +324,46 @@ namespace Domain.Service.Characters
 
         public void ResetChargeAction()
         {
+            var wasCharging = _chargeTurn > 0;
             _chargeAction = Option.None<IAction>();
-            _chargeSkill = Option.None<ISkillWithCost>();
+            _chargeArea = null;
             _chargeStartPosition = Option.None<Vector2Int>();
-            _chargeTurn.Value = 0;
+            _chargeTurn = 0;
+            if (wasCharging)
+                Entity.Record(new ChargeEnded(Entity.Ref));
+        }
+
+        private void StartCharge(IAction action, ISkillWithCost skill, Direction8 direction)
+        {
+            _chargeAction = Option.Some(action);
+            _chargeArea = skill.AreaOf(this, Entity.CurrentPosition, direction, _map, false);
+            _chargeStartPosition = Option.Some(Entity.CurrentPosition);
+            _chargeTurn = skill.ChargeTurn;
+            Turn(direction);
+            Entity.Record(new ChargeStarted(Entity.Ref, Charge));
+        }
+
+        private void CountDownCharge()
+        {
+            _chargeTurn--;
+            Entity.Record(_chargeTurn > 0 ? new ChargeCountedDown(Entity.Ref, _chargeTurn) : new ChargeEnded(Entity.Ref));
         }
 
         public async UniTask DoNextAction(IGameManager gameManager, IMap map, IInput input)
         {
             State = CharacterState.Think;
-            if (_chargeTurn.Value > 0)
+            if (_chargeTurn > 0)
             {
-                _chargeTurn.Value--;
+                CountDownCharge();
             }
 
-            if (_chargeAction.HasValue && _chargeTurn.Value == 0)
+            if (_chargeAction.HasValue && _chargeTurn == 0)
             {
                 State = CharacterState.Act;
-                await _chargeAction.Value.Do(this, map, input);
+                await _chargeAction.Value.Do(this, map);
                 ResetChargeAction();
             }
-            else if (_chargeTurn.Value > 0)
+            else if (_chargeTurn > 0)
             {
                 DoNothing();
             }
@@ -337,7 +379,7 @@ namespace Domain.Service.Characters
                 {
                     if (useSkill.Skill.Cost > 0)
                     {
-                        await LoseHp(useSkill.Skill.Cost, "はアイテムに命を吸われた", null);
+                        await LoseHp(useSkill.Skill.Cost, new DamageSource(DamageCause.ItemCost), null);
                         if (IsDead)
                         {
                             DoNothing();
@@ -346,11 +388,7 @@ namespace Domain.Service.Characters
                     }
                     if (useSkill.Skill.ChargeTurn > 0)
                     {
-                        _chargeAction = Option.Some((IAction)useSkill);
-                        _chargeSkill = Option.Some(useSkill.Skill);
-                        _chargeStartPosition = Option.Some(Entity.CurrentPosition);
-                        _chargeTurn.Value = useSkill.Skill.ChargeTurn;
-                        Turn(useSkill.Direction);
+                        StartCharge(useSkill, useSkill.Skill, useSkill.Direction);
                         DoNothing();
                         return;
                     }
@@ -360,7 +398,7 @@ namespace Domain.Service.Characters
                 {
                     if (skillOnUse.Cost > 0)
                     {
-                        await LoseHp(skillOnUse.Cost, "はアイテムに命を吸われた", null);
+                        await LoseHp(skillOnUse.Cost, new DamageSource(DamageCause.ItemCost), null);
                         if (IsDead)
                         {
                             DoNothing();
@@ -369,18 +407,14 @@ namespace Domain.Service.Characters
                     }
                     if (skillOnUse.ChargeTurn > 0)
                     {
-                        _chargeAction = Option.Some((IAction)useItem);
-                        _chargeSkill = Option.Some(skillOnUse);
-                        _chargeStartPosition = Option.Some(Entity.CurrentPosition);
-                        _chargeTurn.Value = skillOnUse.ChargeTurn;
-                        Turn(useItem.Direction);
+                        StartCharge(useItem, skillOnUse, useItem.Direction);
                         DoNothing();
                         return;
                     }
                 }
 
                 State = CharacterState.Act;
-                await action.Do(this, map, input);
+                await action.Do(this, map);
             }
         }
 
@@ -422,7 +456,10 @@ namespace Domain.Service.Characters
 
         public void Turn(Direction8 direction)
         {
+            if (_direction.Value == direction)
+                return;
             _direction.Value = direction;
+            Entity.Record(new DirectionChanged(Entity.Ref, direction));
         }
 
         public void FaceNearestCharacter(IMap map)
@@ -448,23 +485,12 @@ namespace Domain.Service.Characters
             State = CharacterState.Finish;
         }
 
-        public async UniTask Move(Direction8 direction, IInput input)
+        public void Move(Direction8 direction)
         {
             Log.Debug(
                 $"[Action]{_name}:Move direction:{direction} destination:{Entity.CurrentPosition + direction.Vector()}");
             Turn(direction);
-            await Entity.Move(direction,
-                input.IsDash() ? Settings.GlobalSettings.DashMilliseconds.CurrentValue : Settings.GlobalSettings.MoveMilliseconds.CurrentValue);
-
-            State = CharacterState.Finish;
-        }
-
-        public async UniTask ForceMove(Direction8 direction, IInput input)
-        {
-            State = CharacterState.Act;
-            Turn(direction);
-            await Entity.Move(direction,
-                input.IsDash() ? Settings.GlobalSettings.DashMilliseconds.CurrentValue : Settings.GlobalSettings.MoveMilliseconds.CurrentValue);
+            Entity.Move(direction, MoveKind.Walk);
 
             State = CharacterState.Finish;
         }
@@ -478,13 +504,13 @@ namespace Domain.Service.Characters
 
         public async UniTask UseSkill(ISkillWithCost skill, Direction8 direction, IMap map)
         {
-            Log.Debug($"[Action]{_name}:UseSkill\n{skill.Info()}\ndirection:{direction}");
+            Log.Debug($"[Action]{_name}:UseSkill\n{skill.Description()}\ndirection:{direction}");
             if (!_chargeAction.HasValue)
                 Turn(direction);
             for (var i = 0; i < skill.RushDistance; i++)
             {
                 if (CanMove(direction, map) && !_statusManager.IsFlagStat(FlagStatType.CannotMove))
-                    await Entity.Move(direction, Settings.GlobalSettings.ThrowMilliseconds.CurrentValue, true);
+                    Entity.Move(direction, MoveKind.Thrown);
             }
 
             if (IsDead)
@@ -493,16 +519,13 @@ namespace Domain.Service.Characters
                 return;
             }
 
-            var result = await skill.Use(this, null, Entity.CurrentPosition, direction, map);
-            if (result.Result == SkillResult.Success)
-            {
-                _onAttacked.OnNext(Unit.Default);
-            }
+            map.Events.Record(new SkillUsed(Entity.Ref, new CharacterSkillSource(Label, skill.Log)));
+            await skill.Use(this, null, Entity.CurrentPosition, direction, map);
 
             for (var i = 0; i < skill.BackStepDistance; i++)
             {
                 if (CanMove(direction.Reverse(), map) && !_statusManager.IsFlagStat(FlagStatType.CannotMove))
-                    await Entity.Move(direction.Reverse(), Settings.GlobalSettings.ThrowMilliseconds.CurrentValue, true);
+                    Entity.Move(direction.Reverse(), MoveKind.Thrown);
             }
 
             State = CharacterState.Finish;
@@ -512,60 +535,37 @@ namespace Domain.Service.Characters
         {
             if (_lastSkill != null)
             {
+                _map.Events.Record(new SkillUsed(Entity.Ref, new CharacterSkillSource(Label, _lastSkill.Log)));
                 await _lastSkill.Use(this, null, Entity.CurrentPosition, CurrentDirection, _map);
             }
         }
 
         public async UniTask UseItem(IItem item, Direction8 direction, IMap map)
         {
-            Log.Debug($"[Action]{_name}:UseItem\n{item.Info(map.Player, map.ItemPlaceholders)}\ndirection:{direction}");
+            Log.Debug($"[Action]{_name}:UseItem\n{item.DebugInfo()}\ndirection:{direction}");
             if (!_chargeAction.HasValue)
                 Turn(direction);
-            _onItemUsed.OnNext(item.BaseName);
 
-            var playerName = GetName(map.Player);
-            var itemName = item.GetName(map.Player, map.ItemPlaceholders);
             if (item.CanActivateWhenUsed)
             {
-                switch (item)
-                {
-                    case EquipmentItem equipment:
-                        GameLog.Add(
-                            Entity.IsVisible,
-                            equipment.IsEquipped.UnwrapOr(false)
-                                ? $"{playerName}は{itemName}を外した。"
-                                : $"{playerName}は{itemName}を装備した。");
-                        break;
-                    case DirectWeapon:
-                    case RangedWeapon:
-                    case Item:
-                        GameLog.Add(Entity.IsVisible, $"{playerName}は{itemName}を使った。");
-                        break;
-                    default:
-                        throw new InvalidOperationException(
-                            $"UseItem: unsupported item type '{item.GetType().Name}'.");
-                }
+                map.Events.Record(new SkillUsed(Entity.Ref, new ItemSkillSource(Label, item.NameIn(map), item.BaseName,
+                    item.Category, item.UseKind)));
 
-                _gameManager.PlayItemUseSE(item.Category);
                 var result = await item.SkillOnUse.Expect("skill on use is null").Skill.Match(
                     async spawnEffect =>
                     {
                         for (var i = 0; i < spawnEffect.RushDistance; i++)
                         {
                             if (CanMove(direction, map) && !_statusManager.IsFlagStat(FlagStatType.CannotMove))
-                                await Entity.Move(direction, Settings.GlobalSettings.ThrowMilliseconds.CurrentValue, true);
+                                Entity.Move(direction, MoveKind.Thrown);
                         }
 
                         var result = await item.Use(this, Entity.CurrentPosition, direction, map);
-                        if (result.Result == SkillResult.Success)
-                        {
-                            _onAttacked.OnNext(Unit.Default);
-                        }
 
                         for (var i = 0; i < spawnEffect.BackStepDistance; i++)
                         {
                             if (CanMove(direction.Reverse(), map) && !_statusManager.IsFlagStat(FlagStatType.CannotMove))
-                                await Entity.Move(direction.Reverse(), Settings.GlobalSettings.ThrowMilliseconds.CurrentValue, true);
+                                Entity.Move(direction.Reverse(), MoveKind.Thrown);
                         }
 
                         return result;
@@ -582,9 +582,9 @@ namespace Domain.Service.Characters
                     }
                 }
             }
-            else if (item.CanAttemptUse)
+            else if (item.CanAttemptUse && item.ActivationCheckWhenUsed().IsFailed(out var failure))
             {
-                item.LogWhyCannotActivateWhenUsed(this, map);
+                map.Events.Record(new ItemActionFailed(Entity.IsVisible, item.NameIn(map), failure));
             }
 
             State = CharacterState.Finish;
@@ -604,20 +604,19 @@ namespace Domain.Service.Characters
         public async UniTask ThrowItem(IItem item, Direction8 direction, IMap map)
         {
             Log.Debug(
-                $"[Action]{_name}:ThrowItem\n{item.Info(map.Player, map.ItemPlaceholders)}\n direction:{direction}");
+                $"[Action]{_name}:ThrowItem\n{item.DebugInfo()}\n direction:{direction}");
             Turn(direction);
 
             KnowCurse(item, true);
-            if (!item.CanAttemptThrow)
+            if (item.ThrowCheck().IsFailed(out var failure))
             {
-                GameLog.Add(Entity.IsVisible, $"{item.GetName(map.Player, map.ItemPlaceholders)}は呪われていて投げられない");
+                map.Events.Record(new ItemActionFailed(Entity.IsVisible, item.NameIn(map), failure));
                 State = CharacterState.Finish;
                 return;
             }
 
-            GameLog.Add(Entity.IsVisible, $"{GetName(map.Player)}は{item.GetName(map.Player, map.ItemPlaceholders)}を投げた");
-
-            if (_inventory.Contains(item))
+            var isFromInventory = _inventory.Contains(item);
+            if (isFromInventory)
             {
                 _inventory.Remove(item);
             }
@@ -630,13 +629,10 @@ namespace Domain.Service.Characters
                 ItemEntity.GetThrowDestination(Entity.CurrentPosition, direction, CommonSenseParameters.ThrowDistance,
                     map);
 
-            _onAttacked.OnNext(Unit.Default);
-
-            if (Entity.IsVisible && destination != Entity.CurrentPosition)
-            {
-                await map.ShowThrowAnimation(item.Icon, Entity.CurrentPosition, direction,
-                    CommonSenseParameters.ThrowDistance, false, EntityLayer.Middle);
-            }
+            map.Events.Record(new ItemThrown(Entity.Ref, Label, item.NameIn(map),
+                new Flight(item.Icon, Entity.CurrentPosition, destination),
+                isFromInventory ? HeldItemsIn(map) : null,
+                isFromInventory ? null : UnderfootAfterMove(map, Entity.CurrentPosition)));
 
             if (item.ShouldRevealMimic(this, destination, map))
             {
@@ -661,7 +657,7 @@ namespace Domain.Service.Characters
             if (Inventory.CanRemove(index))
             {
                 var item = Inventory.Remove(index);
-                GameLog.Add(Entity.IsVisible, $"{GetName(map.Player)}は{item.GetName(map.Player, map.ItemPlaceholders)}を落とした");
+                map.Events.Record(new ItemDropped(Entity.Ref, Label, item.NameIn(map), HeldItemsIn(map)));
                 if (!item.ShouldRevealMimic(this, Entity.CurrentPosition, map))
                 {
                     map.SpawnItem(item,
@@ -679,7 +675,9 @@ namespace Domain.Service.Characters
             {
                 map.TryPickUpAt(Entity.CurrentPosition, true);
                 Inventory.AddToEmpty(groundItem.Item);
-                GameLog.Add(Entity.IsVisible, $"{GetName(map.Player)}は{groundItem.Item.GetName(map.Player, map.ItemPlaceholders)}を拾った");
+                map.Events.Record(new ItemPickedUp(Entity.Ref, Label, groundItem.Item.NameIn(map), false,
+                    new ObtainedItem(groundItem.Item.Icon, Entity.CurrentPosition), HeldItemsIn(map),
+                    UnderfootAfterMove(map, Entity.CurrentPosition)));
             }
             else
             {
@@ -688,11 +686,12 @@ namespace Domain.Service.Characters
 
             State = CharacterState.Finish;
         }
+
         public void DropItem(IItem item, IMap map)
         {
-            if (item.IsDiscardBlocked)
+            if (item.DiscardCheck().IsFailed(out var failure))
             {
-                GameLog.Add(Entity.IsVisible, $"{item.GetName(map.Player, map.ItemPlaceholders)}は呪われていて捨てられない");
+                map.Events.Record(new ItemActionFailed(Entity.IsVisible, item.NameIn(map), failure));
                 State = CharacterState.Finish;
                 return;
             }
@@ -706,9 +705,14 @@ namespace Domain.Service.Characters
                 if (groundItem != null)
                 {
                     map.TryPickUpAt(Entity.CurrentPosition, true);
-                    GameLog.Add(Entity.IsVisible, $"{GetName(map.Player)}は{groundItem.Item.GetName(map.Player, map.ItemPlaceholders)}を拾った");
+                    map.Events.Record(new ItemExchanged(Entity.Ref, Label, replacedItem.NameIn(map), groundItem.Item.NameIn(map),
+                        new ObtainedItem(groundItem.Item.Icon, Entity.CurrentPosition), HeldItemsIn(map),
+                        UnderfootAfterMove(map, Entity.CurrentPosition)));
                 }
-                GameLog.Add(Entity.IsVisible, $"{GetName(map.Player)}は{replacedItem.GetName(map.Player, map.ItemPlaceholders)}を捨てた");
+                else
+                {
+                    map.Events.Record(new ItemDiscarded(Entity.Ref, Label, replacedItem.NameIn(map), HeldItemsIn(map)));
+                }
                 if (!item.ShouldRevealMimic(this, Entity.CurrentPosition, map))
                 {
                     map.SpawnItem(item,
@@ -764,7 +768,8 @@ namespace Domain.Service.Characters
                 _canThroughWalls,
                 CanPickUp,
                 CanUseItem,
-                CanReceivePlayerGift
+                CanReceivePlayerGift,
+                _knownTerrain.Serialize()
             );
         }
 
@@ -791,7 +796,7 @@ namespace Domain.Service.Characters
                     break;
                 }
 
-                await Entity.Move(direction, Settings.GlobalSettings.ThrowMilliseconds.CurrentValue, true);
+                Entity.Move(direction, MoveKind.Thrown);
             }
 
             if (!map.At(Entity.CurrentPosition).CanPlace(IsFlying, CanThroughWalls, true, EntityLayer.Middle))
@@ -802,10 +807,17 @@ namespace Domain.Service.Characters
             }
         }
 
-        public void Die(string causeOfDamageLog)
+        public void Die(DamageSource source)
         {
-            _onDead.OnNext(Unit.Default);
-            Entity.Destroy(causeOfDamageLog);
+            Entity.Record(new CharacterDied(Entity.Ref, Label, source));
+            if (!IsPlayer)
+            {
+                foreach (var item in Inventory.Clear())
+                    _map.SpawnItem(item, Entity.CurrentPosition);
+            }
+
+            _onPerished.OnNext(new DeathRecord(Label, source));
+            Entity.Destroy();
         }
 
         public void ApplyKillHealToAttacker(ICharacter? attacker)
@@ -818,12 +830,7 @@ namespace Domain.Service.Characters
             if (!killer.Affiliation.IsEnemy(Affiliation))
                 return;
 
-            var healed = killer.GainHp(CommonSenseParameters.KillHealPerEnemyDefeated);
-            if (healed <= 0)
-                return;
-
-            GameLog.Add(killer.Entity.IsVisible,
-                $"{killer.GetName(_map.Player)}は{healed}回復");
+            killer.GainHp(CommonSenseParameters.KillHealPerEnemyDefeated, HealCause.KillHeal);
         }
 
         #region Status
@@ -831,14 +838,14 @@ namespace Domain.Service.Characters
         public int CurrentMaxHp => _statusManager.Hp.Max.CurrentIntValue;
         public int CurrentHp => _statusManager.Hp.Value.CurrentValue;
 
-        public int GainHp(int value)
+        public void GainHp(int value, HealCause cause)
         {
-            return _statusManager.GainHp(value);
+            _statusManager.GainHp(value, cause);
         }
 
-        public async UniTask<int> LoseHp(int value, string causeOfDamageLog, ICharacter? attacker)
+        public async UniTask<int> LoseHp(int value, DamageSource source, ICharacter? attacker)
         {
-            return await _statusManager.LoseHp(value, causeOfDamageLog, attacker, false);
+            return await _statusManager.LoseHp(value, source, attacker);
         }
 
         public void RestoreToFullHealth()
@@ -862,14 +869,13 @@ namespace Domain.Service.Characters
 
         public void KnowItem(IItem item, bool log)
         {
-            if (IsPlayer)
-            {
-                if (!IsKnownItem(item) && !Settings.WorldSettings.AutoIdentify.CurrentValue && log)
-                {
-                    GameLog.Add(Entity.IsVisible, $"{item.UnknownName(_map.ItemPlaceholders)}は{item.RevealedName}だった");
-                }
-                _knownItemNames.Add(item.BaseName);
-            }
+            if (!IsPlayer || IsKnownItem(item))
+                return;
+
+            var unidentifiedName = item.NameIn(_map);
+            _knownItemNames.Add(item.BaseName);
+            _map.Events.Record(new ItemIdentified(Entity.IsVisible, unidentifiedName, item.NameIn(_map), item.BaseName, log,
+                this.WholeInventoryLookIn(_map), _map.PlayerUnderfoot()));
         }
 
         public void KnowCurse(IItem item, bool log)
@@ -877,15 +883,12 @@ namespace Domain.Service.Characters
             if (!IsPlayer)
                 return;
 
-            if (!IsCurseKnown(item) && log)
-                item.SetCurseIdentified(true, _map.Player, this, _map.ItemPlaceholders);
-            else
-                item.SetCurseIdentified(true);
+            item.SetCurseIdentified(true, this, _map, !IsCurseKnown(item) && log);
         }
 
         public bool IsCurseKnown(IItem item) => item.IsCurseIdentified;
 
-        public bool IsKnownItem(IItem item)
+        public bool IsKnownItem(IReadOnlyItem item)
         {
             return _knownItemNames.Contains(item.BaseName) || Settings.WorldSettings.AutoIdentify.CurrentValue;
         }
@@ -894,7 +897,7 @@ namespace Domain.Service.Characters
         {
             _knownItemNames.Clear();
             map.ItemPlaceholders.ClearPlayerAssignedNames();
-            GameLog.Add(Entity.IsVisible, $"{GetName(map.Player)}はアイテムの名前を忘れてしまった");
+            map.Events.Record(new MemoryLost(Entity.Ref, Label, MemoryKind.ItemNames, this.WholeInventoryLookIn(map), map.PlayerUnderfoot()));
         }
 
         #endregion
@@ -905,8 +908,17 @@ namespace Domain.Service.Characters
             _behavior.KnowLocationOf(location);
         }
 
+        public bool IsVisible(Vector2Int position)
+        {
+            return VisionRange.IsVisible(position);
+        }
+
         public void OnAttackedBy(IActorOfEffect actor, float impact)
         {
+            _statusManager.WasAttacked();
+            if (!IsVisible(actor.Entity.CurrentPosition))
+                return;
+
             var direction =
                 DirectionMethods.NearestDirectionFromVector(actor.Entity.CurrentPosition - Entity.CurrentPosition);
             if (direction.HasValue)
@@ -915,11 +927,13 @@ namespace Domain.Service.Characters
             }
 
             _affiliationManager.OnCharacterAttacked(actor.Affiliation, Affiliation, impact);
-            _statusManager.WasAttacked();
         }
 
         public void OnHealedBy(IActorOfEffect actor, float impact)
         {
+            if (!IsVisible(actor.Entity.CurrentPosition))
+                return;
+
             _affiliationManager.OnCharacterHealed(actor.Affiliation, Affiliation, impact);
         }
 
@@ -927,27 +941,12 @@ namespace Domain.Service.Characters
         public void ClearAffiliation(IMap map)
         {
             _affiliationManager.Clear();
-            GameLog.Add(Entity.IsVisible, $"{GetName(map.Player)}は他のキャラクターのことを忘れてしまった");
+            map.Events.Record(new MemoryLost(Entity.Ref, Label, MemoryKind.Characters, null, null));
         }
 
         public bool CanPickUpItem()
         {
             return _inventory.HasEmptySpace();
-        }
-
-        public bool TryPickUpItem(IMap map, bool canPickUpShopItem)
-        {
-            if (!CanPickUpItem())
-                return false;
-            var item = map.TryPickUpAt(Entity.CurrentPosition, canPickUpShopItem);
-            if (item == null)
-            {
-                return false;
-            }
-            if (!Inventory.CanAddToEmpty())
-                return false;
-            Inventory.AddToEmpty(item.Item);
-            return true;
         }
 
         public void AddEvent(IPlayerEvent ev)
@@ -1094,29 +1093,12 @@ namespace Domain.Service.Characters
                 var skill = new SkillWithCost(memento);
                 await UseSkill(skill, CurrentDirection, _map);
             }
+            _inventory.UpdateTurn(_map);
         }
 
         public void UpdateCharacterTurn()
         {
             _skills.ForEach(x => x.Skill.CoolDown());
-            _inventory.UpdateTurn();
-        }
-
-        public string Info()
-        {
-            var info = $"{_name}\n";
-            info += $"{_statusManager.Info()}\n";
-            info += "スキル:\n";
-            foreach (var skill in Skills)
-            {
-                info += $"{skill.Skill.Info()}\n";
-            }
-            if (_lastSkill != null)
-            {
-                info += "死亡時のスキル:\n";
-                info += $"{_lastSkill.InfoOnUse()}\n";
-            }
-            return info;
         }
     }
 }

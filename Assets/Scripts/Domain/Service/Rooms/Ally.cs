@@ -5,9 +5,9 @@ using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Item;
 using Domain.Model.Map;
+using Domain.Model.WorldEvents;
 using Domain.Service.Characters.Behavior;
 using Domain.Service.Events;
-using Domain.Service.Logs;
 
 namespace Domain.Service.Rooms
 {
@@ -16,7 +16,6 @@ namespace Domain.Service.Rooms
         private const float GiftAffectionPerPrice = 1f / 100f;
 
         public Ally(ICharacter character, EnemyBehavior behavior) : base(
-            null,
             new List<PlayerChoiceEvent>
             {
                 new(
@@ -71,18 +70,19 @@ namespace Domain.Service.Rooms
             if (!focus.HasValue || !player.Character.Inventory.HasItemAt(focus.Value, out var item))
                 return;
 
-            if (!(character.Inventory.CanAddToEmpty()
-                  && player.Character.Inventory.CanRemove(item)
-                  && !item.IsDiscardBlocked))
+            var giving = ItemChecks.Check(character.Inventory.CanAddToEmpty()
+                                          && player.Character.Inventory.CanRemove(item)
+                                          && !item.IsDiscardBlocked, ItemActionFailure.CannotGive);
+            if (giving.IsFailed(out var failure))
             {
-                GameLog.Add(character.Entity.IsVisible, $"{item.GetName(player, map.ItemPlaceholders)}を渡せなかった。");
+                map.Events.Record(new ItemActionFailed(character.Entity.IsVisible, item.NameIn(map), failure));
                 return;
             }
 
             player.Character.Inventory.Remove(item);
             character.Inventory.AddToEmpty(item);
-            GameLog.Add(character.Entity.IsVisible,
-                $"{character.GetName(player)}に{item.GetName(player, map.ItemPlaceholders)}を渡した。");
+            map.Events.Record(new ItemGiven(character.Entity.Ref, character.Label, item.NameIn(map), character.HeldItemsIn(map),
+                player.Character.InventoryLookIn(map), map.ShopLookIn()));
             TryEquipGiftedItem(character, item, map);
             var affectionGain = item.GetPrice(map.MarketPriceTable) * GiftAffectionPerPrice;
             character.Affiliation.ModifyAffection(player.Character.Entity.Id, affectionGain);
@@ -106,8 +106,8 @@ namespace Domain.Service.Rooms
 
             if (toggleTarget.TryToggleEquipped(character, map))
             {
-                GameLog.Add(character.Entity.IsVisible,
-                    $"{character.GetName(map.Player)}は{item.GetName(map.Player, map.ItemPlaceholders)}を装備した。");
+                map.Events.Record(new SkillUsed(character.Entity.Ref, new ItemSkillSource(character.Label,
+                    item.NameIn(map), item.BaseName, item.Category, ItemUseKind.Equip)));
             }
         }
     }

@@ -3,7 +3,7 @@ using Utilities;
 
 namespace Domain.Model.Dungeon
 {
-    public class PlaceholderIndexes
+    internal class PlaceholderIndexes
     {
         private List<int> _prefixIndexes = new();
         private List<int> _placeholderIndexes = new();

@@ -27,10 +27,10 @@ namespace Provider
         {
             var baseItemData = ScriptableObjectLoaderExtension.LoadItemData(itemName);
             var itemViewData = baseItemData.Match(
-                itemData => new ItemLibraryViewData(itemName, itemData.Icon, (int)itemData.Category, itemData.IsShiny, new Item(itemData).FullInfo()),
-                directWeaponData => new ItemLibraryViewData(itemName, directWeaponData.Icon, (int)ItemCategory.Weapons, directWeaponData.IsShiny, new DirectWeapon(directWeaponData).FullInfo()),
-                rangedWeaponData => new ItemLibraryViewData(itemName, rangedWeaponData.Icon, (int)ItemCategory.Weapons, rangedWeaponData.IsShiny, new RangedWeapon(rangedWeaponData).FullInfo()),
-                artifactData => new ItemLibraryViewData(itemName, artifactData.Icon, (int)ItemCategory.Artifacts, artifactData.IsShiny, new EquipmentItem(artifactData).FullInfo())
+                itemData => new ItemLibraryViewData(itemName, itemData.Icon, (int)itemData.Category, itemData.IsShiny, ItemDescriptionText.Of(new Item(itemData).DescribeIdentified())),
+                directWeaponData => new ItemLibraryViewData(itemName, directWeaponData.Icon, (int)ItemCategory.Weapons, directWeaponData.IsShiny, ItemDescriptionText.Of(new DirectWeapon(directWeaponData).DescribeIdentified())),
+                rangedWeaponData => new ItemLibraryViewData(itemName, rangedWeaponData.Icon, (int)ItemCategory.Weapons, rangedWeaponData.IsShiny, ItemDescriptionText.Of(new RangedWeapon(rangedWeaponData).DescribeIdentified())),
+                artifactData => new ItemLibraryViewData(itemName, artifactData.Icon, (int)ItemCategory.Artifacts, artifactData.IsShiny, ItemDescriptionText.Of(new EquipmentItem(artifactData).DescribeIdentified()))
             );
             itemLibraryView.AddItem(itemName, itemViewData);
         }

@@ -7,18 +7,16 @@ using Domain.Model.Character;
 using Domain.Model.Entity;
 using Domain.Model.Effect;
 using Domain.Model.Effect.Area;
-using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
-using Domain.Model.Setting;
-using Domain.Service.Logs;
+using Domain.Model.WorldEvents;
 using R3;
 using UnityEngine;
 using Utilities;
 
 namespace Domain.Service.Effect
 {
-    public class SpawnActorlessEffectSkill : ISerializable<SpawnActorlessEffectSkillMemento>, ISkill
+    public class SpawnActorlessEffectSkill : ISerializable<SpawnActorlessEffectSkillMemento>
     {
         private readonly IPositionOnlyDependentEffectPosition _position;
         private readonly INotDirectionalArea _area;
@@ -67,7 +65,7 @@ namespace Domain.Service.Effect
             );
         }
 
-        public IEnumerable<Vector2Int> GetArea(Vector2Int position,
+        private IEnumerable<Vector2Int> GetArea(Vector2Int position,
             IMap map)
         {
             var spawnPositions = _position.Get(position, map);
@@ -76,16 +74,13 @@ namespace Domain.Service.Effect
                 .SelectMany(spawnPosition => _area.Get(spawnPosition, map));
         }
 
-        public async UniTask<ISkillResult> Use(string? name, Vector2Int position, IMap map, Id<IEntity>? excludeEntityId = null)
+        public async UniTask<ISkillResult> Use(Vector2Int position, IMap map, Id<IEntity>? excludeEntityId = null)
         {
-            if (_log != null && _log != "")
-                GameLog.Add(map.Player.Character.IsVisible(position), $"{name}{_log}");
-
             var successes = RandUtils.RollSuccesses(Repeats, ProbabilityOfSuccess);
 
             for (var i = 0; i < successes; i++)
             {
-                var area = GetArea(position, map);
+                var area = GetArea(position, map).ToList();
                 if (_effects.Any(effect =>
                     effect is AttackEffect ||
                     effect is AbsorbsEffect ||
@@ -102,6 +97,7 @@ namespace Domain.Service.Effect
                 {
                     map.AttackStatue(area);
                 }
+                var round = new SkillRound();
                 foreach (var effect in _effects)
                 {
                     foreach (var target in map.Entities.In(area)
@@ -115,6 +111,7 @@ namespace Domain.Service.Effect
                         {
                             case ICharacter character:
                                 await effect.Apply(character, position, map);
+                                round.Hit(character, effect);
                                 break;
                             default:
                                 await effect.Apply(target, position, map);
@@ -125,24 +122,20 @@ namespace Domain.Service.Effect
                     await effect.Apply(area, map);
                 }
 
-                if (map.Player.Character.VisibleArea.Intersect(area).Any())
-                {
-                    map.SpawnEffect(area, Color);
-                    await UniTask.Delay(Settings.GlobalSettings.EffectDisplayTime.CurrentValue);
-                }
+                round.Record(map, area, Color);
             }
 
             if (successes == 0)
             {
-                GameLog.Add(map.Player.Character.IsVisible(position), "しかし効果がなかった");
-                return SpawnEffectSkillResult.Failed;
+                map.Events.Record(new SkillFailed(Visibility.At(map, position), SkillFailureKind.NoEffect, false));
+                return SkillOutcome.Failed;
             }
             else if (successes < Repeats)
             {
-                GameLog.Add(map.Player.Character.IsVisible(position), $"{successes}回成功した");
+                map.Events.Record(new SkillPartiallySucceeded(Visibility.At(map, position), successes, false));
             }
 
-            return SpawnEffectSkillResult.Success;
+            return SkillOutcome.Success;
         }
 
         public float EvaluatePrice()
@@ -159,48 +152,5 @@ namespace Domain.Service.Effect
             return price * ProbabilityOfSuccess;
         }
 
-        public string InfoOnUse(bool omitProbabilityOfSuccess = false, bool useOrThrowCombinedTargets = false)
-        {
-            var info = "";
-            var positionInfo = _position.Info();
-            var areaInfo = _area.Info();
-            info += EffectTargetDescription.OnUse(positionInfo, areaInfo, useOrThrowCombinedTargets) + "\n";
-            foreach (var (effect, index) in _effects.Index())
-            {
-                info += ItemDescriptionRichText.StyleEffectInfo(effect, effect.Info());
-            }
-            if (Repeats > 1)
-                info += $"効果は{ItemDescriptionRichText.RichMeta(Repeats)}回発動する\n";
-            if (!omitProbabilityOfSuccess)
-                info += ItemDescriptionRichText.ColorPercentagesInPlainText($"成功率：{ProbabilityOfSuccess:P0}\n");
-            return info;
-        }
-
-        public string InfoOnThrow(bool omitEffects = false)
-        {
-            var info = "";
-            var positionInfo = _position.Info();
-            var areaInfo = _area.Info();
-            var targetLine = EffectTargetDescription.OnThrow(positionInfo, areaInfo);
-            if (!omitEffects)
-            {
-                info += targetLine + "\n";
-                foreach (var (effect, index) in _effects.Index())
-                {
-                    info += ItemDescriptionRichText.StyleEffectInfo(effect, effect.Info());
-                }
-            }
-            else
-            {
-                info += targetLine + "\n";
-                info += "使用時と同じ効果を発揮する\n";
-            }
-
-            if (Repeats > 1)
-                info += $"効果は{ItemDescriptionRichText.RichMeta(Repeats)}回発動する\n";
-
-            info += ItemDescriptionRichText.ColorPercentagesInPlainText($"成功率：{ProbabilityOfSuccess:P0}\n");
-            return info;
-        }
     }
 }

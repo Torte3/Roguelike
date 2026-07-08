@@ -10,14 +10,19 @@ namespace Domain.Model.Map
 {
     public static class MapExtensions
     {
+        public static bool IsKeyHolder(this IMap map, Id<IEntity> id)
+        {
+            return map.LockedEntities.Any(locked => locked.IsKeyHolder(id));
+        }
+
         public static IEnumerable<ICharacter> GetVisibleCharacters(this IMap map, IHasBehavior character)
         {
-            return map.Characters.Where(c => character.VisionRange.IsVisible(c.Entity.CurrentPosition)).Where(c => c != character);
+            return map.Characters.Where(c => character.IsVisible(c.Entity.CurrentPosition)).Where(c => c != character);
         }
 
         public static IEnumerable<ICharacter> GetCharactersCanSeePosition(this IMap map, Vector2Int position)
         {
-            return map.Characters.Where(character => character.VisionRange.IsVisible(position));
+            return map.Characters.Where(character => character.IsVisible(position));
         }
 
         public static ICharacter? GetCharacter(this IMap map, Id<IEntity> id)

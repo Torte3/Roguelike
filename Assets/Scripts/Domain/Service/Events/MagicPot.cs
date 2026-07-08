@@ -8,36 +8,35 @@ using Domain.Model.Entity;
 using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using Domain.Service.Items;
-using Domain.Service.Logs;
-using R3;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using Utilities;
 
 namespace Domain.Service.Events
 {
-    public class MagicPot : IDisposable, ISerializable<MagicPotMemento>, IPlayerEventEntity, IIconEntity
+    public class MagicPot : IDisposable, ISerializable<MagicPotMemento>, IPlayerEventEntity
     {
-        private ReactiveProperty<int> _remainingUsages;
-        public ReadOnlyReactiveProperty<bool> CanUse => _remainingUsages.Select(remainingUsages => remainingUsages > 0).ToReadOnlyReactiveProperty();
+        private int _remainingUsages;
+        private bool CanUse => _remainingUsages > 0;
         public EntityBase Entity { get; init; }
         public bool IsGrounded => true;
 
         public MagicPot(MagicPotMemento data)
         {
             Entity = new EntityBase(data.Entity);
-            _remainingUsages = new ReactiveProperty<int>(data.RemainingUsages);
+            _remainingUsages = data.RemainingUsages;
             Events = new List<IPlayerEvent>
             {
                 new PlayerEvent(
-                    "魔法の壺を見つけた",
+                    FixtureKind.MagicPot,
                     new List<PlayerChoiceEvent>
                     {
                         new(
                             "使う",
-                            (player, map) => CanUse.CurrentValue,
-                            async (gameManager, map) => await DoEvent(gameManager, map)
+                            (player, map) => CanUse,
+                            async (_, map) => await DoEvent(map)
                         )
                     }
                 )
@@ -49,17 +48,17 @@ namespace Domain.Service.Events
             Entity.Dispose();
         }
 
-        public Sprite Icon => Addressables.LoadAssetAsync<Sprite>($"Assets/Images/icons_full_16.png[icons_full_16_{(CanUse.CurrentValue ? 270 : 269)}]")
+        private Sprite Icon => Addressables.LoadAssetAsync<Sprite>($"Assets/Images/icons_full_16.png[icons_full_16_{(CanUse ? 270 : 269)}]")
             .WaitForCompletion();
 
         public IReadOnlyList<IPlayerEvent> Events { get; init; }
 
-        private async UniTask DoEvent(IGameManager gameManager, IMap map)
+        private async UniTask DoEvent(IMap map)
         {
             var player = map.Player;
             var mergeBaseItemIndex = await player.Character.SelectItemWithCanSelect(
                 "ベースのアイテムを選択してください",
-                ItemMergeExtension.CanSelectForBaseItem);
+                item => item.CanBeMergeBase);
             if (mergeBaseItemIndex == null)
                 return;
             var mergeBaseItem = player.Character.Inventory.GetItem(mergeBaseItemIndex.Value);
@@ -68,9 +67,9 @@ namespace Domain.Service.Events
             {
                 return;
             }
-            if (!player.Character.Inventory.CanRemove(mergeBaseItem))
+            if (player.Character.Inventory.TakeOutCheck(mergeBaseItem).IsFailed(out var baseFailure))
             {
-                GameLog.AddIgnoreVisibility($"{mergeBaseItem.GetName(player, map.ItemPlaceholders)}は取り出せなかった");
+                map.Events.Record(new FacilityItemFailed(mergeBaseItem.NameIn(map), baseFailure));
                 return;
             }
 
@@ -84,7 +83,7 @@ namespace Domain.Service.Events
                     {
                         return null;
                     }
-                    return new ItemSelectPreview(new ItemFocus(0), mergeBaseItem.Merge(item), null);
+                    return new ItemSelectPreview(new ItemFocus(0), mergeBaseItem.MergeWith(item), null);
                 },
                 new ItemSelectPreview(new ItemFocus(0), mergeBaseItem, "（合成されていません）\n"),
                 "<b>合成結果...</b>");
@@ -96,26 +95,44 @@ namespace Domain.Service.Events
             {
                 return;
             }
-            if (!player.Character.Inventory.CanRemove(mergedItem))
+            if (player.Character.Inventory.TakeOutCheck(mergedItem).IsFailed(out var mergedFailure))
             {
-                GameLog.AddIgnoreVisibility($"{mergedItem.GetName(player, map.ItemPlaceholders)}は取り出せなかった");
+                map.Events.Record(new FacilityItemFailed(mergedItem.NameIn(map), mergedFailure));
                 return;
             }
-            if (mergedItem.IsDiscardBlocked)
+            if (mergedItem.PutInCheck().IsFailed(out var putInFailure))
             {
-                GameLog.AddIgnoreVisibility($"{mergedItem.GetName(player, map.ItemPlaceholders)}は呪われていて入れられない");
+                map.Events.Record(new FacilityItemFailed(mergedItem.NameIn(map), putInFailure));
                 return;
             }
             if (!player.Character.Inventory.CanAddIgnoreEmptySpace())
             {
-                GameLog.AddIgnoreVisibility($"合成したアイテムがインベントリに入れられなかった");
+                map.Events.Record(new MergedItemNotStored());
                 return;
             }
-            player.Character.Inventory.Replace(mergeBaseItem, mergeBaseItem.Merge(mergedItem));
+            map.Events.Record(new FacilityUsed(FixtureKind.MagicPot));
+            player.Character.Inventory.Replace(mergeBaseItem, mergeBaseItem.MergeWith(mergedItem));
             player.Character.Inventory.Remove(mergedItem);
-            GameLog.AddIgnoreVisibility($"{player.Character.GetName(player)}は{mergeBaseItem.GetName(player, map.ItemPlaceholders)}と{mergedItem.GetName(player, map.ItemPlaceholders)}を合成した。");
-            gameManager.PlaySE(SE.MagicPotEnhance);
-            _remainingUsages.Value -= 1;
+            map.Events.Record(new ItemsMerged(player.Character.Label, mergeBaseItem.NameIn(map), mergedItem.NameIn(map),
+                player.Character.InventoryLookIn(map), map.ShopLookIn()));
+            ConsumeUse();
+        }
+
+        private void ConsumeUse()
+        {
+            _remainingUsages -= 1;
+            if (!CanUse)
+                Entity.Record(new FacilityExhausted(Entity.Ref, Icon));
+        }
+
+        public EntityLabel LabelIn(IMap map)
+        {
+            return new KindEntityLabel(FixtureKind.MagicPot);
+        }
+
+        public WorldEvent Appeared(IMap map)
+        {
+            return new FacilityAppeared(Entity.Ref, Entity.AppearanceOf(FixtureKind.MagicPot.ToEntityKind(), Icon), CanUse);
         }
 
         public UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)
@@ -125,7 +142,7 @@ namespace Domain.Service.Events
 
         public MagicPotMemento Serialize()
         {
-            return new MagicPotMemento(_remainingUsages.CurrentValue, Entity.Serialize());
+            return new MagicPotMemento(_remainingUsages, Entity.Serialize());
         }
 
         public static MagicPotMemento Build(Vector2Int position)

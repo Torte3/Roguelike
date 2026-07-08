@@ -87,7 +87,7 @@ namespace Editor
             EditorGUILayout.LabelField("識別済み・汎用説明（効果はテンプレート不使用・色付き）");
             ItemInspectorPreviewEditor.DrawSafe(() =>
             {
-                var generic = new RangedWeapon(data).FullInfoGenericSkillDescription();
+                var generic = ItemDescriptionPreviewEditor.GenericDescriptionOf(new RangedWeapon(data));
                 ItemDescriptionPreviewEditor.DrawIdentifiedLikeInventory(generic, 120f);
             });
         }

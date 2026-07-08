@@ -1,4 +1,9 @@
+using System;
+using Configuration;
+using R3;
 using UnityEngine;
+using Utilities;
+using View.Playback;
 
 namespace View
 {
@@ -26,10 +31,49 @@ namespace View
         [SerializeField] private AudioClip _itemUseWandSE;
         [SerializeField] private AudioClip _itemUseWeaponSE;
         [SerializeField] private AudioClip _itemUseOthersSE;
+        [SerializeField] private AudioClip _equipSE;
+        [SerializeField] private AudioClip _unequipSE;
+        [SerializeField] private AudioClip _itemBreakSE;
+        [SerializeField] private AudioClip _healSE;
+        [SerializeField] private AudioClip _moneyPickupSE;
+        [SerializeField] private AudioClip _chestUnlockSE;
 
-        public void SetVolume(float volume)
+        private void Awake()
         {
-            _audioSource.volume = volume;
+            Settings.GlobalSettings.SEVolume.Value
+                .SubscribeIncludingCurrentValue(volume => _audioSource.volume = volume / 100f)
+                .AddTo(this);
+        }
+
+        internal void Play(SeKind kind)
+        {
+            PlayOneShotIfNotNull(kind switch
+            {
+                SeKind.GrassWalk => _grassWalkSE,
+                SeKind.Attack => _attackSE,
+                SeKind.Heal => _healSE,
+                SeKind.Pickup => _pickupSE,
+                SeKind.MoneyPickup => _moneyPickupSE,
+                SeKind.Stairs => _stairsSE,
+                SeKind.Teleport => _teleportSE,
+                SeKind.WorkbenchCraft => _workbenchCraftSE,
+                SeKind.MagicPotEnhance => _magicPotEnhanceSE,
+                SeKind.BonfireRest => _bonfireRestSE,
+                SeKind.OpenChest => _openChestSE,
+                SeKind.ChestUnlock => _chestUnlockSE,
+                SeKind.ShopCheckout => _shopCheckoutSE,
+                SeKind.TrapStep => _trapStepSE,
+                SeKind.ItemUsePotion => _itemUsePotionSE,
+                SeKind.ItemUseScroll => _itemUseScrollSE,
+                SeKind.ItemUseBook => _itemUseBookSE,
+                SeKind.ItemUseWand => _itemUseWandSE,
+                SeKind.ItemUseWeapon => _itemUseWeaponSE,
+                SeKind.ItemUseOthers => _itemUseOthersSE,
+                SeKind.Equip => _equipSE,
+                SeKind.Unequip => _unequipSE,
+                SeKind.ItemBreak => _itemBreakSE,
+                _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
+            });
         }
 
         private void PlayOneShotIfNotNull(AudioClip? clip)
@@ -42,47 +86,7 @@ namespace View
             _audioSource.PlayOneShot(clip);
         }
 
-        public void GrassWalkSE()
-        {
-            PlayOneShotIfNotNull(_grassWalkSE);
-        }
-
-        public void AttackSE()
-        {
-            PlayOneShotIfNotNull(_attackSE);
-        }
-
-        public void PickupSE()
-        {
-            PlayOneShotIfNotNull(_pickupSE);
-        }
-
-        public void StairsSE()
-        {
-            PlayOneShotIfNotNull(_stairsSE);
-        }
-
-        public void TeleportSE()
-        {
-            PlayOneShotIfNotNull(_teleportSE);
-        }
-
-        public void WorkbenchCraftSE()
-        {
-            PlayOneShotIfNotNull(_workbenchCraftSE);
-        }
-
-        public void MagicPotEnhanceSE()
-        {
-            PlayOneShotIfNotNull(_magicPotEnhanceSE);
-        }
-
-        public void BonfireRestSE()
-        {
-            PlayOneShotIfNotNull(_bonfireRestSE);
-        }
-
-        public void ChoiceCursorSE()
+        internal void ChoiceCursorSE()
         {
             PlayOneShotIfNotNull(_choiceCursorSE);
         }
@@ -101,32 +105,5 @@ namespace View
         {
             PlayOneShotIfNotNull(_itemSelectConfirmSE);
         }
-
-        public void OpenChestSE()
-        {
-            PlayOneShotIfNotNull(_openChestSE);
-        }
-
-        public void ShopCheckoutSE()
-        {
-            PlayOneShotIfNotNull(_shopCheckoutSE);
-        }
-
-        public void TrapStepSE()
-        {
-            PlayOneShotIfNotNull(_trapStepSE);
-        }
-
-        public void ItemUsePotionSE() => PlayOneShotIfNotNull(_itemUsePotionSE);
-
-        public void ItemUseScrollSE() => PlayOneShotIfNotNull(_itemUseScrollSE);
-
-        public void ItemUseBookSE() => PlayOneShotIfNotNull(_itemUseBookSE);
-
-        public void ItemUseWandSE() => PlayOneShotIfNotNull(_itemUseWandSE);
-
-        public void ItemUseWeaponSE() => PlayOneShotIfNotNull(_itemUseWeaponSE);
-
-        public void ItemUseOthersSE() => PlayOneShotIfNotNull(_itemUseOthersSE);
     }
 }

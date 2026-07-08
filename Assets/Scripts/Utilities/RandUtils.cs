@@ -36,11 +36,6 @@ namespace Utilities
             return Mathf.RoundToInt(normalValue);
         }
 
-        public static float LogNormal(float mu, float sigma)
-        {
-            return Mathf.Exp(Normal(mu, sigma));
-        }
-
         public static float LogNormalFromMean(float mean, float sigma)
         {
             return Mathf.Exp(Normal(Mathf.Log(mean), sigma));
@@ -157,7 +152,7 @@ namespace Utilities
         /// <summary>
         /// 重み付きで count 個のインデックスを抽選する（同一インデックスは返さない）。
         /// </summary>
-        public static List<int> WeightedIndices(this IEnumerable<float> source, int count)
+        private static List<int> WeightedIndices(this IEnumerable<float> source, int count)
         {
             if (count < 0)
                 throw new ArgumentOutOfRangeException(nameof(count));
@@ -195,7 +190,7 @@ namespace Utilities
         /// <summary>
         /// 重み付きで count 個の要素を抽選する（同一要素は返さない）。
         /// </summary>
-        public static List<T> GetWeightedAtRandom<T>(
+        internal static List<T> GetWeightedAtRandom<T>(
             this IEnumerable<T> source,
             int count,
             Func<T, float> weightSelector)
@@ -235,18 +230,7 @@ namespace Utilities
             return null;
         }
 
-        public static void Shuffle<T>(this IList<T> list)
-        {
-            for (var i = list.Count - 1; i > 0; i--)
-            {
-                var j = Random.Range(0, i + 1);
-                var tmp = list[i];
-                list[i] = list[j];
-                list[j] = tmp;
-            }
-        }
-
-        public static IEnumerable<T> Shuffled<T>(this IEnumerable<T> ie)
+        private static IEnumerable<T> Shuffled<T>(this IEnumerable<T> ie)
         {
             var list = ie.ToList();
             var n = list.Count;

@@ -47,23 +47,8 @@ namespace Domain.Service.Characters.Conditions
             );
         }
 
-        public string? GetInflictLog(IHasCondition hasCondition, IPlayer player)
-        {
-            if (string.IsNullOrEmpty(_condition.InflictLog))
-            {
-                return null;
-            }
-            return $"{hasCondition.GetName(player)}{_condition.InflictLog}";
-        }
-
-        public string? GetDeleteLog(IHasCondition hasCondition, IPlayer player)
-        {
-            if (string.IsNullOrEmpty(_condition.DeleteLog))
-            {
-                return null;
-            }
-            return $"{hasCondition.GetName(player)}{_condition.DeleteLog}";
-        }
+        public string? InflictLog => string.IsNullOrEmpty(_condition.InflictLog) ? null : _condition.InflictLog;
+        public string? DeleteLog => string.IsNullOrEmpty(_condition.DeleteLog) ? null : _condition.DeleteLog;
 
         public void Inflict(IHasCondition hasCondition, Id<IEntity> actor)
         {
@@ -102,11 +87,6 @@ namespace Domain.Service.Characters.Conditions
                 condition,
                 0
             );
-        }
-
-        public string Info()
-        {
-            return $"{_condition.Info(_elapsedTurn)}";
         }
     }
 }

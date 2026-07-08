@@ -69,7 +69,7 @@ namespace Domain.Model.Memento
                             )
                         ),
                         entity: Player.Character.Entity.CopyWith(
-                            destroyLog: Option<string>.None
+                            isDestroyed: false
                         )
                     )
                 )

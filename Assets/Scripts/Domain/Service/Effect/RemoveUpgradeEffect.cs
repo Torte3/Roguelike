@@ -5,7 +5,7 @@ using Cysharp.Threading.Tasks;
 using Domain.Model.Effect;
 using Domain.Model.Item;
 using Domain.Model.Map;
-using Domain.Service.Logs;
+using Domain.Model.WorldEvents;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Utilities;
@@ -36,13 +36,13 @@ namespace Domain.Service.Effect
             {
                 var item = upgradedItems.GetAtRandom();
                 if (RandUtils.IsLessThanProbability(_probabilityOfSuccess))
-                    item.Downgrade(map.Player, target, map.ItemPlaceholders);
+                    item.Downgrade(target, map);
                 else
-                    GameLog.Add(target.IsVisible, $"{item.GetName(map.Player, map.ItemPlaceholders)}の強化は消えなかった");
+                    map.Events.Record(new ItemChangeResisted(target.Entity.IsVisible, item.NameIn(map), ItemChangeKind.Downgraded));
             }
             else
             {
-                GameLog.Add(target.IsVisible, $"{target.GetName(map.Player)}は強化されたアイテムを持っていない");
+                map.Events.Record(new EffectMissed(target.Entity.Ref, target.Label, EffectMissReason.NoUpgradedItem));
             }
 
             return UniTask.CompletedTask;
@@ -58,7 +58,7 @@ namespace Domain.Service.Effect
             return 100;
         }
 
-        public override string Info()
+        public override string Description()
         {
             return "対象の持つアイテムの強化を解除\n";
         }

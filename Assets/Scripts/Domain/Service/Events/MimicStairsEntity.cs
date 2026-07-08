@@ -4,9 +4,10 @@ using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Effect;
 using Domain.Model.Entity;
+using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
-using Domain.Service.Logs;
+using Domain.Model.WorldEvents;
 using UnityEngine;
 using Utilities;
 
@@ -15,6 +16,7 @@ namespace Domain.Service.Events
     public class MimicStairs : IDisposable, ISerializable<MimicStairsMemento>, ICharacterEventEntity
     {
         public MovementEntityType Type { get; init; }
+        private FixtureKind FixtureKind => Type.ToFixtureKind();
         public EntityBase Entity { get; init; }
         public EnemyData Mimic { get; init; }
         public bool IsGrounded => true;
@@ -36,15 +38,8 @@ namespace Domain.Service.Events
 
         public ICharacter Reveal(IMap map)
         {
-            var entityName = Type switch
-            {
-                MovementEntityType.UpStairs => "階段",
-                MovementEntityType.DownStairs => "階段",
-                MovementEntityType.MagicCircle => "魔法陣",
-                _ => throw new NotImplementedException(),
-            };
-            GameLog.Add(map.Player.Character.IsVisible(Entity.CurrentPosition), $"{entityName}は{Mimic.Name}の擬態だった！");
-            Entity.Destroy("モンスターが正体を表した");
+            map.Events.Record(new MimicRevealed(Entity.IsVisible, LabelIn(map), Mimic.Name, null));
+            Entity.Destroy();
             return map.SpawnEnemyIgnoreMimic(
                 Mimic,
                 Entity.CurrentPosition,
@@ -60,6 +55,16 @@ namespace Domain.Service.Events
         }
 
         public ICharacterEvent Event { get; init; }
+
+        public EntityLabel LabelIn(IMap map)
+        {
+            return new KindEntityLabel(FixtureKind);
+        }
+
+        public WorldEvent Appeared(IMap map)
+        {
+            return new FacilityAppeared(Entity.Ref, Entity.AppearanceOf(FixtureKind.ToEntityKind(), Stairs.IconOf(Type, true)), true);
+        }
 
         public UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)
         {

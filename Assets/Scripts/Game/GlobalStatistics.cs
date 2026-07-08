@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Domain.Model;
+using Domain.Model.Entity;
 using Domain.Model.Memento;
 using ObservableCollections;
 using R3;
@@ -40,7 +40,7 @@ namespace Game
         private readonly Dictionary<string, int> _itemUsedCountByBaseName = new();
 
         // 死亡
-        private readonly Dictionary<string, int> _deathCountByCause = new();
+        private readonly Dictionary<DeathRecord, int> _deathCounts = new();
 
         // 盗み（通算）
         public int TotalStealCount { get; private set; }
@@ -80,64 +80,64 @@ namespace Game
             HasShownFloor30Tutorial = memento.HasShownFloor30Tutorial;
             foreach (var kvp in memento.ItemUsedCountByBaseName)
                 _itemUsedCountByBaseName[kvp.Key] = kvp.Value;
-            foreach (var kvp in memento.DeathCountByCause)
-                _deathCountByCause[kvp.Key] = kvp.Value;
+            foreach (var kvp in memento.DeathCounts)
+                _deathCounts[kvp.Key] = kvp.Value;
         }
 
-        public void RecordTurn() => _totalTurns.Value++;
+        internal void RecordTurn() => _totalTurns.Value++;
 
-        public void RecordMaxMapLevel(int depth)
+        internal void RecordMaxMapLevel(int depth)
         {
             if (depth > MaxMapLevel)
                 MaxMapLevel = depth;
         }
 
-        public void RecordDamageReceived(int damage)
+        internal void RecordDamageReceived(int damage)
         {
             _totalDamageReceived += damage;
             if (damage > _maxDamageReceived)
                 _maxDamageReceived = damage;
         }
 
-        public void RecordDamageDealt(int damage)
+        internal void RecordDamageDealt(int damage)
         {
             _totalDamageDealt += damage;
             if (damage > _maxDamageDealt)
                 _maxDamageDealt = damage;
         }
 
-        public void RecordHealReceived(int amount)
+        internal void RecordHealReceived(int amount)
         {
             _totalHealReceived += amount;
             if (amount > _maxHealReceived)
                 _maxHealReceived = amount;
         }
 
-        public void RecordItemUsed(string baseName)
+        internal void RecordItemUsed(string baseName)
         {
             _itemUsedCountByBaseName.TryGetValue(baseName, out var count);
             _itemUsedCountByBaseName[baseName] = count + 1;
         }
 
-        public void RecordDeath(string cause)
+        internal void RecordDeath(DeathRecord death)
         {
-            _deathCountByCause.TryGetValue(cause, out var count);
-            _deathCountByCause[cause] = count + 1;
+            _deathCounts.TryGetValue(death, out var count);
+            _deathCounts[death] = count + 1;
         }
 
-        public void RecordEnemyKilled(string enemyName)
+        internal void RecordEnemyKilled(string enemyName)
         {
             _enemyTypeKilledCount.TryGetValue(enemyName, out var count);
             _enemyTypeKilledCount[enemyName] = count + 1;
         }
 
-        public void RecordSteal() => TotalStealCount++;
+        internal void RecordSteal() => TotalStealCount++;
 
-        public void RecordMonsterHouseEntered() => TotalMonsterHouseEnterCount++;
+        internal void RecordMonsterHouseEntered() => TotalMonsterHouseEnterCount++;
 
-        public void RecordCursedItemDiscovery() => TotalCursedItemDiscoverCount++;
+        internal void RecordCursedItemDiscovery() => TotalCursedItemDiscoverCount++;
 
-        public bool HasShownTutorial(TutorialType type) => type switch
+        internal bool HasShownTutorial(TutorialType type) => type switch
         {
             TutorialType.FirstGame => HasShownFirstGameTutorial,
             TutorialType.Shop => HasShownShopTutorial,
@@ -146,7 +146,7 @@ namespace Game
             _ => false,
         };
 
-        public void RecordTutorialShown(TutorialType type)
+        internal void RecordTutorialShown(TutorialType type)
         {
             switch (type)
             {
@@ -157,7 +157,7 @@ namespace Game
             }
         }
 
-        public void RecordKnownItem(string baseName) => _knownItemNames.Add(baseName);
+        internal void RecordKnownItem(string baseName) => _knownItemNames.Add(baseName);
 
         public GlobalStatisticsMemento Serialize()
         {
@@ -165,50 +165,35 @@ namespace Game
                 TotalPlayTime.Ticks, TotalTurns.CurrentValue,
                 _totalDamageReceived, _maxDamageReceived, _totalDamageDealt, _maxDamageDealt,
                 _totalHealReceived, _maxHealReceived, TotalStealCount, TotalMonsterHouseEnterCount,
-                TotalCursedItemDiscoverCount, _itemUsedCountByBaseName, _deathCountByCause,
+                TotalCursedItemDiscoverCount, _itemUsedCountByBaseName, _deathCounts,
                 HasShownFirstGameTutorial, HasShownShopTutorial, HasShownMagicCircleTutorial, HasShownFloor30Tutorial);
         }
 
         public static GlobalStatisticsMemento Build()
         {
             return new GlobalStatisticsMemento(1, new(), new Dictionary<string, int>(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                new Dictionary<string, int>(), new Dictionary<string, int>(), false, false, false, false);
+                new Dictionary<string, int>(), new Dictionary<DeathRecord, int>(), false, false, false, false);
         }
 
-        public string GetStatisticsText()
+        public GlobalStatisticsSummary Summarize()
         {
-            var sb = new StringBuilder();
-            sb.AppendLine("=== Global Statistics ===");
-            sb.AppendLine("--- プレイ・進行 ---");
-            sb.AppendLine($"TotalPlayTime: {TotalPlayTime}");
-            sb.AppendLine($"TotalTurns: {TotalTurns.CurrentValue}");
-            sb.AppendLine($"MaxMapLevel: {MaxMapLevel}");
-            sb.AppendLine("--- 戦闘・ダメージ ---");
-            sb.AppendLine($"TotalDamageReceived: {_totalDamageReceived} (Max: {_maxDamageReceived})");
-            sb.AppendLine($"TotalDamageDealt: {_totalDamageDealt} (Max: {_maxDamageDealt})");
-            sb.AppendLine($"TotalHealReceived: {_totalHealReceived} (Max: {_maxHealReceived})");
-            sb.AppendLine("--- 盗み ---");
-            sb.AppendLine($"通算盗み回数: {TotalStealCount}");
-            sb.AppendLine("--- モンスターハウス ---");
-            sb.AppendLine($"通算進入回数: {TotalMonsterHouseEnterCount}");
-            sb.AppendLine("--- 呪い ---");
-            sb.AppendLine($"呪われたアイテムを発見した回数: {TotalCursedItemDiscoverCount}");
-            sb.AppendLine("--- 敵撃破 ---");
-            sb.AppendLine($"EnemyKilledCount: {_enemyTypeKilledCount.Values.Sum()}");
-            foreach (var kvp in _enemyTypeKilledCount.OrderByDescending(x => x.Value))
-                sb.AppendLine($"  {kvp.Key}: {kvp.Value}");
-            sb.AppendLine("--- アイテム ---");
-            sb.AppendLine($"TotalItemUsedCount: {_itemUsedCountByBaseName.Values.Sum()}");
-            foreach (var kvp in _itemUsedCountByBaseName.OrderByDescending(x => x.Value))
-                sb.AppendLine($"  {kvp.Key}: {kvp.Value}");
-            sb.AppendLine($"KnownItemNames Count: {_knownItemNames.Count}");
-            foreach (var itemName in _knownItemNames.OrderBy(x => x))
-                sb.AppendLine($"  {itemName}");
-            sb.AppendLine("--- 死亡 ---");
-            sb.AppendLine($"TotalDeathCount: {_deathCountByCause.Values.Sum()}");
-            foreach (var kvp in _deathCountByCause.OrderByDescending(x => x.Value))
-                sb.AppendLine($"  {kvp.Key}: {kvp.Value}");
-            return sb.ToString();
+            var common = new StatisticsSummary(
+                TotalPlayTime,
+                TotalTurns.CurrentValue,
+                MaxMapLevel,
+                _totalDamageReceived,
+                _maxDamageReceived,
+                _totalDamageDealt,
+                _maxDamageDealt,
+                _totalHealReceived,
+                _maxHealReceived,
+                TotalStealCount,
+                TotalMonsterHouseEnterCount,
+                TotalCursedItemDiscoverCount,
+                new Dictionary<string, int>(_enemyTypeKilledCount),
+                new Dictionary<string, int>(_itemUsedCountByBaseName),
+                new Dictionary<DeathRecord, int>(_deathCounts));
+            return new GlobalStatisticsSummary(common, _knownItemNames.ToList());
         }
     }
 }

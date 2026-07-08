@@ -5,32 +5,29 @@ using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using Domain.Service.Effect;
-using Domain.Service.Logs;
-using R3;
 using UnityEngine;
 using Utilities;
 using Utilities.Stats;
 
 namespace Domain.Service.Events
 {
-    public class Statue : ISerializable<StatueMemento>, IScheduledEventEntity, IIconEntity
+    public class Statue : ISerializable<StatueMemento>, IScheduledEventEntity
     {
-        public readonly string Name;
+        private readonly string _name;
         public EntityBase Entity { get; init; }
         public bool IsGrounded => true;
         private readonly SpawnActorlessEffectSkill _skill;
-        public StatueType Type;
+        private readonly StatueType _type;
         private int _attackToBreak;
-        private readonly Subject<Unit> _onAttacked = new();
-        public Observable<Unit> OnAttacked => _onAttacked;
 
         public Statue(StatueMemento memento)
         {
-            Name = memento.Name;
+            _name = memento.Name;
             Entity = new EntityBase(memento.Entity);
             _skill = new SpawnActorlessEffectSkill(memento.Skill);
-            Type = memento.Type;
+            _type = memento.Type;
             _attackToBreak = memento.AttackToBreak;
             Event = new ScheduledEvent(
                 memento.Cycle,
@@ -40,13 +37,25 @@ namespace Domain.Service.Events
 
         public IScheduledEvent Event { get; init; }
 
-        public Sprite Icon => Type switch
+        private Sprite Icon => _type switch
         {
             StatueType.Beneficial => ObjectLoader.LoadMapChip("(Base)BaseChip_pipo_923"),
             StatueType.Harmful => ObjectLoader.LoadMapChip("(Base)BaseChip_pipo_924"),
             StatueType.Neutral => ObjectLoader.LoadMapChip("(Base)BaseChip_pipo_908"),
             _ => throw new NotImplementedException()
         };
+
+        public bool CanBeBrokenBy(BreakTargets targets) => targets.HasFlag(BreakTargets.Statue);
+
+        public EntityLabel LabelIn(IMap map)
+        {
+            return new NamedEntityLabel(_name);
+        }
+
+        public WorldEvent Appeared(IMap map)
+        {
+            return Entity.Appeared(EntityKind.Statue, Icon);
+        }
 
         public UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)
         {
@@ -61,10 +70,10 @@ namespace Domain.Service.Events
         public StatueMemento Serialize()
         {
             return new StatueMemento(
-                Name,
+                _name,
                 Entity.Serialize(),
                 _skill.Serialize(),
-                Type,
+                _type,
                 Event.WaitTurnData,
                 _attackToBreak);
         }
@@ -84,19 +93,19 @@ namespace Domain.Service.Events
 
         private async UniTask Execute(IMap map)
         {
-            GameLog.Add(Entity.IsVisible, $"<color=red>{Name}</color>が起動した");
-            await _skill.Use(Name, Entity.CurrentPosition, map);
+            map.Events.Record(new SkillUsed(Entity.Ref, new DeviceSkillSource(_name, DeviceKind.Statue)));
+            await _skill.Use(Entity.CurrentPosition, map);
         }
 
-        public void Attacked()
+        public void Attacked(IMap map)
         {
+            map.Events.Record(new StatueStruck(Entity.Ref));
             _attackToBreak -= 1;
             if (_attackToBreak <= 0)
             {
-                GameLog.Add(Entity.IsVisible, $"<color=red>{Name}</color>は壊れた");
-                Entity.Destroy($"は壊された");
+                map.Events.Record(new DeviceBroken(Entity.IsVisible, _name));
+                Entity.Destroy();
             }
-            _onAttacked.OnNext(Unit.Default);
         }
     }
 }

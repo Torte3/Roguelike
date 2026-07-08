@@ -4,6 +4,7 @@ using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using UnityEngine;
 using Utilities;
 
@@ -17,6 +18,16 @@ namespace Domain.Service.Events
         public Fire(EntityMemento memento)
         {
             Entity = new EntityBase(memento);
+        }
+
+        public EntityLabel LabelIn(IMap map)
+        {
+            return new KindEntityLabel(FixtureKind.Fire);
+        }
+
+        public WorldEvent Appeared(IMap map)
+        {
+            return Entity.Appeared(FixtureKind.Fire.ToEntityKind(), null);
         }
 
         public UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)

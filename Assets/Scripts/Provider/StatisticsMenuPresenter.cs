@@ -1,5 +1,4 @@
 #nullable enable
-using System.Text;
 using Game;
 using R3;
 using VContainer;
@@ -30,11 +29,7 @@ namespace Provider
 
         private static string BuildStatisticsText(GameManager gameManager)
         {
-            var sb = new StringBuilder();
-            if (gameManager.ActiveStatistics.CurrentValue != null)
-                sb.AppendLine(gameManager.ActiveStatistics.CurrentValue.GetStatisticsText());
-            sb.AppendLine(gameManager.GlobalStatistics.GetStatisticsText());
-            return sb.ToString();
+            return StatisticsText.Of(gameManager.ActiveStatistics.CurrentValue?.Summarize(), gameManager.GlobalStatistics.Summarize());
         }
     }
 }

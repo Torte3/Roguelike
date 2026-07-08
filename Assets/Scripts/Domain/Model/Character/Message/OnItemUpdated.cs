@@ -3,8 +3,7 @@ using Domain.Model.Item;
 
 namespace Domain.Model.Character.Message
 {
-    public record OnItemInserted(IItem NewItem, int Index);
-    public record OnItemRemoved(IItem OldItem, int Index);
-    public record OnItemReplaced(IItem NewItem, IItem OldItem, int Index);
-    public record OnItemUpdated(IItem Item);
+    public record OnItemInserted<TItem>(TItem NewItem, int Index) where TItem : IReadOnlyItem;
+    public record OnItemRemoved<TItem>(TItem OldItem, int Index) where TItem : IReadOnlyItem;
+    public record OnItemReplaced<TItem>(TItem NewItem, TItem OldItem, int Index) where TItem : IReadOnlyItem;
 }

@@ -1,5 +1,5 @@
 #nullable enable
 namespace Game
 {
-    public record OnActiveMapChangedMessage(MapManager Map, MapManager? PreviousMap, bool IsNewWorld);
+    internal record OnActiveMapChangedMessage(MapManager Map, bool IsNewWorld);
 }

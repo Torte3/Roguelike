@@ -22,6 +22,8 @@ namespace Domain.Service.Effect
 
         public Impact Impact => Impact.Neutral;
 
+        public Impact AppliedImpact => _index == -1 ? Impact.Neutral : Effects[_index].AppliedImpact;
+
         public UniTask Apply(IActorOfEffect actor, ITargetOfEffect target, Vector2Int position, IMap map)
         {
             if (_notRandomized)
@@ -83,7 +85,7 @@ namespace Domain.Service.Effect
             return Effects.Average(effect => effect.EvaluatePrice());
         }
 
-        public string Info()
+        public string Description()
         {
             return "何らかの効果を発動\n";
         }

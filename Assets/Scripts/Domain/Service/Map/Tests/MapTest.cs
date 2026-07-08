@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Domain.Model.Map;
+using Domain.Model.WorldEvents;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -26,14 +27,14 @@ namespace Domain.Service.Map.Tests
         [TestCaseSource(nameof(IndexTestCases))]
         public void IndexTest1(int width, int height, Vector2Int position)
         {
-            var map = new Tilemap(width, height);
+            var map = new Tilemap(width, height, new WorldEventStream());
             Assert.AreEqual(new TileData(TileData.Build(MapType.Cave, TileCategory.Blank, false)), map.GetTile(position));
         }
 
         [TestCaseSource(nameof(IndexTest2Cases))]
         public void IndexTest2(int width, int height, Vector2Int position)
         {
-            var map = new Tilemap(width, height);
+            var map = new Tilemap(width, height, new WorldEventStream());
             Assert.Throws<ArgumentOutOfRangeException>(() => map.GetTile(position));
         }
     }

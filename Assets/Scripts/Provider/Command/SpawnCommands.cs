@@ -5,6 +5,7 @@ using Domain.Model.Item;
 using Domain.Service.Items;
 using Game;
 using IngameDebugConsole;
+using Provider.Texts;
 using Unity.Logging;
 using UnityEngine;
 using Utilities;
@@ -68,7 +69,7 @@ namespace Provider
 
                 var spawnedItem = _world.CurrentMap.SpawnItem(item, position);
                 var map = _world.CurrentMap;
-                Log.Info($"{spawnedItem.Item.GetName(map.Player, map.ItemPlaceholders)}を{position}にスポーンしました。");
+                Log.Info($"{ItemNameText.Of(spawnedItem.Item.NameIn(map))}を{position}にスポーンしました。");
             }
             catch (Exception e)
             {

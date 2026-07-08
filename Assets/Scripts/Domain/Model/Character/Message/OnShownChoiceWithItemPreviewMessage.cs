@@ -5,8 +5,8 @@ using Domain.Model.Map;
 namespace Domain.Model.Character.Message
 {
     public record OnShownChoiceWithItemPreviewMessage(
-        string? Text,
-        IMap Map,
-        (string Choice, IItem Item)[] Choices,
+        ChoiceMessage? Message,
+        IReadOnlyMap Map,
+        IReadOnlyItem[] Items,
         int? CancelChoiceIndex = null);
 }

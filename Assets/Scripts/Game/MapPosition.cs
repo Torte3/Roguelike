@@ -3,23 +3,22 @@ using System.Linq;
 using Domain.Model.Character;
 using Domain.Model.Entity;
 using Domain.Model.Map;
-using Domain.Service.Map;
 using Unity.Logging;
 using UnityEngine;
 
 namespace Game
 {
-    public class MapPosition : IMapPosition
+    internal class MapPosition : IMapPosition
     {
         public Vector2Int Position { get; init; }
         private IMap _map;
-        private ITilemapViewer _tilemapViewer;
+        private ITerrain _terrain;
 
-        public MapPosition(Vector2Int position, IMap map, ITilemapViewer tilemapViewer)
+        public MapPosition(Vector2Int position, IMap map, ITerrain terrain)
         {
             Position = position;
             _map = map;
-            _tilemapViewer = tilemapViewer;
+            _terrain = terrain;
         }
 
         public bool IsBlankIgnoreWall(params EntityLayer[] layers)
@@ -70,17 +69,17 @@ namespace Game
 
         public bool IsWalkableOnMap()
         {
-            return _tilemapViewer.IsWalkable(Position);
+            return _terrain.IsWalkable(Position);
         }
 
         public bool IsPassableOnMap()
         {
-            return _tilemapViewer.IsPassable(Position);
+            return _terrain.IsPassable(Position);
         }
 
         public bool IsLightPassable()
         {
-            return _tilemapViewer.IsTransparent(Position);
+            return _terrain.IsTransparent(Position);
         }
     }
 }

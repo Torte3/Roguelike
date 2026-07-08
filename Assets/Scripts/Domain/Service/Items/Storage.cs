@@ -6,6 +6,7 @@ using Domain.Model;
 using Domain.Model.Character.Message;
 using Domain.Model.Item;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using ObservableCollections;
 using R3;
 using Utilities;
@@ -27,19 +28,18 @@ namespace Domain.Service.Items
             .Cast<(IItem, int)>();
         public bool CanAddItem { get; init; }
         public bool CanRemoveItem { get; init; }
-        public Observable<OnItemInserted> OnItemInserted => _items.ObserveAdd().Select(itemAdded =>
-            new OnItemInserted(itemAdded.Value, itemAdded.Index)
+        public Observable<OnItemInserted<IItem>> OnItemInserted => _items.ObserveAdd().Select(itemAdded =>
+            new OnItemInserted<IItem>(itemAdded.Value, itemAdded.Index)
         );
-        public Observable<OnItemRemoved> OnItemRemoved => _items.ObserveRemove().Select(itemRemoved =>
-            new OnItemRemoved(itemRemoved.Value, itemRemoved.Index)
+        public Observable<OnItemRemoved<IItem>> OnItemRemoved => _items.ObserveRemove().Select(itemRemoved =>
+            new OnItemRemoved<IItem>(itemRemoved.Value, itemRemoved.Index)
         );
-        public Observable<OnItemReplaced> OnItemReplaced => _items.ObserveReplace().Select(itemChanged =>
-            new OnItemReplaced(itemChanged.NewValue, itemChanged.OldValue, itemChanged.Index)
+        public Observable<OnItemReplaced<IItem>> OnItemReplaced => _items.ObserveReplace().Select(itemChanged =>
+            new OnItemReplaced<IItem>(itemChanged.NewValue, itemChanged.OldValue, itemChanged.Index)
         );
-        private readonly Subject<OnItemUpdated> _onItemUpdated = new();
-        public Observable<OnItemUpdated> OnItemUpdated => _onItemUpdated;
         private readonly CompositeDisposable _disposables = new();
         private readonly Dictionary<IItem, CompositeDisposable> _itemDisposables = new();
+        private readonly List<InventoryRowChange> _rowChanges = new();
 
         public Storage(StorageMemento data)
         {
@@ -55,10 +55,6 @@ namespace Domain.Service.Items
                     _itemDisposables[itemAdded] = new CompositeDisposable();
                     if (itemAdded != null)
                     {
-                        itemAdded.OnItemUpdated.Subscribe(
-                            _ => _onItemUpdated.OnNext(new OnItemUpdated(itemAdded))
-                        ).AddTo(_itemDisposables[itemAdded]);
-
                         itemAdded.RemainingUses.SkipLatestValueOnSubscribe().Subscribe(
                             remainingUses =>
                             {
@@ -82,6 +78,12 @@ namespace Domain.Service.Items
                     _itemDisposables[itemRemoved].Dispose();
                     _itemDisposables.Remove(itemRemoved);
                 }).AddTo(_disposables);
+            _items.ObserveAdd()
+                .Subscribe(added => _rowChanges.Add(new InventoryRowChange(InventoryRowChangeKind.Inserted, added.Index)))
+                .AddTo(_disposables);
+            _items.ObserveRemove()
+                .Subscribe(removed => _rowChanges.Add(new InventoryRowChange(InventoryRowChangeKind.Removed, removed.Index)))
+                .AddTo(_disposables);
             _items.ObserveCountChanged().Subscribe(count =>
             {
                 _currentItemCount.Value = count;
@@ -90,7 +92,6 @@ namespace Domain.Service.Items
 
         public void Dispose()
         {
-            _onItemUpdated.Dispose();
             _disposables.Dispose();
             foreach (var disposable in _itemDisposables)
                 disposable.Value.Dispose();
@@ -276,6 +277,13 @@ namespace Domain.Service.Items
                 adjustedIndex2--;
             var item2 = Replace(item1, adjustedIndex2);
             Insert(item2, index1);
+        }
+
+        public IReadOnlyList<InventoryRowChange> TakeRowChanges()
+        {
+            var changes = _rowChanges.ToList();
+            _rowChanges.Clear();
+            return changes;
         }
 
         public IEnumerable<IItem> Clear()

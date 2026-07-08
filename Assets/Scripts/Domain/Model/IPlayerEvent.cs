@@ -8,7 +8,7 @@ namespace Domain.Model
 {
     public interface IPlayerEvent
     {
-        public string? ChoiceMessage { get; }
+        public ChoiceMessage? GetChoiceMessage(IMap map);
         public IReadOnlyList<PlayerChoiceEvent> Events { get; }
         public bool CanExecuteEvent(IPlayer player, IMap map);
         public UniTask<bool> DoEvent(IPlayer player, IGameManager gameManager, IMap map);

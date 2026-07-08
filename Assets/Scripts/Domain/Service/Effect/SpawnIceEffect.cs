@@ -32,7 +32,7 @@ namespace Domain.Service.Effect
             return 50f;
         }
 
-        public override string Info()
+        public override string Description()
         {
             return "水上なら氷を生成\n";
         }

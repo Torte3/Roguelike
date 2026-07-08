@@ -55,7 +55,7 @@ namespace Utilities
             public int Current => 1 << position;
         }
 
-        public static int NumOfBits(int bits)
+        private static int NumOfBits(int bits)
         {
             bits = (bits & 0x55555555) + ((bits >> 1) & 0x55555555);
             bits = (bits & 0x33333333) + ((bits >> 2) & 0x33333333);
@@ -111,16 +111,6 @@ namespace Utilities
                     yield return new Vector2Int(x, y) + center;
         }
 
-        public static T MinBy<T, U>(this IEnumerable<T> xs, Func<T, U> key) where U : IComparable<U>
-        {
-            return xs.Aggregate((a, b) => key(a).CompareTo(key(b)) < 0 ? a : b);
-        }
-
-        public static T MaxBy<T, U>(this IEnumerable<T> xs, Func<T, U> key) where U : IComparable<U>
-        {
-            return xs.Aggregate((a, b) => key(a).CompareTo(key(b)) > 0 ? a : b);
-        }
-
         public static T MinByOrDefault<T, U>(this IEnumerable<T> xs, Func<T, U> key, T defaultValue)
             where U : IComparable<U>
         {
@@ -143,30 +133,6 @@ namespace Utilities
             return xs.Aggregate((a, b) => key(a).CompareTo(key(b)) > 0 ? a : b);
         }
 
-        public static void SynchronizeWith<T>(this ICollection<T> collectionA, IEnumerable<T> collectionB)
-        {
-            // コレクションAの要素のうち、コレクションBに存在しないものを削除する
-            var itemsToRemove = collectionA.Except(collectionB).ToList();
-            foreach (var item in itemsToRemove)
-            {
-                collectionA.Remove(item);
-            }
-
-            // コレクションBの要素のうち、コレクションAに存在しないものを追加する
-            var itemsToAdd = collectionB.Except(collectionA).ToList();
-            foreach (var item in itemsToAdd)
-            {
-                collectionA.Add(item);
-            }
-        }
-
-        public static List<T> TakeAndRemove<T>(this List<T> list, int count)
-        {
-            var result = list.Take(count).ToList();
-            list.RemoveAll(item => result.Contains(item));
-            return result;
-        }
-
         public static T GetAtRandomAndRemove<T>(this List<T> list)
         {
             var result = list.GetAtRandom();
@@ -179,11 +145,6 @@ namespace Utilities
             var result = list.GetAtRandom(n);
             list.RemoveAll(item => result.Contains(item));
             return result;
-        }
-
-        public static IEnumerable<T> CreateNewInstances<T>(int count) where T : new()
-        {
-            return Enumerable.Range(0, count).Select(_ => new T());
         }
     }
 }

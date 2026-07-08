@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Domain.Model.Character;
 using Domain.Model.Map;
 using UnityEngine;
+using Utilities;
 
 namespace Domain.Service.Characters.Behavior
 {
@@ -28,6 +29,19 @@ namespace Domain.Service.Characters.Behavior
                 MoveTypeWhenDiscoveringTarget.Escape => Escape.GenerateMoveActionsDoable(character, targetPosition, map),
                 MoveTypeWhenDiscoveringTarget.Wander => Wander.GenerateMoveActionsDoable(character, map),
                 MoveTypeWhenDiscoveringTarget.NoMove => NoMove.GenerateMoveActionsDoable(character, map),
+                _ => throw new ArgumentException($"Invalid move type: {moveType}")
+            };
+        }
+
+        public static Direction8? NextStep(MoveTypeWhenDiscoveringTarget moveType, IHasBehavior character,
+            Vector2Int targetPosition, IMap map)
+        {
+            return moveType switch
+            {
+                MoveTypeWhenDiscoveringTarget.Chase => Chase.NextStep(character, targetPosition, map),
+                MoveTypeWhenDiscoveringTarget.Escape => Escape.NextStep(character, targetPosition),
+                MoveTypeWhenDiscoveringTarget.Wander => null,
+                MoveTypeWhenDiscoveringTarget.NoMove => null,
                 _ => throw new ArgumentException($"Invalid move type: {moveType}")
             };
         }

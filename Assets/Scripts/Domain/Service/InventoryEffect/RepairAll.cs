@@ -1,17 +1,16 @@
-using Domain.Model.Character;
-using Domain.Model.Dungeon;
 using Domain.Model.Entity;
 using Domain.Model.Item;
+using Domain.Model.Map;
 
 namespace Domain.Service.InventoryEffect
 {
     public class RepairAll : IInventoryEffect
     {
-        public void Apply(IPlayer player, IStorage storage, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
+        public void Apply(IStorage storage, IEntity itemHolder, IMap map)
         {
             foreach (var item in storage.AllItems)
             {
-                item.Repair(player, itemHolder, itemPlaceholders);
+                item.Repair(itemHolder, map);
             }
         }
 
@@ -20,7 +19,7 @@ namespace Domain.Service.InventoryEffect
             return 500 * 5;
         }
 
-        public string Info()
+        public string Description()
         {
             return "修理(全て)";
         }

@@ -8,6 +8,7 @@ using Domain.Model.Dungeon;
 using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Item;
+using Domain.Model.Map;
 using Domain.Model.Memento;
 using Domain.Service.Characters;
 using Domain.Service.Effect;
@@ -30,13 +31,14 @@ namespace Domain.Service.Items
         protected override bool HasSameEffect => _hasSameEffect;
         protected override bool HasSameSkill => _hasSameSkill;
         public override bool UseOnDeath => _useOnDeath;
-        public bool CanMergeUses => Category == ItemCategory.Books || Category == ItemCategory.Wands;
+        public override bool CanBeMergeBase => Category == ItemCategory.Books || Category == ItemCategory.Wands;
         public override bool RequiresLiteracy => Category == ItemCategory.Books || Category == ItemCategory.Scrolls;
         public override bool IdentifyIfGot => Category == ItemCategory.Weapons || Category == ItemCategory.Others;
         public override bool IdentifyIfUsed => Category != ItemCategory.Wands;
         public override bool AutoDestroyWhenDisabled => Category == ItemCategory.Potions || Category == ItemCategory.Scrolls || Category == ItemCategory.Others;
         public override ItemCurseKind CurseKind => ItemCurseKind.UseBlockedWhenCursed;
-        public readonly IReadOnlyList<ItemFeature> FeaturesToMergeWeapon;
+        private readonly IReadOnlyList<ItemFeature> _featuresToMergeWeapon;
+        public override IReadOnlyList<ItemFeature>? FeaturesForWeaponMerge => _featuresToMergeWeapon;
 
         public Item(ItemData data) : this(Build(data))
         {
@@ -107,7 +109,7 @@ namespace Domain.Service.Items
             }
 
             _useOnDeath = data.UseOnDeath;
-            FeaturesToMergeWeapon = data.FeaturesToMergeWeapon;
+            _featuresToMergeWeapon = data.FeaturesToMergeWeapon;
         }
 
         private readonly bool _hasSameEffect;
@@ -124,7 +126,7 @@ namespace Domain.Service.Items
                 hasSameEffect: _hasSameEffect,
                 hasSameSkill: _hasSameSkill,
                 useOnDeath: _useOnDeath,
-                featuresToMergeWeapon: FeaturesToMergeWeapon.ToList()
+                featuresToMergeWeapon: _featuresToMergeWeapon.ToList()
             ));
             return JsonUtility.FromJson<ItemMemento>(json);
         }
@@ -177,41 +179,45 @@ namespace Domain.Service.Items
 
         public override bool CanUpgrade() => false;
         public override bool CanDowngrade() => false;
-        public override void Upgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true) =>
+        public override void Upgrade(IEntity itemHolder, IMap map, bool log = true) =>
             throw new Exception("Cannot upgrade item");
-        public override void Downgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true) =>
+        public override void Downgrade(IEntity itemHolder, IMap map, bool log = true) =>
             throw new Exception("Cannot downgrade item");
 
         protected override string? BuildTemplatedActivatableSkillInfo()
         {
             if (Category != ItemCategory.Potions)
                 return null;
-            var info = ItemDescriptionTemplate.FormatPotion(
+            var description = ItemDescriptionTemplate.FormatPotion(
                 _skillOnUse.UnwrapOrNull() is { } u ? (SkillWithCost)u : null,
                 _skillOnThrow.UnwrapOrNull() is { } t ? (SkillWithCost)t : null,
                 _hasSameEffect,
                 _hasSameSkill);
-            return string.IsNullOrEmpty(info) ? null : info;
+            return string.IsNullOrEmpty(description) ? null : description;
         }
 
-        protected override string FullInfoImpl() => "";
+        protected override ItemAbilities? Abilities => null;
 
-        public Item Merge(Item mergedItem)
+        public override bool CanAcceptMergeMaterial(IItem material)
         {
-            if (BaseName != mergedItem.BaseName)
+            return BaseName == material.BaseName && CanBeMergeBase;
+        }
+
+        public override IItem MergeWith(IItem material)
+        {
+            if (BaseName != material.BaseName)
             {
                 throw new Exception("Cannot merge different items");
             }
-            else if (!CanMergeUses)
+            else if (!CanBeMergeBase)
             {
                 throw new Exception("Cannot merge uses");
             }
             var memento = Serialize();
-            var mergedMemento = mergedItem.Serialize();
             var item = new Item(memento.CopyWith(
                 baseItem: memento.BaseItem.CopyWith(
-                    maxUsages: memento.BaseItem.MaxUsages + mergedMemento.BaseItem.MaxUsages,
-                    remainingUsages: memento.BaseItem.RemainingUsages + mergedMemento.BaseItem.RemainingUsages
+                    maxUsages: memento.BaseItem.MaxUsages + material.MaxUsages,
+                    remainingUsages: memento.BaseItem.RemainingUsages + material.RemainingUses.CurrentValue
                 )
             ));
             return item;

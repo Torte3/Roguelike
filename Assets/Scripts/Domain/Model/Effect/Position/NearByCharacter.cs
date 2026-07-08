@@ -52,12 +52,12 @@ namespace Domain.Model.Effect.Position
             return 4 + 2 * NumberOfTarget;
         }
 
-        public string Info()
+        public string Description()
         {
-            var info = "近くの";
+            var description = "近くの";
             if (TargetAlly && TargetNeutral && TargetEnemy)
             {
-                info += "キャラクター";
+                description += "キャラクター";
             }
             else
             {
@@ -66,13 +66,13 @@ namespace Domain.Model.Effect.Position
                 if (TargetNeutral) targets.Add("中立");
                 if (TargetEnemy) targets.Add("敵");
 
-                info += string.Join("、", targets);
+                description += string.Join("、", targets);
             }
 
-            if (TargetSelf) info += "（自分含む）";
-            info += $"{ItemDescriptionRichText.RichSpatial(NumberOfTarget)}体";
+            if (TargetSelf) description += "（自分含む）";
+            description += $"{ItemDescriptionRichText.RichSpatial(NumberOfTarget)}体";
 
-            return info;
+            return description;
         }
     }
 }

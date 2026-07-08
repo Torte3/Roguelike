@@ -34,7 +34,7 @@ namespace Domain.Service.Effect
             return 20;
         }
 
-        public override string Info()
+        public override string Description()
         {
             return "警報を鳴らす\n";
         }

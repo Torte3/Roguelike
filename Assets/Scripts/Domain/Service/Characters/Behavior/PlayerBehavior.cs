@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Configuration;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
@@ -12,12 +13,12 @@ using Domain.Model.Entity;
 using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
-using Domain.Model.Setting;
+using Domain.Model.WorldEvents;
 using Domain.Service.Action;
 using Domain.Service.Events;
-using Domain.Service.Logs;
 using R3;
 using Unity.Logging;
+using UnityEngine;
 using Utilities;
 using Utilities.Serialize.Option;
 
@@ -68,12 +69,24 @@ namespace Domain.Service.Characters.Behavior
             IInput input)
         {
             Log.Debug("[Think] Start waiting input...");
+            await _receiver.WaitUntilReady();
             if (input.IsDash()) await _intelligentDashController.Wait(character, map);
 
             var tasks = InitializeTasks();
             _receiver.ReadInput();
-            var result = await tasks;
+            try
+            {
+                return await ReadAction(character, gameManager, map, input, await tasks);
+            }
+            finally
+            {
+                _receiver.FinishReading();
+            }
+        }
 
+        private async UniTask<IAction> ReadAction(IHasBehavior character, IGameManager gameManager, IMap map,
+            IInput input, (InputType type, (Move action, bool isStarted)? move, ItemFocus? focus) result)
+        {
             // 入力種別ごとの処理に振り分ける。各ハンドラは「確定した行動」を返し、null の場合は
             // まだ行動が確定していないので、次の入力を待ち直してループを続ける。
             while (true)
@@ -230,6 +243,7 @@ namespace Domain.Service.Characters.Behavior
                 if (!character.Inventory.CanSwap(focus.Index, focus2.Index))
                     throw new Exception($"Can't swap item from inventory: focus: {focus}, focus2: {focus2}");
                 character.Inventory.Swap(focus.Index, focus2.Index);
+                map.Events.Record(new ItemsReordered(character.Entity.Ref, focus.Index, focus2.Index, character.InventoryLookIn(map)));
             }
 
             return new DoNothing();
@@ -244,7 +258,7 @@ namespace Domain.Service.Characters.Behavior
                 return;
 
             var choices = new List<string>();
-            if (!focusItem.IsInfoIdentified(map.Player))
+            if (!map.Player.Character.IsKnownItem(focusItem))
             {
                 choices.Add("このアイテムの種類に名前をつける");
             }
@@ -284,6 +298,8 @@ namespace Domain.Service.Characters.Behavior
                     focusItem.RevertToDefaultName();
                     break;
             }
+
+            map.Events.Record(new ItemRenamed(character.Entity.Ref, character.WholeInventoryLookIn(map), map.PlayerUnderfoot()));
         }
 
         private static async UniTask<(IAction? action, bool anyEventCanExecute)> TryGetPlayerEventAction(IHasBehavior character, IGameManager gameManager, IMap map, IHasPlayerEvent? playerEventEntity, Swap swap)
@@ -328,12 +344,17 @@ namespace Domain.Service.Characters.Behavior
         {
         }
 
+        public bool AcceptsSwapFrom(IHasBehavior character, Vector2Int requesterPosition, IMap map)
+        {
+            return false;
+        }
+
         public async UniTask<ItemFocus> SelectItem(string text, params ItemFocus[] disabledItemIndexes)
         {
+            await _receiver.WaitUntilReady();
             _onStartItemSelect.OnNext(new OnStartItemSelectMessage(text, disabledItemIndexes));
             var focus = await WaitItemSelectOrCancel(disabledItemIndexes);
 
-            _gameManager.PlaySE(SE.ItemSelectConfirm);
             // 確定は Submit 入力の配信中（同期継続）に到達する。配信中に OnNext を発火すると、購読側の
             // 入力マップ切替が配信中のアクションを壊して IndexOutOfRange になるため、配信後（フレーム末）に発火する。
             await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
@@ -348,11 +369,11 @@ namespace Domain.Service.Characters.Behavior
             ItemSelectPreview? defaultPreview,
             string previewTitle)
         {
+            await _receiver.WaitUntilReady();
             _onStartItemSelect.OnNext(new OnStartItemSelectMessage(text, disabledItemIndexes, previews, defaultPreview, previewTitle));
 
             var focus = await WaitItemSelectOrCancel(disabledItemIndexes);
 
-            _gameManager.PlaySE(SE.ItemSelectConfirm);
             // 確定は Submit 入力の配信中（同期継続）に到達する。配信中に OnNext を発火すると、購読側の
             // 入力マップ切替が配信中のアクションを壊して IndexOutOfRange になるため、配信後（フレーム末）に発火する。
             await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
@@ -385,10 +406,9 @@ namespace Domain.Service.Characters.Behavior
                 return;
             if (!IsItemAccessibleForThrow(character, map, item))
                 return;
-            if (!item.IsDiscardBlocked)
+            if (!item.ThrowCheck().IsFailed(out var failure))
                 return;
-            GameLog.Add(character.Entity.IsVisible,
-                $"{item.GetName(map.Player, map.ItemPlaceholders)}は呪われていて投げられない");
+            map.Events.Record(new ItemActionFailed(character.Entity.IsVisible, item.NameIn(map), failure));
         }
 
         private static void LogIfCursedBlocksDropAfterDoableFailed(IHasBehavior character, IMap map, IItem? item)
@@ -397,10 +417,9 @@ namespace Domain.Service.Characters.Behavior
                 return;
             if (!character.Inventory.CanRemove(item))
                 return;
-            if (!item.IsDiscardBlocked)
+            if (!item.DiscardCheck().IsFailed(out var failure))
                 return;
-            GameLog.Add(character.Entity.IsVisible,
-                $"{item.GetName(map.Player, map.ItemPlaceholders)}は呪われていて捨てられない");
+            map.Events.Record(new ItemActionFailed(character.Entity.IsVisible, item.NameIn(map), failure));
         }
 
         private static bool IsItemAccessibleForThrow(IHasBehavior character, IMap map, IItem item) =>

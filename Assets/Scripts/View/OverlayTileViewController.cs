@@ -22,14 +22,14 @@ namespace View
             return _grasses.TryGetValue(type, out var grass) ? grass : _defaultGrass;
         }
 
-        public void SetGrass(Vector2Int position, TileSet type, TileVisibility? visibility = null)
+        public void SetGrass(Vector2Int position, TileSet type)
         {
-            SetTile(position, GetGrass(type), visibility);
+            SetTile(position, GetGrass(type));
         }
 
-        public void SetIce(Vector2Int position, TileVisibility? visibility = null)
+        public void SetIce(Vector2Int position)
         {
-            SetTile(position, _ice, visibility);
+            SetTile(position, _ice);
         }
 
         public void RemoveTile(Vector2Int position)
@@ -37,14 +37,14 @@ namespace View
             SetTile(position, null);
         }
 
-        private void SetTile(Vector2Int position, TileBase tile, TileVisibility? visibility = null)
+        private void SetTile(Vector2Int position, TileBase tile)
         {
-            var color = visibility?.GetColor() ?? GetTileColor(position);
+            var color = GetTileColor(position);
             _tilemap.SetTile(new Vector3Int(position.x, position.y, 0), tile);
             SetTileColor(position, color);
         }
 
-        public Color GetTileColor(Vector2Int position)
+        private Color GetTileColor(Vector2Int position)
         {
             var color = _tilemap.GetColor(new Vector3Int(position.x, position.y, 0));
             return color;

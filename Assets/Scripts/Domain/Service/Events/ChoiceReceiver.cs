@@ -1,6 +1,7 @@
 #nullable enable
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using Domain.Model;
 using Domain.Model.Character.Message;
 using Domain.Model.Item;
 using Domain.Model.Map;
@@ -11,80 +12,80 @@ namespace Domain.Service.Events
 {
     public class ChoiceReceiver
     {
-        private readonly Subject<(string? text, string[] choices, int? cancelChoiceIndex)> _onShownChoice = new();
-        public Observable<(string? text, string[] choices, int? cancelChoiceIndex)> OnShownChoice => _onShownChoice;
-        private readonly Subject<(string? text, (string choice, string infoTitle, string info)[] choices, int defaultIndex, bool clearPreviousMenus)> _onShownChoiceWithInfo = new();
-        public Observable<(string? text, (string choice, string infoTitle, string info)[] choices, int defaultIndex, bool clearPreviousMenus)> OnShownChoiceWithInfo => _onShownChoiceWithInfo;
+        private readonly Subject<(ChoiceMessage? message, string[] choices, int? cancelChoiceIndex)> _onShownChoice = new();
+        public Observable<(ChoiceMessage? message, string[] choices, int? cancelChoiceIndex)> OnShownChoice => _onShownChoice;
+        private readonly Subject<(ChoiceMessage? message, (string choice, ChoiceMessage infoTitle, string info)[] choices, int defaultIndex, bool clearPreviousMenus)> _onShownChoiceWithInfo = new();
+        public Observable<(ChoiceMessage? message, (string choice, ChoiceMessage infoTitle, string info)[] choices, int defaultIndex, bool clearPreviousMenus)> OnShownChoiceWithInfo => _onShownChoiceWithInfo;
         private readonly Subject<OnShownChoiceWithItemPreviewMessage> _onShownChoiceWithItemPreview = new();
         public Observable<OnShownChoiceWithItemPreviewMessage> OnShownChoiceWithItemPreview => _onShownChoiceWithItemPreview;
         private readonly AsyncReactiveProperty<int> _onReceivedChoicedIndex = new(-1);
 
-        public UniTask<int> GetChoice(string? text, params string[] choices) =>
-            GetChoiceInternal(text, null, choices);
+        public UniTask<int> GetChoice(ChoiceMessage? message, params string[] choices) =>
+            GetChoiceInternal(message, null, choices);
 
-        public UniTask<int> GetChoice(string? text, int cancelChoiceIndex, params string[] choices) =>
-            GetChoiceInternal(text, cancelChoiceIndex, choices);
+        public UniTask<int> GetChoice(ChoiceMessage? message, int cancelChoiceIndex, params string[] choices) =>
+            GetChoiceInternal(message, cancelChoiceIndex, choices);
 
-        private async UniTask<int> GetChoiceInternal(string? text, int? cancelChoiceIndex, string[] choices)
+        private async UniTask<int> GetChoiceInternal(ChoiceMessage? message, int? cancelChoiceIndex, string[] choices)
         {
-            Log.Debug($"[Menu]GetChoice: {text} {string.Join(", ", choices)}");
-            ShowChoices(text, choices, cancelChoiceIndex);
+            Log.Debug($"[Menu]GetChoice: {message} {string.Join(", ", choices)}");
+            ShowChoices(message, choices, cancelChoiceIndex);
             var index = await _onReceivedChoicedIndex.WaitAsync();
             Log.Debug($"[Menu]GetChoice: {index}");
             return index;
         }
 
         public UniTask<int> GetChoiceWithInfo(
-            string? text,
+            ChoiceMessage? message,
             int defaultIndex = 0,
             bool clearPreviousMenus = false,
-            params (string choice, string infoTitle, string info)[] choices) =>
-            GetChoiceWithInfoInternal(text, choices, defaultIndex, clearPreviousMenus);
+            params (string choice, ChoiceMessage infoTitle, string info)[] choices) =>
+            GetChoiceWithInfoInternal(message, choices, defaultIndex, clearPreviousMenus);
 
         private async UniTask<int> GetChoiceWithInfoInternal(
-            string? text,
-            (string choice, string infoTitle, string info)[] choices,
+            ChoiceMessage? message,
+            (string choice, ChoiceMessage infoTitle, string info)[] choices,
             int defaultIndex,
             bool clearPreviousMenus)
         {
-            Log.Debug($"[Menu]GetChoice: {text} {string.Join(", ", choices.Select(c => c.choice))}");
-            ShowChoicesWithInfo(text, choices, defaultIndex, clearPreviousMenus);
+            Log.Debug($"[Menu]GetChoice: {message} {string.Join(", ", choices.Select(c => c.choice))}");
+            ShowChoicesWithInfo(message, choices, defaultIndex, clearPreviousMenus);
             var index = await _onReceivedChoicedIndex.WaitAsync();
             Log.Debug($"[Menu]GetChoice: {index}");
             return index;
         }
 
-        public UniTask<int> GetChoiceWithItemPreview(string? text, IMap map, params (string choice, IItem item)[] choices) =>
-            GetChoiceWithItemPreviewInternal(text, map, null, choices);
+        public UniTask<int> GetChoiceWithItemPreview(ChoiceMessage? message, IMap map, params IItem[] items) =>
+            GetChoiceWithItemPreviewInternal(message, map, null, items);
 
         public UniTask<int> GetChoiceWithItemPreview(
-            string? text,
+            ChoiceMessage? message,
             IMap map,
             int cancelChoiceIndex,
-            params (string choice, IItem item)[] choices) =>
-            GetChoiceWithItemPreviewInternal(text, map, cancelChoiceIndex, choices);
+            params IItem[] items) =>
+            GetChoiceWithItemPreviewInternal(message, map, cancelChoiceIndex, items);
 
         private async UniTask<int> GetChoiceWithItemPreviewInternal(
-            string? text,
+            ChoiceMessage? message,
             IMap map,
             int? cancelChoiceIndex,
-            (string choice, IItem item)[] choices)
+            IItem[] items)
         {
-            Log.Debug($"[Menu]GetChoiceWithItemPreview: {text} {string.Join(", ", choices.Select(c => c.choice))}");
-            _onShownChoiceWithItemPreview.OnNext(new OnShownChoiceWithItemPreviewMessage(text, map, choices, cancelChoiceIndex));
+            Log.Debug($"[Menu]GetChoiceWithItemPreview: {message} {string.Join(", ", items.Select(item => item.DebugName))}");
+            _onShownChoiceWithItemPreview.OnNext(new OnShownChoiceWithItemPreviewMessage(message, map, items, cancelChoiceIndex));
             var index = await _onReceivedChoicedIndex.WaitAsync();
             Log.Debug($"[Menu]GetChoiceWithItemPreview: {index}");
             return index;
         }
 
-        private void ShowChoicesWithInfo(string? text, (string choice, string infoTitle, string info)[] choices, int defaultIndex, bool clearPreviousMenus)
+        private void ShowChoicesWithInfo(ChoiceMessage? message, (string choice, ChoiceMessage infoTitle, string info)[] choices, int defaultIndex, bool clearPreviousMenus)
         {
-            _onShownChoiceWithInfo.OnNext((text, choices, defaultIndex, clearPreviousMenus));
+            _onShownChoiceWithInfo.OnNext((message, choices, defaultIndex, clearPreviousMenus));
         }
 
-        private void ShowChoices(string? text, string[] choices, int? cancelChoiceIndex)
+        private void ShowChoices(ChoiceMessage? message, string[] choices, int? cancelChoiceIndex)
         {
-            _onShownChoice.OnNext((text, choices, cancelChoiceIndex));
+            _onShownChoice.OnNext((message, choices, cancelChoiceIndex));
         }
 
         public void SetChoicedIndex(int index)

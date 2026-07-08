@@ -19,7 +19,7 @@ namespace Domain.Service.Action
             return !actor.Status.IsFlagStat(FlagStatType.CannotAct);
         }
 
-        public UniTask Do(IActor actor, IMap map, IInput input)
+        public UniTask Do(IActor actor, IMap map)
         {
             actor.PickUpItem(map);
             return UniTask.CompletedTask;
@@ -28,11 +28,6 @@ namespace Domain.Service.Action
         public float Evaluate(IActor actor, IMap map)
         {
             return 0;
-        }
-
-        public string Info()
-        {
-            return $"PickUpItem";
         }
     }
 }

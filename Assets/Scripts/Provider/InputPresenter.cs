@@ -1,12 +1,13 @@
 #nullable enable
 using System.Linq;
+using Configuration;
 using Cysharp.Threading.Tasks;
-using Domain.Model.Setting;
 using Domain.Service.Characters.Behavior;
 using Domain.Service.Events;
 using Game;
 using IngameDebugConsole;
 using Provider.Input;
+using Provider.Texts;
 using R3;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -14,6 +15,7 @@ using UnityEngine.InputSystem.UI;
 using Utilities;
 using VContainer;
 using View;
+using View.Playback;
 using View.UI;
 
 namespace Provider
@@ -22,9 +24,12 @@ namespace Provider
     {
         [Inject]
         public InputPresenter(InputReceiver receiver, GameInput input, CharacterControlInputReceiver actionReceiver,
-            ChoiceReceiver choiceReceiver, CharacterSelectReceiver characterSelectReceiver, TextInputReceiver textInputReceiver, World world,
-            MenuController menuController, InventoryView inventoryView)
+            ChoiceReceiver choiceReceiver, CharacterSelectReceiver characterSelectReceiver, TextInputReceiver textInputReceiver,
+            MenuController menuController, InventoryView inventoryView, PlaybackQueue playback, DashState dash)
         {
+            dash.IsDashing = () => receiver.IsDashPressed;
+            actionReceiver.SetReadyWaiter(playback.WaitUntilIdle);
+
             var logWindowVisible = Observable.EveryValueChanged(DebugLogManager.Instance, x => x.IsLogWindowVisible).ToReadOnlyReactiveProperty();
             var textInputShown = new ReactiveProperty<bool>(false);
             Observable.CombineLatest(logWindowVisible, actionReceiver.IsEnabled.SkipLatestValueOnSubscribe(), textInputShown)
@@ -104,26 +109,36 @@ namespace Provider
 
             choiceReceiver.OnShownChoiceWithInfo.Subscribe(async message =>
             {
-                var index = await menuController.GetChoiceWithInfo(message.text, message.defaultIndex, message.clearPreviousMenus, message.choices);
+                await playback.WaitUntilIdle();
+                var choices = message.choices
+                    .Select(choice => (choice.choice, ToneText.Of(choice.infoTitle), choice.info))
+                    .ToArray();
+                var index = await menuController.GetChoiceWithInfo(ToneText.Of(message.message), message.defaultIndex, message.clearPreviousMenus, choices);
                 choiceReceiver.SetChoicedIndex(index);
             });
 
             choiceReceiver.OnShownChoice.Subscribe(async message =>
             {
+                await playback.WaitUntilIdle();
                 var index = message.cancelChoiceIndex is { } cancelIndex
-                    ? await menuController.GetChoice(message.text, cancelIndex, message.choices)
-                    : await menuController.GetChoice(message.text, message.choices);
+                    ? await menuController.GetChoice(ToneText.Of(message.message), cancelIndex, message.choices)
+                    : await menuController.GetChoice(ToneText.Of(message.message), message.choices);
                 choiceReceiver.SetChoicedIndex(index);
             });
 
             characterSelectReceiver.OnShownChoice.Subscribe(async message =>
             {
-                var index = await menuController.GetCharacter(message);
+                await playback.WaitUntilIdle();
+                var index = await menuController.GetCharacter(message
+                    .Select(character => (character.name, character.textureName,
+                        UnlockText.Of(character.unlock, character.info), character.unlock.IsUnlocked))
+                    .ToList());
                 characterSelectReceiver.SetChoicedIndex(index);
             });
 
             textInputReceiver.OnShownTextInput.Subscribe(async canCancel =>
             {
+                await playback.WaitUntilIdle();
                 textInputShown.Value = true;
                 var text = await menuController.GetTextInput(canCancel);
                 textInputReceiver.SetTextInput(text);

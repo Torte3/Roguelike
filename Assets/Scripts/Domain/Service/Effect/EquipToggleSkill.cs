@@ -21,15 +21,15 @@ namespace Domain.Service.Effect
 
         public EquipToggleSkillMemento Serialize() => new();
 
-        public static EquipToggleSkillMemento BuildMemento() => new();
+        internal static EquipToggleSkillMemento BuildMemento() => new();
 
         public UniTask<ISkillResult> Use(IActorOfEffect actor, IItem item, Vector2Int position, Direction8 direction, IMap map)
         {
             if (item is IEquipmentToggleTarget toggleTarget)
             {
                 if (!toggleTarget.TryToggleEquipped(actor, map))
-                    return UniTask.FromResult((ISkillResult)SpawnEffectSkillResult.Failed);
-                return UniTask.FromResult((ISkillResult)SpawnEffectSkillResult.Success);
+                    return UniTask.FromResult((ISkillResult)SkillOutcome.Failed);
+                return UniTask.FromResult((ISkillResult)SkillOutcome.Success);
             }
 
             throw new ArgumentException($"Expected {nameof(IEquipmentToggleTarget)}, got {item.GetType().Name}");
@@ -39,6 +39,6 @@ namespace Domain.Service.Effect
 
         public float EvaluatePrice() => 0;
 
-        public string Info() => "装備する / 外す\n";
+        public string Description() => "装備する / 外す\n";
     }
 }

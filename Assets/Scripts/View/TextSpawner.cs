@@ -21,7 +21,7 @@ namespace View
             _numberText = ObjectLoader.LoadPrefab("NumberText").GetComponent<TextMeshProUGUI>();
         }
 
-        public TextMeshProUGUI SpawnNumber(Vector2 position, string text)
+        internal TextMeshProUGUI SpawnNumber(Vector2 position, string text)
         {
             var instance = Instantiate(_numberText, canvas.transform);
             instance.text = text;
@@ -29,7 +29,7 @@ namespace View
             return instance;
         }
 
-        public void DeleteAll<T>() where T : Component
+        internal void DeleteAll<T>() where T : Component
         {
             foreach (var component in canvas.GetComponentsInChildren<T>())
             {

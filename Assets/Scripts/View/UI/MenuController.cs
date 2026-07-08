@@ -193,7 +193,7 @@ namespace View.UI
             _menuStack.Push(menu);
         }
 
-        public void PushMenu(IMenu pushedMenu)
+        private void PushMenu(IMenu pushedMenu)
         {
             Log.Info($"[Menu]PushMenu: {pushedMenu} MenuStack Count: {_menuStack.Count}");
             if (_menuStack.Count > 0)
@@ -248,10 +248,9 @@ namespace View.UI
             SwitchMenu(_titleMenu);
         }
 
-        public void TitleMenuWhenGameOver(int level, float score, string causeOfDeath)
+        internal void ShowGameOver(int level, float score, string causeOfDeath)
         {
             _titleMenu.SetData(level, score, causeOfDeath);
-            SwitchMenu(_titleMenu);
         }
 
         public void DungeonMenu()

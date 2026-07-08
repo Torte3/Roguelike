@@ -1,7 +1,6 @@
-﻿using System;
-using System.ComponentModel;
-using Domain.Model.Memento;
-using Utilities.WorldCreater;
+﻿using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
+using UnityEngine;
 
 namespace Domain.Model.Map
 {
@@ -30,8 +29,6 @@ namespace Domain.Model.Map
 
         public static TileMemento Build(MapType mapType, TileCategory tileCategory, bool isKnown)
         {
-            if (mapType == MapType.WorldMap)
-                throw new ArgumentException("WorldMap cannot be used with TileCategory");
             return new TileMemento
             (
                 mapType,
@@ -40,23 +37,15 @@ namespace Domain.Model.Map
             );
         }
 
-        public static TileMemento Build(WorldTileType worldTileType, bool isKnown)
-        {
-            return new TileMemento
-            (
-                MapType.WorldMap,
-                (int)worldTileType,
-                isKnown
-            );
-        }
-
         public TileCategory Category()
         {
-            if (MapType != MapType.WorldMap)
-                return (TileCategory)Index;
-            else
-                return ((WorldTileType)Index).Category();
+            return (TileCategory)Index;
         }
+        public TileState ToState(Vector2Int position)
+        {
+            return new TileState(position, MapType, Category(), IsKnown);
+        }
+
         public bool IsWalkable() => Category().IsWalkable();
         public bool IsPassable() => Category().IsPassable();
         public bool IsTransparent() => Category().IsTransparent();
@@ -64,19 +53,5 @@ namespace Domain.Model.Map
         {
             IsKnown = isKnown;
         }
-    }
-
-    public static class WorldTileTypeExtension
-    {
-        public static TileCategory Category(this WorldTileType worldTileType) => worldTileType switch
-        {
-            WorldTileType.Blank => TileCategory.Blank,
-            WorldTileType.Grass => TileCategory.Floor,
-            WorldTileType.Ocean => TileCategory.Water,
-            WorldTileType.Mountain => TileCategory.Wall,
-            WorldTileType.Forest => TileCategory.Floor,
-            WorldTileType.Desert => TileCategory.Floor,
-            _ => throw new InvalidEnumArgumentException()
-        };
     }
 }

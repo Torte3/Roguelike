@@ -24,14 +24,12 @@ namespace View
             return Direction.CurrentValue;
         }
 
-        public void Construct(string characterTypeName, bool isEnemy, bool isAlly)
+        public void Construct(string characterTypeName)
         {
             var animation = ObjectLoader.LoadAnimation(characterTypeName);
 
             _animator = GetComponent<Animator>();
             _animator.runtimeAnimatorController = animation;
-
-            UpdateGroupMarker(isEnemy, isAlly);
         }
 
         public void SetScale(float value)

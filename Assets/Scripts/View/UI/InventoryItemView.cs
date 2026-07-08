@@ -18,7 +18,7 @@ namespace View.UI
         [SerializeField] private TMP_Text _name;
         private ParticleController _particles => _icon.GetComponent<ParticleController>();
         private readonly Subject<Unit> _onFocus = new();
-        public Observable<Unit> OnSelected => _onFocus;
+        internal Observable<Unit> OnSelected => _onFocus;
 
         public override void OnSelect(BaseEventData eventData)
         {
@@ -84,7 +84,7 @@ namespace View.UI
             _name.color = isUsable ? Colors.White : Colors.Gray;
         }
 
-        public void UpdateInteractable(bool interactable)
+        internal void UpdateInteractable(bool interactable)
         {
             this.interactable = interactable;
         }

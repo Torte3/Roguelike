@@ -23,6 +23,7 @@ namespace View.UI
         public ReadOnlyReactiveProperty<InventoryViewIndex> Focus => _focusIndex.Select(index => GetFocus(index)).ToReadOnlyReactiveProperty();
         // 現在のフォーカス（単一所有者）。ReactiveProperty を生成せず即値で返す。
         public InventoryViewIndex CurrentFocus => GetFocus(_focusIndex.CurrentValue);
+        internal ItemViewData EmptyRow => _defaultEmptyItem;
         public void Initialize()
         {
             Log.Debug($"[View]InventoryView Initialize");
@@ -138,7 +139,7 @@ namespace View.UI
             _storageView.ConfigureNavigation(readNavigate);
         }
 
-        public void UpdateAllItemInteractable()
+        private void UpdateAllItemInteractable()
         {
             foreach (var (item, index) in _storageView.ItemViews.Index())
             {
@@ -162,7 +163,7 @@ namespace View.UI
             UpdateAllItemInteractable();
         }
 
-        public void EnableAllItems()
+        internal void EnableAllItems()
         {
             Log.Debug($"[View]InventoryView EnableAllItems");
             if (_enabled)
@@ -171,7 +172,7 @@ namespace View.UI
             UpdateAllItemInteractable();
         }
 
-        public void DisableAllItems()
+        internal void DisableAllItems()
         {
             Log.Debug($"[View]InventoryView DisableAllItems");
             if (!_enabled)

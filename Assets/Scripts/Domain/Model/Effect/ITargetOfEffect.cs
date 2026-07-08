@@ -7,7 +7,7 @@ using Utilities;
 
 namespace Domain.Model.Effect
 {
-    public interface ITargetOfEffect : IHasName, IHasStatus, IHasInventory, IEntity
+    public interface ITargetOfEffect : IHasLabel, IHasStatus, IHasInventory, IEntity
     {
         public IVisionRange VisionRange { get; }
         public void AddCondition(Id<IEntity> actor, ConditionTemplate condition);

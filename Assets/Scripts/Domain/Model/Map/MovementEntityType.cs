@@ -1,4 +1,5 @@
 using System;
+using Domain.Model.WorldEvents;
 
 namespace Domain.Model.Map
 {
@@ -17,6 +18,15 @@ namespace Domain.Model.Map
                 MovementEntityType.DownStairs => MovementEntityType.UpStairs,
                 MovementEntityType.UpStairs => MovementEntityType.DownStairs,
                 MovementEntityType.MagicCircle => MovementEntityType.MagicCircle,
+                _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+            };
+
+        public static FixtureKind ToFixtureKind(this MovementEntityType type) =>
+            type switch
+            {
+                MovementEntityType.UpStairs => FixtureKind.UpStairs,
+                MovementEntityType.DownStairs => FixtureKind.DownStairs,
+                MovementEntityType.MagicCircle => FixtureKind.MagicCircle,
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
     }

@@ -38,8 +38,8 @@ namespace Domain.Service.Effect
 
         public UniTask<ISkillResult> Use(IStorage storage, IEntity itemHolder, IMap map)
         {
-            _inventoryEffect.Apply(map.Player, storage, itemHolder, map.ItemPlaceholders);
-            return UniTask.FromResult((ISkillResult)InventoryTargetSkillResult.Success);
+            _inventoryEffect.Apply(storage, itemHolder, map);
+            return UniTask.FromResult((ISkillResult)SkillOutcome.Success);
         }
 
         public float Evaluate() => 0;
@@ -49,19 +49,9 @@ namespace Domain.Service.Effect
             return _inventoryEffect.EvaluatePrice();
         }
 
-        public string Info(bool hasStorage = false)
+        public string Description()
         {
-            var info = "";
-            if (hasStorage)
-            {
-                info += $"中身を対象にして\n";
-            }
-            else
-            {
-                info += $"使用者のインベントリを対象にして\n";
-            }
-            info += _inventoryEffect.Info();
-            return info;
+            return "使用者のインベントリを対象にして\n" + _inventoryEffect.Description();
         }
     }
 }

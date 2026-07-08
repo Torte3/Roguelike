@@ -7,7 +7,7 @@ using Utilities.Serialize;
 namespace Domain.Model.Character
 {
     [Serializable]
-    public class AdditionalConditionData : IHasInfo
+    public class AdditionalConditionData
     {
         [Required] public ScriptableObjectSerializable<ConditionTemplate> Condition;
         [Range(0, 1)] public float Probability;
@@ -16,11 +16,6 @@ namespace Domain.Model.Character
         {
             Condition = new ScriptableObjectSerializable<ConditionTemplate>(condition);
             Probability = probability;
-        }
-
-        public string Info()
-        {
-            return $"{Condition.Value.Condition.Name} {Probability:P0}";
         }
     }
 }

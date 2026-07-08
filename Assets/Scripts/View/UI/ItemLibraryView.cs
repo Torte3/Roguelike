@@ -57,7 +57,7 @@ namespace View.UI
                 SetNavigation(i);
         }
 
-        public void SetNavigation(int index)
+        private void SetNavigation(int index)
         {
             var nav = new Navigation
             {

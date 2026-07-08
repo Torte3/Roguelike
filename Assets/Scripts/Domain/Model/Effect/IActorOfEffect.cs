@@ -6,7 +6,7 @@ using Utilities;
 
 namespace Domain.Model.Effect
 {
-    public interface IActorOfEffect : IHasName, IHasStatus, IHasAffiliation, IEntity
+    public interface IActorOfEffect : IHasLabel, IHasStatus, IHasAffiliation, IEntity
     {
         public bool CanReadItem { get; }
         public bool IsShiny { get; }

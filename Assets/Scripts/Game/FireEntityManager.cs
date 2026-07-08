@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Domain.Model;
+using Domain.Model.Entity;
 using Domain.Model.Evaluation;
 using Domain.Model.Map;
 using Domain.Model.Memento;
@@ -12,7 +13,7 @@ using Utilities;
 
 namespace Game
 {
-    public class FireEntityManager
+    internal class FireEntityManager
     {
         private readonly ObservableList<Fire> _fireEntities = new();
 
@@ -80,7 +81,7 @@ namespace Game
 
             foreach (var fire in destroyedFires)
             {
-                fire.Entity.Destroy("は自然に消えた");
+                fire.Entity.Destroy();
             }
 
             foreach (var fire in addedFires)

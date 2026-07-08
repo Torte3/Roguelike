@@ -47,7 +47,7 @@ namespace Domain.Service.Effect
             return 50f;
         }
 
-        public override string Info()
+        public override string Description()
         {
             return "対象に向かってテレポート\n";
         }

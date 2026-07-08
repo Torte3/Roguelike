@@ -41,6 +41,6 @@ namespace Domain.Model.Effect
 
         public abstract float EvaluatePrice();
 
-        public abstract string Info();
+        public abstract string Description();
     }
 }

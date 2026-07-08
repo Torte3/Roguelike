@@ -36,6 +36,7 @@ namespace Domain.Service.Characters.Behavior
         private readonly Option<Location> _homeLocation = Option.None<Location>();
 
         private readonly float behavioralRandomness = 0.01f;
+        private const float AdvanceAngleLimit = 90;
 
         private readonly MoveTypeWhenUndiscoveringTarget _wander;
 
@@ -138,7 +139,7 @@ namespace Domain.Service.Characters.Behavior
 
             foreach (var actionTemp in actions)
             {
-                Log.Debug($"[Think]{actionTemp.action.Info()} {actionTemp.evaluate}");
+                Log.Debug($"[Think]{actionTemp.action} {actionTemp.evaluate}");
             }
 
             // わずかな乱数を足すのは、同点の候補が毎ターン同じ動きに偏るのを防ぐため。
@@ -233,7 +234,7 @@ namespace Domain.Service.Characters.Behavior
             if (_previousResult.State == BehaviorState.ApproachingToObserve)
             {
                 if (CanReachButNotAtTarget(character, _previousResult.TargetLocation.Value, map)
-                    && !character.VisionRange.IsVisible(_previousResult.TargetLocation.Value.Position))
+                    && !character.IsVisible(_previousResult.TargetLocation.Value.Position))
                 {
                     return _previousResult;
                 }
@@ -272,17 +273,17 @@ namespace Domain.Service.Characters.Behavior
             return new BehaviorResult(BehaviorState.Wandering, Option.None<Location>());
         }
 
-        public bool CanReachButNotAtTarget(IHasBehavior character, Location targetLocation, IMap map)
+        private bool CanReachButNotAtTarget(IHasBehavior character, Location targetLocation, IMap map)
         {
             if (targetLocation.MapId != map.Id)
             {
                 return false;
             }
             return character.Entity.CurrentPosition != targetLocation.Position
-                   && map.IsReachable(character.Entity.CurrentPosition, targetLocation.Position, character);
+                   && map.IsReachable(targetLocation.Position, character);
         }
 
-        public bool IsChasingEnemy()
+        private bool IsChasingEnemy()
         {
             return _default is Chase && (_greaterThanTopBound == null || _greaterThanTopBound is Chase) &&
                    (_lessThanBottomBound == null || _lessThanBottomBound is Chase);
@@ -294,7 +295,7 @@ namespace Domain.Service.Characters.Behavior
             return distance;
         }
 
-        public MoveTypeWhenDiscoveringTarget GetMoveTypeWhenDiscoveringTarget(IHasBehavior character,
+        private MoveTypeWhenDiscoveringTarget GetMoveTypeWhenDiscoveringTarget(IHasBehavior character,
             Vector2Int targetPosition, BehaviorState state)
         {
             switch (state)
@@ -456,6 +457,20 @@ namespace Domain.Service.Characters.Behavior
                 .Where(action => action.Doable(character, map))
                 .Select(action => (item: (IAction)action, evaluate: action.Evaluate(character, map)))
                 .Where(action => action.evaluate > 0);
+        }
+
+        public bool AcceptsSwapFrom(IHasBehavior character, Vector2Int requesterPosition, IMap map)
+        {
+            var result = GenerateNextBehaviorResult(character, map);
+            if (!result.TargetLocation.IsSome(out var target) || target.MapId != map.Id)
+                return true;
+
+            var moveType = GetMoveTypeWhenDiscoveringTarget(character, target.Position, result.State);
+            if (MoveGenerater.NextStep(moveType, character, target.Position, map) is not { } step)
+                return !(result.State == BehaviorState.DiscoveringEnemy && moveType == MoveTypeWhenDiscoveringTarget.Chase);
+
+            var towardRequester = new Angle(requesterPosition - character.Entity.CurrentPosition).Value;
+            return Mathf.Abs(Mathf.DeltaAngle(step.Angle().Value, towardRequester)) < AdvanceAngleLimit;
         }
 
         public void KnowLocationOf(Location location)

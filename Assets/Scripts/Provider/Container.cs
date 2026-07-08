@@ -3,13 +3,14 @@ using Domain.Service.Characters.Behavior;
 using Domain.Service.Events;
 using Game;
 using Provider.Input;
+using Provider.Presentations;
 using Utilities;
 using VContainer;
 using VContainer.Unity;
 using View;
+using View.Playback;
 using View.UI;
 #if UNITY_EDITOR
-using System.Text;
 using Sirenix.OdinInspector;
 using Unity.Logging;
 using UnityEngine;
@@ -29,7 +30,7 @@ namespace Provider
         protected override void Configure(IContainerBuilder builder)
         {
             builder.Register<GameManager>(Lifetime.Singleton).AsSelf().As<IGameManager>();
-            builder.Register<World>(Lifetime.Singleton);
+            builder.Register<World>(Lifetime.Singleton).AsSelf().As<IReadOnlyWorld>();
             builder.Register<InputReceiver>(Lifetime.Singleton);
             builder.Register<GameInput>(Lifetime.Singleton);
             builder.Register<EffectViewSpawner>(Lifetime.Singleton);
@@ -39,10 +40,13 @@ namespace Provider
             builder.Register<TextInputReceiver>(Lifetime.Singleton);
             builder.Register<CharacterControlInputReceiver>(Lifetime.Singleton);
             builder.Register<TutorialReceiver>(Lifetime.Singleton);
-            builder.Register<SynchronizedCharacterView>(Lifetime.Singleton);
-            builder.Register<SynchronizedIconEntityView>(Lifetime.Singleton);
-            builder.Register<SynchronizedThrowAnimationEntityView>(Lifetime.Singleton);
-            builder.Register<SynchronizedFireEntityView>(Lifetime.Singleton);
+            builder.Register<DashState>(Lifetime.Singleton);
+            builder.Register<ShownSight>(Lifetime.Singleton);
+            builder.Register<EntityBoard>(Lifetime.Singleton);
+            builder.Register<ProjectileLayer>(Lifetime.Singleton);
+            builder.Register<TileBoard>(Lifetime.Singleton);
+            builder.Register<PlaybackContext>(Lifetime.Singleton);
+            builder.Register<PlaybackQueue>(Lifetime.Singleton);
             builder.RegisterComponentInHierarchy<DungeonInfoView>();
             builder.RegisterComponentInHierarchy<TilePalette>();
             builder.RegisterComponentInHierarchy<TileViewController>();
@@ -71,24 +75,13 @@ namespace Provider
             builder.RegisterComponentInHierarchy<TutorialWindow>();
 
             builder.RegisterPlainEntryPoint<InitPresenter>();
-            builder.RegisterPlainEntryPoint<DungeonInfoPresenter>();
+            builder.RegisterPlainEntryPoint<WorldEventTranslator>();
             builder.RegisterPlainEntryPoint<InputPresenter>();
-            builder.RegisterPlainEntryPoint<TilemapPresenter>();
-            builder.RegisterPlainEntryPoint<PlayerPresenter>();
-            builder.RegisterPlainEntryPoint<PlayerInventoryPresenter>();
-            builder.RegisterPlainEntryPoint<PlayerCameraPresenter>();
             builder.RegisterPlainEntryPoint<EffectPreviewPresenter>();
-            builder.RegisterPlainEntryPoint<DamagePresenter>();
-            builder.RegisterPlainEntryPoint<PickupEmphasisPresenter>();
-            builder.RegisterPlainEntryPoint<SoundPresenter>();
-            builder.RegisterPlainEntryPoint<GroupMarkerPresenter>();
-            builder.RegisterPlainEntryPoint<KeyCharacterPresenter>();
             builder.RegisterPlainEntryPoint<MainMenuPresenter>();
             builder.RegisterPlainEntryPoint<SettingPresenter>();
-            builder.RegisterPlainEntryPoint<LogPresenter>();
             builder.RegisterPlainEntryPoint<KeyHintPresenter>();
             builder.RegisterPlainEntryPoint<TutorialPresenter>();
-            builder.RegisterPlainEntryPoint<ShopInfoPresenter>();
             builder.RegisterPlainEntryPoint<ItemPreviewPresenter>();
             builder.RegisterPlainEntryPoint<StatisticsPresenter>();
             builder.RegisterPlainEntryPoint<StatisticsMenuPresenter>();
@@ -113,13 +106,8 @@ namespace Provider
         {
             if (_gameManager == null) return;
 
-            var sb = new StringBuilder();
-            if (_gameManager.ActiveStatistics.CurrentValue != null)
-            {
-                sb.AppendLine(_gameManager.ActiveStatistics.CurrentValue.GetStatisticsText());
-            }
-            sb.AppendLine(_gameManager.GlobalStatistics.GetStatisticsText());
-            _statisticsText = sb.ToString();
+            _statisticsText = StatisticsText.Of(_gameManager.ActiveStatistics.CurrentValue?.Summarize(),
+                _gameManager.GlobalStatistics.Summarize());
             EditorUtility.SetDirty(this);
         }
 #endif

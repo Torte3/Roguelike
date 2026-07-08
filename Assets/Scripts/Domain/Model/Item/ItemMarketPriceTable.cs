@@ -24,7 +24,7 @@ namespace Domain.Model.Item
         [MinValue(0)] public float Epic = 2.8f;
         [MinValue(0)] public float Legendary = 4.0f;
 
-        public float GetCategoryBase(ItemCategory category)
+        private float GetCategoryBase(ItemCategory category)
         {
             return category switch
             {
@@ -38,7 +38,7 @@ namespace Domain.Model.Item
             };
         }
 
-        public float GetRarityMultiplier(Rarity rarity)
+        private float GetRarityMultiplier(Rarity rarity)
         {
             return rarity switch
             {

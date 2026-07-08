@@ -12,6 +12,7 @@ namespace Domain.Service.Characters.Behavior
         // フォーカス（選択中アイテム）の単一所有者はインベントリ（View）側。
         // ここはコピーを持たず、行動の発火時に現在値を都度読む。
         private Func<ItemFocus> _focusProvider = () => new(0);
+        private Func<UniTask> _waitUntilReady = () => UniTask.CompletedTask;
         private readonly Subject<Unit> _onActionRead = new();
         private readonly AsyncReactiveProperty<(Move action, bool isStarted)> _onMoveInputReceived = new((null, false));
 
@@ -36,6 +37,7 @@ namespace Domain.Service.Characters.Behavior
         private readonly AsyncReactiveProperty<Unit> _onFaceNearestCharacterActionReceived = new(Unit.Default);
 
         private readonly ReactiveProperty<bool> _enable = new(false);
+        private readonly ReactiveProperty<bool> _isWaitingForAction = new(false);
 
         internal IReadOnlyAsyncReactiveProperty<(Move action, bool isStarted)> OnMoveInputReceived =>
             _onMoveInputReceived;
@@ -50,6 +52,7 @@ namespace Domain.Service.Characters.Behavior
         internal IReadOnlyAsyncReactiveProperty<Unit> OnFaceNearestCharacterActionReceived => _onFaceNearestCharacterActionReceived;
         public Observable<Unit> OnActionRead => _onActionRead;
         public ReadOnlyReactiveProperty<bool> IsEnabled => _enable;
+        public ReadOnlyReactiveProperty<bool> IsWaitingForAction => _isWaitingForAction;
 
         public void SetMoveInput(Direction8 direction, bool isStarted)
         {
@@ -111,10 +114,26 @@ namespace Domain.Service.Characters.Behavior
             _focusProvider = provider ?? (() => new(0));
         }
 
+        public void SetReadyWaiter(Func<UniTask> waitUntilReady)
+        {
+            _waitUntilReady = waitUntilReady ?? (() => UniTask.CompletedTask);
+        }
+
+        internal UniTask WaitUntilReady()
+        {
+            return _waitUntilReady();
+        }
+
         internal void ReadInput()
         {
+            _isWaitingForAction.Value = true;
             if (_enable.CurrentValue)
                 _onActionRead.OnNext(Unit.Default);
+        }
+
+        internal void FinishReading()
+        {
+            _isWaitingForAction.Value = false;
         }
 
         public void Enable(bool enable)

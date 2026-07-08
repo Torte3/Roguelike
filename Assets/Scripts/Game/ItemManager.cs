@@ -14,7 +14,7 @@ using VContainer;
 
 namespace Game
 {
-    public sealed class ItemManager : IDisposable
+    internal sealed class ItemManager : IDisposable
     {
         private readonly ObservableList<IItemEntity> _items = new();
         private HashSet<Vector2Int> _allItemPositions = new();

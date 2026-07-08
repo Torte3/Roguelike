@@ -32,6 +32,7 @@ namespace Domain.Model.Memento
         [field: SerializeField] public bool CanPickUp { get; private set; }
         [field: SerializeField] public bool CanUseItem { get; private set; }
         [field: SerializeField] public bool CanReceivePlayerGift { get; private set; }
+        [field: SerializeField] public TerrainMemoryMemento TerrainMemory { get; private set; }
 
         public CharacterMemento(
             string name,
@@ -53,7 +54,8 @@ namespace Domain.Model.Memento
             bool canThroughWalls,
             bool canPickUp,
             bool canUseItem,
-            bool canReceivePlayerGift
+            bool canReceivePlayerGift,
+            TerrainMemoryMemento? terrainMemory = null
         )
         {
             Name = name;
@@ -76,6 +78,7 @@ namespace Domain.Model.Memento
             CanPickUp = canPickUp;
             CanUseItem = canUseItem;
             CanReceivePlayerGift = canReceivePlayerGift;
+            TerrainMemory = terrainMemory ?? TerrainMemoryMemento.Empty;
         }
 
         public CharacterMemento CopyWith(
@@ -98,7 +101,8 @@ namespace Domain.Model.Memento
             bool? canThroughWalls = null,
             bool? canPickUp = null,
             bool? canUseItem = null,
-            bool? canReceivePlayerGift = null
+            bool? canReceivePlayerGift = null,
+            TerrainMemoryMemento? terrainMemory = null
         )
         {
             return new CharacterMemento(
@@ -121,7 +125,8 @@ namespace Domain.Model.Memento
                 canThroughWalls ?? CanThroughWalls,
                 canPickUp ?? CanPickUp,
                 canUseItem ?? CanUseItem,
-                canReceivePlayerGift ?? CanReceivePlayerGift
+                canReceivePlayerGift ?? CanReceivePlayerGift,
+                terrainMemory ?? TerrainMemory
             );
         }
 

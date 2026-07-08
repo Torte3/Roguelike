@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Domain.Model;
 using Domain.Model.Entity;
-using Domain.Model.Map;
 using Domain.Model.Memento;
 using Domain.Service.Events;
 using Domain.Service.Items;
@@ -15,13 +14,14 @@ using Utilities.Serialize.Option;
 
 namespace Game
 {
-    public class EventEntityManager : ISerializable<EventEntitiesMemento>
+    internal class EventEntityManager : ISerializable<EventEntitiesMemento>
     {
         public readonly List<MimicItemEntity> MimicItems = new();
         public readonly List<MimicMoney> MimicMoney = new();
         public readonly List<MimicStairs> MimicStairs = new();
         public readonly List<Stairs> Stairs = new();
         private readonly List<Chest> _chests = new();
+        private readonly List<Chest> _lockedChests = new();
         private readonly List<Trap> _traps = new();
         public readonly List<Statue> Statues = new();
         private readonly List<Money> _money = new();
@@ -33,18 +33,6 @@ namespace Game
         private ObservableList<ICharacterEventEntity> _standaloneCharacterEventEntities = new();
         private ObservableList<IPlayerEventEntity> _standalonePlayerEventEntities = new();
         private ObservableList<IScheduledEventEntity> _standaloneScheduledEventEntities = new();
-        
-        public IEnumerable<ILockedEntity> LockedEntities
-        {
-            get
-            {
-                foreach (var chest in _chests)
-                {
-                    if (chest.KeyCharacters.Count > 0)
-                        yield return chest;
-                }
-            }
-        }
 
         public EventEntityManager(EventEntitiesMemento eventEntities)
         {
@@ -98,6 +86,8 @@ namespace Game
             {
                 var chest = new Chest(chestMemento);
                 _chests.Add(chest);
+                if (chest.HasLock)
+                    _lockedChests.Add(chest);
                 Spawn(chest);
             }
 
@@ -189,6 +179,8 @@ namespace Game
             );
         }
 
+        public IEnumerable<ILockedEntity> LockedEntities => _lockedChests;
+
         public IObservableCollection<IEntityEventEntity> StandaloneEntityEventEntities =>
             _standaloneEntityEventEntities;
         public IObservableCollection<ICharacterEventEntity> StandaloneCharacterEventEntities =>
@@ -271,6 +263,7 @@ namespace Game
             if (eventEntity is Chest chest)
             {
                 _chests.Remove(chest);
+                _lockedChests.Remove(chest);
             }
             else if (eventEntity is Stairs stairs)
             {

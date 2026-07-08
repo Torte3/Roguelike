@@ -1,3 +1,5 @@
+using Domain.Service.Items;
+using Provider;
 using UnityEditor;
 using UnityEngine;
 
@@ -26,6 +28,9 @@ namespace Editor
         /// <summary>ゲーム内と同じ説明文（組み立て時に色タグ済み）を表示。</summary>
         public static void DrawIdentifiedLikeInventory(string description, float minHeight = 80f) =>
             DrawRichText(description, minHeight);
+
+        public static string GenericDescriptionOf(BaseItem item) =>
+            ItemDescriptionText.Of(item.DescribeIdentifiedWithoutSkillTemplate());
 
         public static void DrawRichText(string richText, float minHeight = 80f)
         {

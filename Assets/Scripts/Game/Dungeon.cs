@@ -58,14 +58,14 @@ namespace Game
             SubscribeTopologyEvents();
         }
 
-        public void InitializeNewGame()
+        internal void InitializeNewGame()
         {
             _startMapId = _topology.GetMapIds(_blueprint.GetStartMapNodeId())[0];
         }
 
-        public int GetDepth(Id<IMap> mapId) => _topology.GetDepth(mapId);
+        internal int GetDepth(Id<IMap> mapId) => _topology.GetDepth(mapId);
 
-        public float GetProgress(Id<IMap> mapId)
+        internal float GetProgress(Id<IMap> mapId)
         {
             if (_maxFiniteDepth <= 0) return 1f;
 
@@ -73,13 +73,13 @@ namespace Game
             return depth <= _maxFiniteDepth ? depth / (float)_maxFiniteDepth : 1f;
         }
 
-        public FloorSpec GetFloorSpec(Id<IMap> mapId) =>
+        internal FloorSpec GetFloorSpec(Id<IMap> mapId) =>
             _floorSpecByMapNode[_topology.GetMapNodeId(mapId)];
 
-        public List<MapConnection> GetDestinations(Id<IMap> mapId) =>
+        internal List<MapConnection> GetDestinations(Id<IMap> mapId) =>
             _topology.GetDestinations(mapId);
 
-        public bool ShouldBatchCreateSection(Id<IMap> mapId)
+        internal bool ShouldBatchCreateSection(Id<IMap> mapId)
         {
             if (!_topology.TryGetMapNodeId(mapId, out var ownerId)) return false;
             if (!_topology.IsInfiniteSection(ownerId)) return false;
@@ -87,7 +87,7 @@ namespace Game
             return ids[0] == mapId;
         }
 
-        public IReadOnlyList<Id<IMap>> GetSectionMapIds(Id<IMap> sectionHeadMapId)
+        internal IReadOnlyList<Id<IMap>> GetSectionMapIds(Id<IMap> sectionHeadMapId)
         {
             var normalSectionId = _topology.GetMapNodeId(sectionHeadMapId);
             var bossSectionId = _topology.GetBossSectionId(normalSectionId);
@@ -96,22 +96,14 @@ namespace Game
             return mapIds;
         }
 
-        public MapMemento CreateMapManager(Id<IMap> id, IEnumerable<MovementData> movementData)
+        internal MapMemento CreateMapManager(Id<IMap> id, IEnumerable<MovementData> movementData)
         {
             var spec = GetFloorSpec(id);
             var progress = GetProgress(id);
-            if (spec.Field == null)
-            {
-                var mapBuilder = new WorldMapBuilder(id, "seed");
-                foreach (var data in movementData)
-                    mapBuilder.AddMovementEntity(data);
-                return mapBuilder.Build();
-            }
-
-            var mapBuilder2 = new MapBuilder(spec.Field, spec.WaterChance, spec, progress, id);
+            var mapBuilder = new MapBuilder(spec.Field, spec.WaterChance, spec, progress, id);
             foreach (var data in movementData)
-                mapBuilder2.AddMovementEntity(data);
-            return mapBuilder2.Build();
+                mapBuilder.AddMovementEntity(data);
+            return mapBuilder.Build();
         }
 
         public DungeonMemento Serialize() =>

@@ -1,7 +1,6 @@
 #nullable enable
 using System.Collections.Generic;
 using System.Linq;
-using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Item;
 using Domain.Model.Map;
@@ -9,6 +8,7 @@ using Game;
 using Provider.Input;
 using R3;
 using VContainer;
+using View;
 using View.UI;
 
 namespace Provider
@@ -17,12 +17,12 @@ namespace Provider
     {
         [Inject]
         public ItemSelectPresenter(
-            World world,
+            IReadOnlyWorld world,
             ItemSelectText itemSelectText,
             InventoryView inventoryView,
             ItemPreviewView itemPreviewView,
             InputReceiver receiver,
-            IGameManager gameManager)
+            SEManager seManager)
         {
             var serialDisposable = new SerialDisposable();
             world.OnActiveMapChanged.Subscribe(mapChanged =>
@@ -31,7 +31,7 @@ namespace Provider
                 serialDisposable.Disposable = disposables;
 
                 var map = mapChanged.Map;
-                var player = mapChanged.Map.Player.Character;
+                var player = map.PlayerCharacter;
                 var previews = new Dictionary<InventoryViewIndex, ItemSelectPreview>();
                 ItemSelectPreview? defaultPreview = null;
                 var previewTitle = string.Empty;
@@ -62,6 +62,7 @@ namespace Provider
 
                 player.OnSelectedItemSelect.Subscribe(_ =>
                 {
+                    seManager.ItemSelectConfirmSE();
                     itemSelectText.Hide();
                     inventoryView.UnlockAllItems();
                     inventoryView.SetCanSkip(false);
@@ -78,7 +79,7 @@ namespace Provider
 
                 inventoryView.Focus.Subscribe(focus =>
                 {
-                    gameManager.PlaySE(SE.ItemSelectCursor);
+                    seManager.ItemSelectCursorSE();
 
                     if (previews.Count == 0)
                         return;
@@ -93,7 +94,7 @@ namespace Provider
             InventoryViewIndex focus,
             IReadOnlyDictionary<InventoryViewIndex, ItemSelectPreview> previews,
             ItemSelectPreview? defaultPreview,
-            IMap map,
+            IReadOnlyMap map,
             string previewTitle,
             bool isItemPreviewVisible)
         {

@@ -27,7 +27,7 @@ namespace Domain.Service.Characters.Conditions
 
         public float Evaluate(ITargetOfEffect target)
         {
-            if (!target.Status.GetFlagStat(_flagStatType.Value).CurrentValue)
+            if (!target.Status.IsFlagStat(_flagStatType.Value))
             {
                 return _flagStatType.Value.Evaluate(target);
             }

@@ -4,6 +4,7 @@ using Game;
 using R3;
 using Unity.Logging;
 using VContainer;
+using View.Playback;
 using View.UI;
 
 namespace Provider
@@ -12,8 +13,7 @@ namespace Provider
     {
 
         [Inject]
-        public Presenter(GameManager gameManager, World world, SynchronizedIconEntityView _, SynchronizedThrowAnimationEntityView _2,
-            SynchronizedFireEntityView _3, MenuController menuController)
+        public Presenter(GameManager gameManager, MenuController menuController, PlaybackQueue playback)
         {
             gameManager.State.Subscribe(state =>
             {
@@ -21,21 +21,8 @@ namespace Provider
                 {
                     case GameState.Title:
                         Log.Debug("[Game]Change to title scene.");
-                        gameManager.Title().Forget();
-                        var player = world.CurrentMap.Player;
-                        var destroyLog = player.Character.Entity.DestroyLog;
-                        if (destroyLog != null && gameManager.ActiveStatistics.CurrentValue != null)
-                        {
-                            var maxMapLevel = gameManager.ActiveStatistics.CurrentValue.MaxMapLevel;
-                            var score = gameManager.GetScore();
-                            var causeOfDeathLog = player.Character.GetNameIgnoreVisibility(player) + destroyLog;
-                            menuController.TitleMenuWhenGameOver(
-                                maxMapLevel,
-                                score,
-                                causeOfDeathLog);
-                        }
-                        else
-                            menuController.TitleMenu();
+                        StartTitle(gameManager, playback).Forget();
+                        menuController.TitleMenu();
                         break;
                     case GameState.Dungeon:
                         Log.Debug("[Game]Change to dungeon scene.");
@@ -43,6 +30,12 @@ namespace Provider
                         break;
                 }
             });
+        }
+
+        private static async UniTaskVoid StartTitle(GameManager gameManager, PlaybackQueue playback)
+        {
+            await playback.WaitUntilIdle();
+            await gameManager.Title();
         }
     }
 }

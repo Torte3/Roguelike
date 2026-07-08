@@ -6,7 +6,7 @@ using Unity.Logging;
 
 namespace Game
 {
-    public class SQLiteDatabase
+    internal class SQLiteDatabase
     {
         private SQLite<SQLiteTable<SQLiteRow>, SQLiteRow> sqlDB;
 
@@ -14,7 +14,7 @@ namespace Game
         {
             Log.Debug("Database init");
             var initQuery = @"
-                create table if not exists saves (save_id integer, text string, turnWaitTime real, bgm integer not null default 0, primary key(save_id));
+                create table if not exists saves (save_id integer, text string, turnWaitTime real, primary key(save_id));
                 create table if not exists latest_tracker(save_id integer, turn integer, primary key(save_id));
                 create table if not exists maps (save_id integer, map_id string, text string, primary key(save_id, map_id));
                 create table if not exists global_statistics (text string);
@@ -83,17 +83,16 @@ namespace Game
             }
         }
 
-        public void Save(int save_id, string saveData, float turnWaitTime, int bgm)
+        public void Save(int save_id, string saveData, float turnWaitTime)
         {
             Guard(nameof(Save), () =>
                 sqlDB.ExecuteNonQuery(
-                    "insert or replace into saves (save_id, text, turnWaitTime, bgm) values (:save_id, :text, :turnWaitTime, :bgm)",
+                    "insert or replace into saves (save_id, text, turnWaitTime) values (:save_id, :text, :turnWaitTime)",
                     new SQLiteRow
                     {
                         { "save_id", save_id },
                         { "text", saveData },
-                        { "turnWaitTime", turnWaitTime },
-                        { "bgm", bgm }
+                        { "turnWaitTime", turnWaitTime }
                     }));
         }
         public void SaveTurn(int save_id, int turn)
@@ -195,7 +194,7 @@ namespace Game
                 return dataTable.Rows.Count > 0;
             });
         }
-        public (string world, float turnWaitTime, int bgm) Load(int save_id)
+        public (string world, float turnWaitTime) Load(int save_id)
         {
             return Guard(nameof(Load), () =>
             {
@@ -207,8 +206,7 @@ namespace Game
                     });
                 string world = (string)dataTable.Rows[0]["text"];
                 float turnWaitTime = (float)(double)dataTable.Rows[0]["turnWaitTime"];
-                int bgm = (int)dataTable.Rows[0]["bgm"];
-                return (world, turnWaitTime, bgm);
+                return (world, turnWaitTime);
             });
         }
         public int LoadLatestTurn(int save_id)

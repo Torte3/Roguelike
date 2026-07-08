@@ -12,6 +12,7 @@ namespace Domain.Model.Memento
         [field: SerializeField] public List<ItemEntityMemento> Items { get; private set; }
         [field: SerializeField] public EventEntitiesMemento EventEntities { get; private set; }
         [field: SerializeField] public FireEntitiesMemento Fires { get; private set; }
+
         public EntitiesMemento(
             List<CharacterMemento> characters,
             List<ItemEntityMemento> items,

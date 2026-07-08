@@ -1,22 +1,21 @@
 using System;
-using Domain.Model.Character;
-using Domain.Model.Dungeon;
 using Domain.Model.Entity;
 using Domain.Model.Item;
+using Domain.Model.Map;
 
 namespace Domain.Service.ItemEffect
 {
     [Serializable]
     public class UpgradeItem : IItemEffect
     {
-        public bool CanApplyTo(IPlayer player, IItem item)
+        public bool CanApplyTo(IItem item, IMap map)
         {
             return item.CanUpgrade();
         }
 
-        public void Apply(IPlayer player, IItem item, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
+        public void Apply(IItem item, IEntity itemHolder, IMap map)
         {
-            item.Upgrade(player, itemHolder, itemPlaceholders);
+            item.Upgrade(itemHolder, map);
         }
 
         public float EvaluatePrice()
@@ -24,7 +23,7 @@ namespace Domain.Service.ItemEffect
             return 1000;
         }
 
-        public string Info()
+        public string Description()
         {
             return "強化";
         }

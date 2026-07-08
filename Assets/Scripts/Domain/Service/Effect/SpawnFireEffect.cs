@@ -32,7 +32,7 @@ namespace Domain.Service.Effect
             return 50f;
         }
 
-        public override string Info()
+        public override string Description()
         {
             return "炎を生成\n";
         }

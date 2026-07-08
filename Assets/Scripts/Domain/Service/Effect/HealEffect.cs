@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Domain.Model.Effect;
+using Domain.Model.Entity;
 using Domain.Model.Item;
 using Domain.Model.Map;
-using Domain.Service.Logs;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Utilities;
@@ -23,8 +23,7 @@ namespace Domain.Service.Effect
         public override UniTask Apply(ITargetOfEffect target, Vector2Int position, IMap map)
         {
             var value = Formula.CalcHeal(_power);
-            GameLog.Add(target.IsVisible, $"{target.GetName(map.Player)}は{value}回復");
-            target.GainHp(value);
+            target.GainHp(value, HealCause.Effect);
             return UniTask.CompletedTask;
         }
 
@@ -46,7 +45,7 @@ namespace Domain.Service.Effect
             return Formula.EvaluateHeal(_power);
         }
 
-        public override string Info() =>
+        public override string Description() =>
             $"{ItemDescriptionRichText.RichHealAmount(_power)}HP回復\n";
     }
 }

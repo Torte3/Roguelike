@@ -6,7 +6,7 @@ using Domain.Model.Character.Status;
 using Domain.Model.Effect;
 using Domain.Model.Item;
 using Domain.Model.Map;
-using Domain.Service.Logs;
+using Domain.Model.WorldEvents;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Utilities;
@@ -34,7 +34,7 @@ namespace Domain.Service.Effect
         {
             if (target.Status.IsFlagStat(FlagStatType.CurseProof))
             {
-                GameLog.Add(target.IsVisible, $"{target.GetName(map.Player)}は呪われない");
+                map.Events.Record(new EffectMissed(target.Entity.Ref, target.Label, EffectMissReason.CannotBeCursed));
                 return UniTask.CompletedTask;
             }
 
@@ -43,13 +43,13 @@ namespace Domain.Service.Effect
             {
                 var item = notCursedItems.GetAtRandom();
                 if (RandUtils.IsLessThanProbability(_probabilityOfSuccess))
-                    item.SetCursed(map.Player, target, map.ItemPlaceholders, true);
+                    item.SetCursed(target, map, true);
                 else
-                    GameLog.Add(target.IsVisible, $"{item.GetName(map.Player, map.ItemPlaceholders)}は呪われなかった");
+                    map.Events.Record(new ItemChangeResisted(target.Entity.IsVisible, item.NameIn(map), ItemChangeKind.Cursed));
             }
             else
             {
-                GameLog.Add(target.IsVisible, $"{target.GetName(map.Player)}は呪いの対象になるアイテムを持っていない");
+                map.Events.Record(new EffectMissed(target.Entity.Ref, target.Label, EffectMissReason.NoItemToCurse));
             }
 
             return UniTask.CompletedTask;
@@ -65,7 +65,7 @@ namespace Domain.Service.Effect
             return 100;
         }
 
-        public override string Info()
+        public override string Description()
         {
             return "対象の持つアイテムに呪い付与\n";
         }

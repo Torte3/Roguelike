@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using Domain.Model.Effect.Area;
 using Domain.Model.Effect.Position;
 using Domain.Model.Evaluation;
-using Domain.Model.Item;
 using Sirenix.OdinInspector;
 using UnityEngine;
-using Utilities;
 
 namespace Domain.Model.Effect
 {
@@ -97,37 +95,5 @@ namespace Domain.Model.Effect
             }
         }
 #endif
-
-        public string Info()
-        {
-            var info = "";
-
-            if (Cost > 0)
-                info += $"消費HP: {ItemDescriptionRichText.RichHpCost(Cost)}\n";
-
-            if (RushDistance > 0)
-                info += $"最初に{ItemDescriptionRichText.RichSpatialCells(RushDistance)}前に進む\n";
-
-            var positionInfo = Position.Info();
-            var areaInfo = Area.Info();
-            info += EffectTargetDescription.OnUse(positionInfo, areaInfo, useOrThrowCombinedTargets: false) + "\n";
-            foreach (var (effect, index) in Effects.Index())
-            {
-                info += ItemDescriptionRichText.StyleEffectInfo(effect, effect.Info());
-            }
-            if (Repeats > 1)
-                info += $"効果は{ItemDescriptionRichText.RichMeta(Repeats)}回発動する\n";
-            info += ItemDescriptionRichText.ColorPercentagesInPlainText($"成功率：{ProbabilityOfSuccess:P0}\n");
-
-            if (BackStepDistance > 0)
-                info += $"最後に{ItemDescriptionRichText.RichSpatialCells(BackStepDistance)}後ろに下がる\n";
-
-            if (ChargeTurn > 0)
-                info += $"発動には{ItemDescriptionRichText.RichTurns(ChargeTurn)}ターンかかる\n";
-
-            if (CoolTime > 0)
-                info += $"発動後に{ItemDescriptionRichText.RichTurns(CoolTime)}ターンは再使用不能\n";
-            return info;
-        }
     }
 }

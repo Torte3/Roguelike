@@ -11,6 +11,7 @@ using Domain.Model.Entity;
 using Domain.Model.Evaluation;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using Domain.Service.Characters.Conditions;
 using ObservableCollections;
 using R3;
@@ -23,9 +24,8 @@ namespace Domain.Service.Characters
     public class CharacterStatusManager : IDisposable, ISerializable<CharacterStatusMemento>, IStatusManager
     {
         private readonly CharacterConditions _conditions;
-        private readonly Subject<OnDamageReceivedMessage> _onDamageReceived = new();
-        private readonly Subject<int> _onHealReceived = new();
         public IntResource Hp { get; init; }
+        private readonly IStat _maxHp;
         public Stat HpNaturalRecoveryAmount { get; init; }
         public Stat ViewRange { get; init; }
         public Resource WaitTime { get; init; }
@@ -41,6 +41,7 @@ namespace Domain.Service.Characters
             ICharacter character, IMap map)
         {
             Hp = new IntResource(data.Stats.Hp);
+            _maxHp = new RecordingStat(Hp.Max, RecordMaxHp);
             HpNaturalRecoveryAmount = new Stat(data.Stats.HpNaturalRecoveryAmount);
             AttackMultiplier = new Stat(data.Stats.AttackMultiplier);
             ElementAttackMultiplier =
@@ -87,7 +88,6 @@ namespace Domain.Service.Characters
             {
                 condition.Dispose();
             }
-            _conditions.Dispose();
         }
 
         public CharacterStatusMemento Serialize()
@@ -110,18 +110,17 @@ namespace Domain.Service.Characters
             );
         }
 
-        public ReadOnlyReactiveProperty<int> MaxHp => Hp.Max.IntValue;
-        public ReadOnlyReactiveProperty<int> HpValue => Hp.Value;
         public ReadOnlyReactiveProperty<float> WaitTimeValue => WaitTime.Value;
 
         public IVisionRange VisionRange => _visionRange;
         public IObservableCollection<ICondition> Conditions => _conditions.Conditions;
+        public IReadOnlyList<ParticleType> Particles => _conditions.Particles;
 
         public IStat GetStat(StatType type)
         {
             return type switch
             {
-                StatType.MaxHp => Hp.Max,
+                StatType.MaxHp => _maxHp,
                 StatType.HpNaturalRecovery => HpNaturalRecoveryAmount,
                 StatType.ViewRange => ViewRange,
                 StatType.MaxWaitTime => WaitTime.Max,
@@ -172,9 +171,9 @@ namespace Domain.Service.Characters
             return GetStat(type).CurrentValue;
         }
 
-        public float GetAttackMultiplier() => AttackMultiplier.CurrentValue;
+        private float GetAttackMultiplier() => AttackMultiplier.CurrentValue;
 
-        public float GetElementAttackMultiplier(Element element)
+        private float GetElementAttackMultiplier(Element element)
         {
             return GetElementAttackMultiplierStat(element).CurrentValue;
         }
@@ -216,40 +215,24 @@ namespace Domain.Service.Characters
         }
 
         public bool IsDead => Hp.Value.CurrentValue <= 0;
-        public Observable<OnDamageReceivedMessage> OnDamageReceived => _onDamageReceived;
-        public Observable<int> OnHealReceived => _onHealReceived;
 
-        public int GainHp(float value, bool notifyOnlyActualGain = false)
+        internal void GainHp(float value, HealCause cause, bool recordOnlyActualGain = false)
         {
             var gainValue = Hp.Gain(value);
-            if (notifyOnlyActualGain)
+            if (!recordOnlyActualGain || gainValue > 0)
             {
-                if (gainValue > 0)
-                {
-                    _onHealReceived.OnNext(gainValue);
-                }
+                var amount = recordOnlyActualGain ? gainValue : Mathf.RoundToInt(value);
+                _character.Entity.Record(new CharacterHealed(_character.Entity.Ref, _character.Label, _character.Health, amount, gainValue, cause));
             }
-            else
-            {
-                _onHealReceived.OnNext(Mathf.RoundToInt(value));
-            }
-
-            return gainValue;
         }
 
-        public async UniTask<int> LoseHp(float value, string causeOfDeathLog, ICharacter? attacker, bool notifyOnlyActualLoss = false)
+        internal async UniTask<int> LoseHp(float value, DamageSource source, ICharacter? attacker, bool recordOnlyActualLoss = false)
         {
             var loseValue = Hp.Lose(value);
-            if (notifyOnlyActualLoss)
+            if (!recordOnlyActualLoss || loseValue > 0)
             {
-                if (loseValue > 0)
-                {
-                    _onDamageReceived.OnNext(new OnDamageReceivedMessage(loseValue, causeOfDeathLog, attacker));
-                }
-            }
-            else
-            {
-                _onDamageReceived.OnNext(new OnDamageReceivedMessage(Mathf.RoundToInt(value), causeOfDeathLog, attacker));
+                var amount = recordOnlyActualLoss ? loseValue : Mathf.RoundToInt(value);
+                _character.Entity.Record(new CharacterDamaged(_character.Entity.Ref, _character.Label, _character.Health, amount, source, attacker?.Label));
             }
 
             if (loseValue == 0)
@@ -264,28 +247,36 @@ namespace Domain.Service.Characters
             {
                 await _character.UseLastSkill();
                 _character.ApplyKillHealToAttacker(attacker);
-                _character.Die(causeOfDeathLog);
+                _character.Die(source);
             }
 
             return loseValue;
         }
 
-        public void RestoreToFullHealth()
+        internal void RestoreToFullHealth()
         {
+            var restored = Hp.Max.CurrentIntValue - Hp.Value.CurrentValue;
             Hp.Set(Hp.Max.CurrentIntValue);
+            _character.Entity.Record(new CharacterHealed(_character.Entity.Ref, _character.Label, _character.Health,
+                restored, restored, HealCause.Rest));
             _conditions.Clear();
+        }
+
+        private void RecordMaxHp()
+        {
+            _character.Entity.Record(new MaxHpChanged(_character.Entity.Ref, _character.Label, _character.Health));
         }
 
         public async UniTask UpdateTurn(bool characterVisible)
         {
             if (HpNaturalRecoveryAmount.CurrentValue > 0)
-                GainHp(HpNaturalRecoveryAmount.CurrentValue, true);
+                GainHp(HpNaturalRecoveryAmount.CurrentValue, HealCause.NaturalRecovery, true);
             else
-                await LoseHp(-HpNaturalRecoveryAmount.CurrentValue, "は毒で死んだ", null, true);
+                await LoseHp(-HpNaturalRecoveryAmount.CurrentValue, new DamageSource(DamageCause.Poison), null, true);
             _conditions.UpdateTurn(characterVisible);
         }
 
-        public void WasAttacked()
+        internal void WasAttacked()
         {
             _conditions.WasAttacked();
         }
@@ -355,7 +346,7 @@ namespace Domain.Service.Characters
             _conditions.Add(actor, condition);
         }
 
-        public void RemoveConditionType(Type conditionType)
+        internal void RemoveConditionType(Type conditionType)
         {
             _conditions.RemoveType(conditionType);
         }
@@ -363,48 +354,6 @@ namespace Domain.Service.Characters
         public void ClearCondition()
         {
             _conditions.Clear();
-        }
-
-        public string Info()
-        {
-            var info = "";
-            info += $"Hp:{Hp.Value}/{Hp.Max.CurrentValue}\n";
-            info += $"Hp自然回復量:{HpNaturalRecoveryAmount.CurrentValue}\n";
-            info += $"視界範囲:{ViewRange.CurrentValue}\n";
-            info += $"待機時間:{WaitTime.Max.CurrentValue}\n";
-            if (AttackMultiplier.CurrentValue != 1)
-                info += $"攻撃倍率:{AttackMultiplier.CurrentValue:P0}\n";
-            foreach (var element in ElementAttackMultiplier.Keys)
-            {
-                if (ElementAttackMultiplier[element].CurrentValue == 1)
-                    continue;
-                info += $"攻撃倍率:{element.Name()}:{ElementAttackMultiplier[element].CurrentValue:P0}\n";
-            }
-            foreach (var element in ElementDamageRateMultiplier.Keys)
-            {
-                if (ElementDamageRateMultiplier[element].CurrentValue == 1)
-                    continue;
-                info += $"被ダメージ倍率:{element.Name()}:{ElementDamageRateMultiplier[element].CurrentValue:P0}\n";
-            }
-            foreach (var condition in ConditionResistance.Keys)
-            {
-                if (ConditionResistance[condition].CurrentValue == 0)
-                    continue;
-                info += $"状態異常耐性:{condition}:{ConditionResistance[condition].CurrentValue:P0}\n";
-            }
-            info += "フラグ:\n";
-            foreach (var flag in _flagStats)
-            {
-                if (!flag.Value.CurrentValue)
-                    continue;
-                info += $"{flag.Key.GetName()}\n";
-            }
-            info += "状態異常:\n";
-            foreach (var condition in _conditions.Conditions)
-            {
-                info += $"{condition.Info()}\n";
-            }
-            return info;
         }
     }
 }

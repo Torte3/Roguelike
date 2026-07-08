@@ -10,9 +10,9 @@ using Domain.Model.Entity;
 using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using Domain.Service.Effect;
 using Domain.Service.Items;
-using Domain.Service.Logs;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using Utilities;
@@ -26,23 +26,25 @@ namespace Domain.Service.Events
         public bool IsGrounded => true;
         private List<IItem> _items;
         private Option<EnemyData> _mimic;
-        public List<Id<IEntity>> KeyCharacters { get; init; }
+        private readonly List<Id<IEntity>> _keyHolders;
+        public bool HasLock { get; }
 
         public Chest(ChestMemento memento)
         {
             _items = memento.Items.Select(i => i.Deserialize()).ToList();
             _mimic = memento.Mimic;
             Entity = new EntityBase(memento.Entity);
-            KeyCharacters = memento.KeyCharacters;
+            HasLock = memento.HasLock;
+            _keyHolders = memento.KeyHolders;
             Events = new List<IPlayerEvent>
             {
                 new PlayerEvent(
-                    "宝箱を見つけた",
+                    FixtureKind.Chest,
                     new List<PlayerChoiceEvent>
                     {
                         new(
                             "開ける",
-                            (player, map) => CanExecuteEvent(map),
+                            (player, map) => !IsLocked,
                             async (gameManager, map) => { await DoEvent(gameManager, map); }
                         )
                     }
@@ -50,27 +52,61 @@ namespace Domain.Service.Events
             };
         }
 
-        public Sprite Icon => Addressables.LoadAssetAsync<Sprite>("Assets/Images/Monsters/ChestA.png[Chest_0]")
+        private Sprite Icon => Addressables.LoadAssetAsync<Sprite>("Assets/Images/Monsters/ChestA.png[Chest_0]")
             .WaitForCompletion();
 
         public IReadOnlyList<IPlayerEvent> Events { get; init; }
 
-        private bool CanExecuteEvent(IMap map)
+        private bool IsLocked => HasLock && _keyHolders.Count > 0;
+        public bool IsLockReleased => HasLock && _keyHolders.Count == 0;
+
+        public bool IsKeyHolder(Id<IEntity> id)
         {
-            return KeyCharacters.All(keyCharacterId => map.Characters.ById(keyCharacterId) == null);
+            return _keyHolders.Contains(id);
+        }
+
+        public void ForgetKeyHolder(Id<IEntity> id)
+        {
+            if (!_keyHolders.Remove(id))
+                return;
+
+            Entity.Record(new ChestLockReleased(Entity.Ref, _keyHolders.Count, !IsLocked));
+        }
+
+        public void LeaveMap(IMap map)
+        {
+            ReleaseKeyHolders(map);
+        }
+
+        private void ReleaseKeyHolders(IMap map)
+        {
+            foreach (var holder in map.Characters.Where(character => _keyHolders.Contains(character.Entity.Id)))
+                holder.Entity.Record(new KeyHolderChanged(holder.Entity.Ref, false));
+            _keyHolders.Clear();
+        }
+
+        public bool CanBeBrokenBy(BreakTargets targets) => targets.HasFlag(BreakTargets.Chest);
+
+        public EntityLabel LabelIn(IMap map)
+        {
+            return new KindEntityLabel(FixtureKind.Chest);
+        }
+
+        public WorldEvent Appeared(IMap map)
+        {
+            return new ChestAppeared(Entity.Ref, Entity.AppearanceOf(FixtureKind.Chest.ToEntityKind(), Icon), _keyHolders.Count, !IsLocked);
         }
 
         private async UniTask DoEvent(IGameManager gameManager, IMap map)
         {
-            gameManager.PlaySE(SE.OpenChest);
-            Entity.Destroy($"は{map.Player.Character.GetName(map.Player)}に開かれた");
+            map.Events.Record(new FacilityUsed(FixtureKind.Chest));
+            Entity.Destroy();
 
             IItem? selectedItem = null;
 
             if (_items.Count > 1)
             {
-                var choices = _items.Select(item => (item.GetName(map.Player, map.ItemPlaceholders), item)).ToArray();
-                var selectedIndex = await gameManager.GetChoiceWithItemPreview("報酬を選択してください", map, choices);
+                var selectedIndex = await gameManager.GetChoiceWithItemPreview(new ChoiceMessage("報酬を選択してください"), map, _items.ToArray());
                 if (selectedIndex >= _items.Count)
                     return;
                 selectedItem = _items[selectedIndex];
@@ -82,22 +118,21 @@ namespace Domain.Service.Events
 
             if (selectedItem != null)
             {
-                if (map.Player.Character.Inventory.CanAddToEmpty())
+                if (map.Player.Character.Inventory.PickUpCheck().IsFailed(out var failure))
                 {
-                    map.Player.Character.Inventory.AddToEmpty(selectedItem);
-                    gameManager.RequestWorldIconPopup(selectedItem.Icon, Entity.CurrentPosition);
-                    GameLog.AddIgnoreVisibility(
-                        $"{map.Player.Character.GetName(map.Player)}は{selectedItem.GetName(map.Player, map.ItemPlaceholders)}を手に入れた");
+                    map.Events.Record(new FacilityItemFailed(selectedItem.NameIn(map), failure));
+                    map.SpawnItem(selectedItem, Entity.CurrentPosition);
                 }
                 else
                 {
-                    GameLog.AddIgnoreVisibility($"{selectedItem.GetName(map.Player, map.ItemPlaceholders)}を拾えなかった");
-                    map.SpawnItem(selectedItem, Entity.CurrentPosition);
+                    map.Player.Character.Inventory.AddToEmpty(selectedItem);
+                    map.Events.Record(new ItemObtainedFromChest(map.Player.Character.Label, selectedItem.NameIn(map),
+                        new ObtainedItem(selectedItem.Icon, Entity.CurrentPosition), map.Player.Character.InventoryLookIn(map)));
                 }
             }
             else if (_mimic.IsSome(out var mimic))
             {
-                GameLog.Add(map.Player.Character.IsVisible(Entity.CurrentPosition), $"宝箱は{mimic.Name}の擬態だった！");
+                map.Events.Record(new MimicRevealed(Entity.IsVisible, LabelIn(map), mimic.Name, null));
                 map.SpawnEnemyIgnoreMimic(
                     mimic,
                     Entity.CurrentPosition,
@@ -158,14 +193,9 @@ namespace Domain.Service.Events
                 }
             }
 
-            if (Entity.Visibility.CurrentValue && destination != Entity.CurrentPosition)
-            {
-                Entity.SetVisibility(false);
-                await map.ShowThrowAnimation(Icon, Entity.CurrentPosition, direction, distance, false, EntityLayer.Middle);
-                Entity.Teleport(map.FindBlankPositionFrom(destination,
-                    position => map.At(position)
-                        .CanPlace(false, false, false, EntityLayer.Bottom, EntityLayer.Floor, EntityLayer.Middle)));
-            }
+            if (destination != Entity.CurrentPosition)
+                Entity.BlowTo(map.FindBlankPositionFrom(destination, position => map.At(position)
+                    .CanPlace(false, false, false, EntityLayer.Bottom, EntityLayer.Floor, EntityLayer.Middle)));
         }
 
         public ChestMemento Serialize()
@@ -175,7 +205,8 @@ namespace Domain.Service.Events
                 _items.Select(i => i.Serialize()).ToList(),
                 _mimic,
                 Entity.Serialize(),
-                KeyCharacters
+                HasLock,
+                _keyHolders
             );
         }
 
@@ -202,14 +233,15 @@ namespace Domain.Service.Events
             );
         }
 
-        public static ChestMemento Build(List<IItemMemento> items, Vector2Int position, List<Id<IEntity>> keyCharacters)
+        public static ChestMemento Build(List<IItemMemento> items, Vector2Int position, List<Id<IEntity>> keyHolders)
         {
             return new ChestMemento
             (
                 items,
                 Option.None<EnemyData>(),
                 EntityBase.Build(position, EntityLayer.Middle),
-                keyCharacters
+                keyHolders.Any(),
+                keyHolders
             );
         }
     }
