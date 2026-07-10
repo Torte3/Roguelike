@@ -5,5 +5,5 @@ using Utilities;
 
 namespace Game.Messages
 {
-    public record BlueprintGraphNodeInitializedMessage(Id<MapNode> MapNodeId);
+    internal record BlueprintGraphNodeInitializedMessage(Id<MapNode> MapNodeId);
 }

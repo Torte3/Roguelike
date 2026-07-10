@@ -7,7 +7,7 @@ using Domain.Model.Map;
 
 namespace Domain.Service.Events
 {
-    public class CharacterEvent : ICharacterEvent
+    internal class CharacterEvent : ICharacterEvent
     {
         private readonly Func<ICharacter, bool> _canExecuteEvent;
         private readonly Func<ICharacter, IGameManager, IMap, UniTask> _doEvent;

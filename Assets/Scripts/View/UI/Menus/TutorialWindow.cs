@@ -9,7 +9,7 @@ namespace View.UI.Menus
         [SerializeField] private GameObject _magicCircleContent;
         [SerializeField] private GameObject _floor30Content;
 
-        public bool CanClose => true;
+        public bool CanClose => false;
 
         public void SetContent(int index)
         {

@@ -5,7 +5,7 @@ using Utilities;
 
 namespace Game.Messages
 {
-    public record InfiniteSectionCreatedMessage(
+    internal record InfiniteSectionCreatedMessage(
         Id<MapNode> NormalSectionId,
         Id<MapNode> BossSectionId,
         FloorSpec NormalFloorSpec,

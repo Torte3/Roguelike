@@ -3,7 +3,8 @@ using Domain.Model;
 
 namespace Domain.Model.Entity
 {
-    public interface IEntityEventEntity : IEntity, IHasEntityEvent
+    public interface IEntityEventEntity : IEntity
     {
+        public IEntityEvent Event { get; }
     }
 }

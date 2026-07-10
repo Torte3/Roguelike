@@ -6,7 +6,7 @@ namespace View.UI.Menus
     {
         [SerializeField] private GameOverWindow _gameOverPanel;
         public bool CanClose => false;
-        public void SetData(string levelText, float score, string causeOfDeath)
+        internal void SetData(string levelText, float score, string causeOfDeath)
         {
             _gameOverPanel.SetData(levelText, score, causeOfDeath);
             _gameOverPanel.Show();
