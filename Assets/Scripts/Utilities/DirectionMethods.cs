@@ -27,7 +27,7 @@ namespace Utilities
             };
         }
 
-        public static Direction8 FromAngle(Angle angle)
+        private static Direction8 FromAngle(Angle angle)
         {
             return angle.Value switch
             {

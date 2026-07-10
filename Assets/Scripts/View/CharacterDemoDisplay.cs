@@ -20,7 +20,7 @@ namespace View
             _overrideSprite.SetTexture("Human", _textureName, true);
         }
 
-        public void SetColor(Color color)
+        internal void SetColor(Color color)
         {
             GetComponent<SpriteRenderer>().color = color;
         }

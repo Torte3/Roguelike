@@ -1,6 +1,7 @@
 namespace Domain.Model.Entity
 {
-    public interface IScheduledEventEntity : IHasScheduledEvent, IEntity
+    public interface IScheduledEventEntity : IEntity
     {
+        public IScheduledEvent Event { get; }
     }
 }

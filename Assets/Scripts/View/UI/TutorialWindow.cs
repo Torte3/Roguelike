@@ -12,7 +12,7 @@ namespace View.UI
         [SerializeField] private GameObject _magicCircleContent;
         [SerializeField] private GameObject _floor30Content;
 
-        public bool CanClose => true;
+        public bool CanClose => false;
 
         // index（TutorialType の値: 0=FirstGame,1=Shop,2=MagicCircle,3=Floor30）に対応する中身だけを表示する。
         public void SetContent(int index)

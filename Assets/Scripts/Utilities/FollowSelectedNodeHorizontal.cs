@@ -50,7 +50,7 @@ namespace UI
             return -1;
         }
 
-        public void Scroll(int nodeIndex)
+        private void Scroll(int nodeIndex)
         {
             float spacing = _horizontalLayoutGroup.spacing;
             float p = _scrollRect.horizontalNormalizedPosition;

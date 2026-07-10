@@ -6,7 +6,7 @@ using Domain.Service.Effect;
 
 namespace Domain.Service.Characters
 {
-    public class CharacterSkillWithRule : ICharacterSkillWithRule
+    internal class CharacterSkillWithRule : ICharacterSkillWithRule
     {
         private readonly SkillWithCost _skill;
         public ISkillWithCost Skill => _skill;
