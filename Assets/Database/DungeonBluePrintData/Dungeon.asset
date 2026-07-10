@@ -80,7 +80,7 @@ MonoBehaviour:
       - {fileID: 11400000, guid: e4f6f32ac39072e48b9873628a8fe660, type: 2}
       - {fileID: 11400000, guid: f74e22d6bc7ef4e45aa6d54bce4befa2, type: 2}
       - {fileID: 11400000, guid: 80233bee09b458c40ba9dbda318a1206, type: 2}
-      - {fileID: 11400000, guid: f3a8c2e1d4b5678901234abcdef56789, type: 2}
+      - {fileID: 11400000, guid: f341976892a2658429bb75a1e8d2e637, type: 2}
     Wands:
       items:
       - {fileID: 11400000, guid: 0991fe41fbd35644aa6f41f21d2de0d7, type: 2}

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Utilities
 {
-    public class AStarNode
+    internal class AStarNode
     {
         private readonly Vector2Int _position;
 

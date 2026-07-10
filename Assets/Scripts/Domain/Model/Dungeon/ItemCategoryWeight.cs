@@ -14,7 +14,7 @@ namespace Domain.Model.Dungeon
         public float Artifacts;
         public float Others;
 
-        public ItemCategory GetRandomCategory()
+        internal ItemCategory GetRandomCategory()
         {
             return new[] { Potions, Scrolls, Books, Wands, Weapons, Artifacts, Others }.WeightedIndex() switch
             {

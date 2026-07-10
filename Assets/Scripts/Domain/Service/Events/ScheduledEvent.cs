@@ -7,7 +7,7 @@ using Utilities.Stats;
 
 namespace Domain.Service.Events
 {
-    public class ScheduledEvent : IScheduledEvent
+    internal class ScheduledEvent : IScheduledEvent
     {
         private Resource _waitTurn;
         private readonly Func<IGameManager, IMap, UniTask> _doEvent;

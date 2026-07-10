@@ -1,6 +1,6 @@
 namespace Game.Map
 {
-    public enum DungeonMapNodeKind
+    internal enum DungeonMapNodeKind
     {
         FiniteBlueprint,
         InfiniteNormal,

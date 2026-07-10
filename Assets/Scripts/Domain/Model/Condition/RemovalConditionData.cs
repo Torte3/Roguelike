@@ -55,7 +55,7 @@ namespace Domain.Model.Condition
             return RemoveByDamage && RandUtils.IsLessThanProbability(Probability);
         }
 
-        public float EvaluateTurn()
+        internal float EvaluateTurn()
         {
             var estimatedTurns = float.MaxValue;
 
@@ -83,24 +83,6 @@ namespace Domain.Model.Condition
             }
 
             return estimatedTurns;
-        }
-
-        public string Info(int elapsedTurn)
-        {
-            var info = "解除条件:\n";
-            if (RemoveByElapsedTurn)
-            {
-                info += $"ターン経過:あと{Duration - elapsedTurn}ターン\n";
-            }
-            if (RemoveByDamage)
-            {
-                info += $"ダメージを受けたとき:{Probability:P0}\n";
-            }
-            if (RemoveByCharacterNearby)
-            {
-                info += $"近くにキャラクターがいるとき:{CharacterNearbyProbability:P0}\n";
-            }
-            return info;
         }
     }
 }
