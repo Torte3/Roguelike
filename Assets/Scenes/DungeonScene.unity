@@ -5548,12 +5548,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44ccc2ba03c3d0e459c2e75305e8d233, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _worldMapTiles:
-    Grass: {fileID: 11400000, guid: 5ff724a28035f564fa9a28afbde2c6f7, type: 2}
-    Ocean: {fileID: 11400000, guid: 9791aa24085658544b5cb6890b752ed0, type: 2}
-    Mountain: {fileID: 11400000, guid: 6196e72b182fb7f499a4bd6b23edc6d1, type: 2}
-    Desert: {fileID: 11400000, guid: 4fa4afd16ff65754ca8a69c7379eb6d8, type: 2}
-    Forest: {fileID: 11400000, guid: f6d2a7c7b7f2a7b4595859678be2e00c, type: 2}
   _caveTiles:
     Floor: {fileID: 11400000, guid: 182c47a00ff1c5047afe9d0e30c19a3c, type: 2}
     ShopFloor: {fileID: 11400000, guid: 1abe48c2a1c39f54cab9bcd7ce8f6242, type: 2}
@@ -7425,9 +7419,9 @@ MonoBehaviour:
   _defaultGrass: {fileID: 11400000, guid: 43a1f900f656e124691800ee4990ea68, type: 2}
   _grasses:
     data:
-    - Key: 2
+    - Key: 1
       Value: {fileID: 11400000, guid: c794efbe0c0616642821fad5c53e1265, type: 2}
-    - Key: 3
+    - Key: 2
       Value: {fileID: 11400000, guid: d6bf11a20becc5b4e933b7429a21ee44, type: 2}
   _ice: {fileID: 11400000, guid: 9c9ebe7140da20743b79b94b0487afb8, type: 2}
 --- !u!483693784 &878990522
