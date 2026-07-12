@@ -15800,12 +15800,18 @@ MonoBehaviour:
   _openChestSE: {fileID: 8300000, guid: fc92a4b4ae0fbca45a5b2f95d2104824, type: 3}
   _shopCheckoutSE: {fileID: 8300000, guid: b65341da08857fe46aa1bbd1d0394ffc, type: 3}
   _trapStepSE: {fileID: 0}
-  _itemUsePotionSE: {fileID: 0}
-  _itemUseScrollSE: {fileID: 0}
-  _itemUseBookSE: {fileID: 0}
-  _itemUseWandSE: {fileID: 0}
-  _itemUseWeaponSE: {fileID: 0}
+  _itemUsePotionSE: {fileID: 8300000, guid: 564a547a460847ca93a69c61d1aad753, type: 3}
+  _itemUseScrollSE: {fileID: 8300000, guid: bf9f15aec0a84e3987f6d9bb8f61f801, type: 3}
+  _itemUseBookSE: {fileID: 8300000, guid: 94464f89f5114f04af88cece3cce32bb, type: 3}
+  _itemUseWandSE: {fileID: 8300000, guid: 07aacf6c61ba45e99f3d8017399cee83, type: 3}
+  _itemUseWeaponSE: {fileID: 8300000, guid: 853b07b229704531b66e2aa7107481ca, type: 3}
   _itemUseOthersSE: {fileID: 0}
+  _equipSE: {fileID: 8300000, guid: 1c37c734c59d4fb1bfc282f8a2d71b2b, type: 3}
+  _unequipSE: {fileID: 8300000, guid: 8b92dc075ba4473a8a7f99ccf7796145, type: 3}
+  _itemBreakSE: {fileID: 8300000, guid: b8772bc4415f48b1b2e81f29a5d96f6a, type: 3}
+  _healSE: {fileID: 8300000, guid: 5ed340ea1eb14b1bba83943b56071d76, type: 3}
+  _moneyPickupSE: {fileID: 8300000, guid: 24afa1db4358409bb0507466d076c591, type: 3}
+  _chestUnlockSE: {fileID: 8300000, guid: dbeb25ef479a49d8acf78638bad6b908, type: 3}
 --- !u!82 &1953968010
 AudioSource:
   m_ObjectHideFlags: 0
