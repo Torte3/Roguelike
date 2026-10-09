@@ -98,7 +98,7 @@ namespace Editor
             ItemInspectorPreviewEditor.DrawSafe(() =>
             {
                 var item = new Item(itemData);
-                ItemDescriptionPreviewEditor.DrawIdentifiedLikeInventory(item.FullInfoGenericSkillDescription(), 120f);
+                ItemDescriptionPreviewEditor.DrawIdentifiedLikeInventory(ItemDescriptionPreviewEditor.GenericDescriptionOf(item), 120f);
             });
         }
     }

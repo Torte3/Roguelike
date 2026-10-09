@@ -17,14 +17,14 @@ namespace View.UI
         private readonly ReactiveProperty<int> _selectedIndex = new(-1);
         public ReadOnlyReactiveProperty<int> SelectedIndex => _selectedIndex;
         private readonly AsyncReactiveProperty<int> _choicedIndex = new(-1);
-        public IReadOnlyAsyncReactiveProperty<int> ChoicedIndex => _choicedIndex;
+        internal IReadOnlyAsyncReactiveProperty<int> ChoicedIndex => _choicedIndex;
         [SerializeField] private RectTransform _content;
         [SerializeField] private ChoiceButton _choiceButtonPrefab;
         [SerializeField] private SEManager _seManager;
         [SerializeField] private TMP_Text _infoText;
         private readonly List<ChoiceButton> _buttons = new();
 
-        public void SetChoices(List<(string name, string textureName, string info, bool usable)> characters)
+        internal void SetChoices(List<(string name, string textureName, string info, bool usable)> characters)
         {
             foreach (var button in _buttons)
             {

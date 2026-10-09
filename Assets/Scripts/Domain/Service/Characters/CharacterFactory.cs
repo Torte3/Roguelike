@@ -1,5 +1,4 @@
 #nullable enable
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Domain.Model;
@@ -163,85 +162,10 @@ namespace Domain.Service.Characters
             return new Player(playerData, receiver, gameManager, map);
         }
 
-        public static ICharacter CreateCharacter(CharacterMemento data, ICharacterBehavior behavior, IGameManager gameManager, IMap map)
+        public static ICharacter CreateCharacter(CharacterMemento data, ICharacterBehavior behavior, IMap map)
         {
-            return new Character(data, behavior, gameManager, map, false);
+            return new Character(data, behavior, map, false);
         }
 
-        public static float EvaluateDamageRate(EnemyData enemyData)
-        {
-            var sum = 0f;
-            foreach (var element in Enum.GetValues(typeof(Element)))
-            {
-                if (enemyData.ElementDamageRateMultiplier.TryGetValue((Element)element, out var multiplier))
-                {
-                    sum += multiplier;
-                }
-                else
-                {
-                    sum += 1;
-                }
-            }
-            return sum / Enum.GetValues(typeof(Element)).Length;
-        }
-        public static float EvaluateSkills(IEnumerable<SkillData> skills)
-        {
-            var virtualSkills = skills.Select(x => new VirtualSkill(x)).ToList();
-            var sum = 0f;
-            var turn = 0;
-            while (turn < 100)
-            {
-                foreach (var skill in virtualSkills)
-                {
-                    skill.Update(1);
-                }
-                var selectedSkill = virtualSkills.Where(x => x.IsReady()).MaxByOrDefault(x => x.Value, null);
-                if (selectedSkill == null)
-                {
-                    turn++;
-                    continue;
-                }
-                if (selectedSkill.ChargeTurn > 0)
-                {
-                    foreach (var skill in virtualSkills)
-                    {
-                        skill.Update(selectedSkill.ChargeTurn);
-                    }
-
-                    sum += selectedSkill.Value * selectedSkill.ChargeTurn;
-                    turn += selectedSkill.ChargeTurn;
-                }
-                selectedSkill.Use();
-                sum += selectedSkill.Value;
-                turn++;
-            }
-            return sum / turn;
-        }
-        private class VirtualSkill
-        {
-            public float Value;
-            public int ChargeTurn;
-            public int CoolTime;
-            private int _remainingCoolTime;
-            public VirtualSkill(SkillData skill)
-            {
-                Value = new SpawnEffectSkill(SpawnEffectSkill.Build(skill)).EvaluatePrice();
-                ChargeTurn = skill.ChargeTurn;
-                CoolTime = skill.CoolTime;
-                _remainingCoolTime = 0;
-            }
-            public void Update(int turnCount)
-            {
-                _remainingCoolTime = Mathf.Max(0, _remainingCoolTime - turnCount);
-            }
-            public void Use()
-            {
-                _remainingCoolTime = 1 + CoolTime;
-            }
-            public bool IsReady()
-            {
-                return _remainingCoolTime == 0;
-            }
-        }
     }
 }

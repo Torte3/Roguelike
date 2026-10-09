@@ -4,6 +4,7 @@ using System.Linq;
 using Domain.Model.Character;
 using Game;
 using IngameDebugConsole;
+using Provider.Texts;
 using Unity.Logging;
 using UnityEngine;
 using VContainer;
@@ -39,7 +40,7 @@ namespace Provider
 
         private void ShowCharacter(ICharacter character)
         {
-            var info = $"{character.GetNameIgnoreVisibility(_world.CurrentMap.Player)}\n"
+            var info = $"{CharacterNameText.Of(character.Label, true)}\n"
                        + $"Id: {character.Entity.Id}\n"
                        + $"Position: {character.Entity.CurrentPosition}\n"
                        + $"CharacterType: {character.CharacterType.SubtypeName()}";

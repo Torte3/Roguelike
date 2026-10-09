@@ -1,23 +1,45 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Map;
+using Domain.Model.WorldEvents;
 using Domain.Service.Action;
 
 namespace Domain.Service.Events
 {
     public class PlayerEvent : IPlayerEvent
     {
-        public string? ChoiceMessage { get; init; }
+        private readonly Func<IMap, ChoiceMessage?> _getChoiceMessage;
         public IReadOnlyList<PlayerChoiceEvent> Events { get; init; }
 
-        public PlayerEvent(string? choiceMessage, List<PlayerChoiceEvent> choices)
+        public PlayerEvent(List<PlayerChoiceEvent> choices)
+            : this(_ => null, choices)
         {
-            ChoiceMessage = choiceMessage;
+        }
+
+        public PlayerEvent(FixtureKind foundKind, List<PlayerChoiceEvent> choices)
+            : this(_ => FoundMessage(foundKind), choices)
+        {
+        }
+
+        public PlayerEvent(Func<IMap, ChoiceMessage?> getChoiceMessage, List<PlayerChoiceEvent> choices)
+        {
+            _getChoiceMessage = getChoiceMessage;
             Events = choices;
+        }
+
+        internal static ChoiceMessage FoundMessage(FixtureKind kind)
+        {
+            return new ChoiceMessage($"{kind.Name()}を見つけた");
+        }
+
+        public ChoiceMessage? GetChoiceMessage(IMap map)
+        {
+            return _getChoiceMessage(map);
         }
 
         public bool CanExecuteEvent(IPlayer player, IMap map)
@@ -41,7 +63,7 @@ namespace Domain.Service.Events
             var choiceIndex = 0;
             if (choices.Count > 1)
             {
-                choiceIndex = await gameManager.GetChoice(ChoiceMessage, cancelChoiceIndex, choices.ToArray());
+                choiceIndex = await gameManager.GetChoice(GetChoiceMessage(map), cancelChoiceIndex, choices.ToArray());
             }
 
             if (choiceIndex == cancelChoiceIndex)
@@ -81,7 +103,7 @@ namespace Domain.Service.Events
             if (choices.Count > 1)
             {
                 choiceIndex =
-                    await gameManager.GetChoice(ChoiceMessage, cancelChoiceIndex, choices.ToArray());
+                    await gameManager.GetChoice(GetChoiceMessage(map), cancelChoiceIndex, choices.ToArray());
             }
 
             if (choiceIndex == cancelChoiceIndex)

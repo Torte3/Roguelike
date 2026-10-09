@@ -6,7 +6,7 @@ using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Item;
 using Domain.Model.Map;
-using Domain.Service.Logs;
+using Domain.Model.WorldEvents;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Utilities;
@@ -60,7 +60,7 @@ namespace Domain.Service.Effect
                 }
                 else
                 {
-                    GameLog.Add(target.IsVisible, $"{target.GetName(map.Player)}は{_condition.Value.name}に耐性がある");
+                    map.Events.Record(new ConditionResisted(target.Entity.Ref, target.Label, _condition.Value.name));
                 }
             }
 
@@ -102,7 +102,7 @@ namespace Domain.Service.Effect
             return _condition.Value.EvaluateDamage() * _probabilityOfSuccess;
         }
 
-        public string Info()
+        public string Description()
         {
             var name = ItemDescriptionRichText.RichBracketedConditionName(_condition.Value.name, Impact);
             var prob = ItemDescriptionRichText.ColorPercentagesInPlainText($"（{_probabilityOfSuccess:P0}）");

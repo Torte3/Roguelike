@@ -18,7 +18,7 @@ namespace View.UI
             _inputField.onEndEdit.AddListener(text => _text.Value = text);
         }
 
-        public void SetCanCancel(bool canCancel) => _canCancel = canCancel;
+        internal void SetCanCancel(bool canCancel) => _canCancel = canCancel;
 
         public void Show()
         {

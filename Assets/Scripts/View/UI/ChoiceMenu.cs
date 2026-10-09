@@ -17,7 +17,7 @@ namespace View.UI
         private readonly ReactiveProperty<int> _selectedIndex = new(-1);
         public ReadOnlyReactiveProperty<int> SelectedIndex => _selectedIndex;
         private readonly AsyncReactiveProperty<int> _choicedIndex = new(-1);
-        public IReadOnlyAsyncReactiveProperty<int> ChoicedIndex => _choicedIndex;
+        internal IReadOnlyAsyncReactiveProperty<int> ChoicedIndex => _choicedIndex;
         [SerializeField] private TextMeshProUGUI _choiceText;
         [SerializeField] private RectTransform _content;
         [SerializeField] private ChoiceButton _choiceButtonPrefab;
@@ -25,9 +25,9 @@ namespace View.UI
         private readonly List<ChoiceButton> _buttons = new();
         private int _initialIndex;
 
-        public void SetCanCancel(bool canCancel) => _canClose = canCancel;
+        internal void SetCanCancel(bool canCancel) => _canClose = canCancel;
 
-        public void SetChoices(string? choiceText, int initialIndex, params string[] choices)
+        internal void SetChoices(string? choiceText, int initialIndex, params string[] choices)
         {
             foreach (var button in _buttons)
             {

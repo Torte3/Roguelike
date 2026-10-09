@@ -87,19 +87,9 @@ namespace Utilities.Serialize.Option
             return false;
         }
 
-        private string FriendlyName(Type t)
-        {
-            return t.FullName;
-        }
-
         public T Expect(string msg)
         {
             return IsSome(out value) ? value : throw new Exception(msg);
-        }
-
-        public T Unwrap()
-        {
-            return IsSome() ? value : throw new Exception($"Tried to unwrap a None<{FriendlyName(typeof(T))}>!");
         }
 
         public T UnwrapOr(T def = default)
@@ -135,36 +125,6 @@ namespace Utilities.Serialize.Option
         public U MapOr<U>(Func<U> provider, Func<T, U> converter)
         {
             return IsSome() ? converter(value) : provider();
-        }
-
-        public Option<U> And<U>(Option<U> option)
-        {
-            return IsNone ? Option<U>.None : option;
-        }
-
-        public Option<U> AndThen<U>(Func<T, Option<U>> option)
-        {
-            return IsNone ? Option<U>.None : option(value);
-        }
-
-        public Task<Option<U>> AndThen<U>(Func<T, Task<Option<U>>> option)
-        {
-            return IsNone ? Task.FromResult(Option<U>.None) : option(value);
-        }
-
-        public Option<T> Or(Option<T> other)
-        {
-            return IsSome() ? this : other;
-        }
-
-        public Option<T> OrElse(Func<Option<T>> option)
-        {
-            return IsSome() ? this : option();
-        }
-
-        public Task<Option<T>> OrElse(Func<Task<Option<T>>> option)
-        {
-            return IsSome() ? Task.FromResult(this) : option();
         }
 
         public void Take()

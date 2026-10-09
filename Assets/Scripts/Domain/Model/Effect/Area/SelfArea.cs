@@ -8,6 +8,8 @@ namespace Domain.Model.Effect.Area
 {
     public class SelfArea : INotDirectionalArea
     {
+        public bool IsSelf => true;
+
         public IEnumerable<Vector2Int> Get(Vector2Int position, IMap map)
         {
             return new List<Vector2Int> { position };
@@ -23,7 +25,7 @@ namespace Domain.Model.Effect.Area
             return 1;
         }
 
-        public string Info()
+        public string Description()
         {
             return "その場";
         }

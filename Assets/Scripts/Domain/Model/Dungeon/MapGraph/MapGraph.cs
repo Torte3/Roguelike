@@ -100,9 +100,7 @@ namespace Domain.Model.Dungeon
         }
 
         [ContextMenu("全 MapNode ID を再生成")]
-        private void RegenerateAllMapNodeIdsContextMenu() => RegenerateAllMapNodeIds();
-
-        public void RegenerateAllMapNodeIds()
+        private void RegenerateAllMapNodeIds()
         {
             if (nodes == null) return;
 
@@ -136,7 +134,7 @@ namespace Domain.Model.Dungeon
             return node;
         }
 
-        public IEnumerable<IMapNodeBlueprint> GetAllBlueprints()
+        internal IEnumerable<IMapNodeBlueprint> GetAllBlueprints()
         {
             if (nodes == null) yield break;
             foreach (var node in nodes)
@@ -146,23 +144,23 @@ namespace Domain.Model.Dungeon
             }
         }
 
-        public IMapNodeBlueprint GetBlueprint(Id<MapNode> id)
+        private IMapNodeBlueprint GetBlueprint(Id<MapNode> id)
         {
             return GetAllBlueprints().First(b => b.NodeId == id);
         }
 
-        public bool IsGraphNode(Id<MapNode> id) => GetAllBlueprints().Any(b => b.NodeId == id);
+        internal bool IsGraphNode(Id<MapNode> id) => GetAllBlueprints().Any(b => b.NodeId == id);
 
-        public bool IsInfiniteTemplate(Id<MapNode> id)
+        internal bool IsInfiniteTemplate(Id<MapNode> id)
         {
             return GetBlueprint(id).Node is InfiniteMapNode;
         }
 
-        public MapNode GetMapNode(Id<MapNode> id) => (MapNode)GetBlueprint(id).Node;
+        internal MapNode GetMapNode(Id<MapNode> id) => (MapNode)GetBlueprint(id).Node;
 
-        public InfiniteMapNode GetInfiniteMapNode(Id<MapNode> id) => (InfiniteMapNode)GetBlueprint(id).Node;
+        internal InfiniteMapNode GetInfiniteMapNode(Id<MapNode> id) => (InfiniteMapNode)GetBlueprint(id).Node;
 
-        public Id<MapNode> GetStartMapNodeId()
+        internal Id<MapNode> GetStartMapNodeId()
         {
             var startNode = nodes.OfType<StartMapNode>().First(n => n != null);
             return GetMapNodesConnectedFromStart(startNode).First().NodeId;

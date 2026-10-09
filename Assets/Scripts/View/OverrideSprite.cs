@@ -68,7 +68,7 @@ namespace View
             }
         }
 
-        public int GetIndex(Direction8 direction)
+        private int GetIndex(Direction8 direction)
         {
             switch (direction)
             {
@@ -84,7 +84,7 @@ namespace View
             }
         }
 
-        public bool NeedFlip(Direction8 direction)
+        private bool NeedFlip(Direction8 direction)
         {
             switch (direction)
             {

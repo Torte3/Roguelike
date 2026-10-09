@@ -271,14 +271,5 @@ namespace Domain.Service.Map
             // SectionのIndexからRoomIdを取得
             return _sectionToRoomMap.TryGetValue(section.Index, out var roomId) ? roomId : null;
         }
-
-        public static TilemapMemento Build(string seed)
-        {
-            return new TilemapMemento(
-                seed,
-                new Dictionary<Vector2Int, TileData>(),
-                new Dictionary<Vector2Int, OverlayTileCategory>()
-            );
-        }
     }
 }

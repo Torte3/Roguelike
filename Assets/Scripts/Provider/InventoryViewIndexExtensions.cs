@@ -5,7 +5,7 @@ using View.UI;
 
 namespace Provider
 {
-    public static class InventoryViewIndexExtensions
+    internal static class InventoryViewIndexExtensions
     {
         public static InventoryViewIndex ToInventoryViewIndex(this ItemFocus focus)
         {

@@ -25,13 +25,5 @@ namespace Domain.Model.Character
         {
             return Condition.EvaluatePrice() * RemovalCondition.EvaluateTurn();
         }
-
-        public string Info(int elapsedTurn)
-        {
-            var info = "";
-            info += $"{name}\n";
-            info += $"{RemovalCondition.Info(elapsedTurn)}\n";
-            return info;
-        }
     }
 }

@@ -35,37 +35,37 @@ namespace Domain.Model.Character
         public SerializableDictionary<Element, float> ElementAttackMultiplier;
         public SerializableDictionary<Element, float> ElementDamageRateMultiplier;
         public SerializableDictionary<ConditionTemplate, float> ConditionResistance;
-        public string InfoWithoutName()
+        public string DescriptionWithoutName()
         {
-            var info = "";
-            info += $"HP: {Hp}\n";
-            info += $"所持上限: {InventoryCapacity}\n";
+            var description = "";
+            description += $"HP: {Hp}\n";
+            description += $"所持上限: {InventoryCapacity}\n";
             if (MoveSpeed != MoveSpeed.Normal)
-                info += $"速度: {MoveSpeed.GetName()}\n";
+                description += $"速度: {MoveSpeed.GetName()}\n";
             foreach (var flag in Flags)
             {
-                info += $"{flag.GetName()}\n";
+                description += $"{flag.GetName()}\n";
             }
             if (IsFlying)
-                info += $"飛行\n";
+                description += $"飛行\n";
             if (CanThroughWalls)
-                info += $"壁を貫通可能\n";
-            info += $"\n";
+                description += $"壁を貫通可能\n";
+            description += $"\n";
             if (AttackMultiplier != 1f)
-                info += $"攻撃倍率: {AttackMultiplier:P0}\n";
+                description += $"攻撃倍率: {AttackMultiplier:P0}\n";
             foreach (var element in ElementAttackMultiplier.Keys)
             {
-                info += $"{element.Name()}属性攻撃倍率: {ElementAttackMultiplier[element]:P0}\n";
+                description += $"{element.Name()}属性攻撃倍率: {ElementAttackMultiplier[element]:P0}\n";
             }
             foreach (var element in ElementDamageRateMultiplier.Keys)
             {
-                info += $"{element.Name()}属性被ダメージ倍率: {ElementDamageRateMultiplier[element]:P0}\n";
+                description += $"{element.Name()}属性被ダメージ倍率: {ElementDamageRateMultiplier[element]:P0}\n";
             }
             foreach (var condition in ConditionResistance.Keys)
             {
-                info += $"{condition.name}耐性: {ConditionResistance[condition]:P0}\n";
+                description += $"{condition.name}耐性: {ConditionResistance[condition]:P0}\n";
             }
-            return info;
+            return description;
         }
 #if UNITY_EDITOR
         private void OnValidate()

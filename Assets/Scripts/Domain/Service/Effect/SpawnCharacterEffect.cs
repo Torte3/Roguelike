@@ -75,7 +75,7 @@ namespace Domain.Service.Effect
             return 50f;
         }
 
-        public override string Info()
+        public override string Description()
         {
             return $"{_character.Value.Name}を{_count}体召喚\n";
         }

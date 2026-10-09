@@ -4,5 +4,5 @@ using Utilities;
 
 namespace Game
 {
-    public record BlueprintGraphNodeInitializedMessage(Id<MapNode> MapNodeId);
+    internal record BlueprintGraphNodeInitializedMessage(Id<MapNode> MapNodeId);
 }

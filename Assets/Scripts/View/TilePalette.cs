@@ -7,7 +7,6 @@ namespace View
 {
     public sealed class TilePalette : MonoBehaviour
     {
-        [SerializeField] private WorldTiles _worldMapTiles;
         [SerializeField] private Tiles _caveTiles;
         [SerializeField] private Tiles _forestTiles;
         [SerializeField] private Tiles _snowTiles;
@@ -17,16 +16,6 @@ namespace View
         [SerializeField] private Tiles _voidTiles;
         public (TileBase tile, TileBase? underTile) GetTile(TileSet type, int index)
         {
-            if (type == TileSet.WorldMap)
-                return index switch
-                {
-                    1 => (_worldMapTiles.Grass, null),
-                    2 => (_worldMapTiles.Ocean, _worldMapTiles.Grass),
-                    3 => (_worldMapTiles.Mountain, _worldMapTiles.Grass),
-                    4 => (_worldMapTiles.Desert, null),
-                    5 => (_worldMapTiles.Forest, _worldMapTiles.Grass),
-                    _ => throw new ArgumentOutOfRangeException(nameof(index), index, null)
-                };
             var tiles = type switch
             {
                 TileSet.Cave => _caveTiles,

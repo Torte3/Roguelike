@@ -34,7 +34,7 @@ namespace Domain.Service.Effect
             return 100;
         }
 
-        public override string Info()
+        public override string Description()
         {
             return $"好感度を上昇させる\n";
         }

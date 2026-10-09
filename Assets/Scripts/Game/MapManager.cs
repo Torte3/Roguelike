@@ -2,23 +2,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Configuration;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
-using Domain.Model.Character.Message;
 using Domain.Model.Character.Status;
 using Domain.Model.Dungeon;
+using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Evaluation;
 using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
-using Domain.Model.Setting;
+using Domain.Model.WorldEvents;
 using Domain.Service.Characters;
 using Domain.Service.Characters.Behavior;
 using Domain.Service.Events;
 using Domain.Service.Items;
-using Domain.Service.Logs;
 using Domain.Service.Map;
 using Domain.Service.Rooms;
 using ObservableCollections;
@@ -38,6 +38,8 @@ namespace Game
         public MapType Type => _floorSpec.Type;
         public ItemDatabase ItemDatabase => _floorSpec.ItemDatabase;
         public ItemPlaceholders ItemPlaceholders { get; }
+        IReadOnlyItemPlaceholders IReadOnlyMap.ItemPlaceholders => ItemPlaceholders;
+        public IWorldEventRecorder Events { get; }
         public ItemMarketPriceTable MarketPriceTable { get; }
         private readonly CompositeDisposable _disposables = new();
         private readonly ITilemap _tilemap;
@@ -46,45 +48,43 @@ namespace Game
         private readonly List<IEventArea> _rooms;
         private readonly MonsterHouse? _monsterHouse;
         private readonly Shop? _shop;
-        public IShop? Shop => _shop;
-        public IMonsterHouse? MonsterHouse => _monsterHouse;
-        public ReadOnlyReactiveProperty<bool>? IsStolen => _shop?.IsStolen;
-        public RectInt? ShopRect => _shop?.Rect;
-        private readonly Subject<OnEffectSpawnedMessage> _onEffectSpawned = new();
+        public IReadOnlyShop? Shop => _shop;
         private readonly IGameManager _gameManager;
-        public EntityManager EntityManager { get; }
+        private EntityManager EntityManager { get; }
 
-        public MapManager(MapMemento map, FloorSpec spec, int depth, float progress, PlayerData playerData, IGameManager gameManager, CharacterControlInputReceiver receiver, ItemPlaceholders itemPlaceholders, ItemMarketPriceTable marketPriceTable)
+        public MapManager(MapMemento map, FloorSpec spec, int depth, float progress, PlayerData playerData, IGameManager gameManager, CharacterControlInputReceiver receiver, ItemPlaceholders itemPlaceholders, ItemMarketPriceTable marketPriceTable, IWorldEventRecorder events)
         {
             Id = map.Id;
             Depth = depth;
             _floorSpec = spec;
             _progress = progress;
             ItemPlaceholders = itemPlaceholders;
+            Events = events;
             MarketPriceTable = marketPriceTable;
             _gameManager = gameManager;
 
             var playerPosition = map.InitialPlayerPosition;
 
-            _tilemap = new Tilemap(map.Tilemap);
+            _tilemap = new Tilemap(map.Tilemap, events);
 
             var playerMemento = CharacterFactory.BuildPlayer(playerData, playerPosition);
 
             EntityManager = new EntityManager(map.Entities, playerMemento, new(), playerPosition, false, receiver, gameManager, this);
 
-            (_monsterHouse, _shop, _rooms) = BuildRooms(map, gameManager);
-            ApplyInitialMapState(map, gameManager);
+            (_monsterHouse, _shop, _rooms) = BuildRooms(map);
+            ApplyInitialMapState(map, gameManager, true);
         }
 
         public MapManager(MapMemento map, FloorSpec spec, int depth, float progress, PlayerMemento playerMemento,
             List<CharacterMemento> partyMembers,
-            Vector2Int? playerPosition, bool resetPertyPositions, IGameManager gameManager, CharacterControlInputReceiver receiver, ItemPlaceholders itemPlaceholders, ItemMarketPriceTable marketPriceTable)
+            Vector2Int? playerPosition, bool resetPertyPositions, IGameManager gameManager, CharacterControlInputReceiver receiver, ItemPlaceholders itemPlaceholders, ItemMarketPriceTable marketPriceTable, IWorldEventRecorder events, bool isNewWorld)
         {
             Id = map.Id;
             Depth = depth;
             _floorSpec = spec;
             _progress = progress;
             ItemPlaceholders = itemPlaceholders;
+            Events = events;
             MarketPriceTable = marketPriceTable;
             _gameManager = gameManager;
 
@@ -93,19 +93,17 @@ namespace Game
                 playerPosition = map.InitialPlayerPosition;
             }
 
-            _tilemap = new Tilemap(map.Tilemap);
+            _tilemap = new Tilemap(map.Tilemap, events);
 
             playerMemento = playerMemento.CopyWith(character: playerMemento.Character.ReplacePosition(playerPosition.Value));
 
             EntityManager = new EntityManager(map.Entities, playerMemento, partyMembers, playerPosition.Value, resetPertyPositions, receiver, gameManager, this);
 
-            (_monsterHouse, _shop, _rooms) = BuildRooms(map, gameManager);
-            ApplyInitialMapState(map, gameManager);
+            (_monsterHouse, _shop, _rooms) = BuildRooms(map);
+            ApplyInitialMapState(map, gameManager, isNewWorld);
         }
 
-        private (MonsterHouse? MonsterHouse, Shop? Shop, List<IEventArea> Rooms) BuildRooms(
-            MapMemento map,
-            IGameManager gameManager)
+        private (MonsterHouse? MonsterHouse, Shop? Shop, List<IEventArea> Rooms) BuildRooms(MapMemento map)
         {
             var rooms = new List<IEventArea>();
 
@@ -131,13 +129,12 @@ namespace Game
                             _floorSpec.Clerk,
                             clerkPosition.Position,
                             homeLocation: new Location(Id, clerkPosition.Position)),
-                            gameManager,
                             this);
                 }
 
                 if (clerk != null)
                 {
-                    shop = new Shop(map.Shop.Value, clerk, gameManager, this);
+                    shop = new Shop(map.Shop.Value, clerk, this);
                     rooms.Add(shop);
                 }
             }
@@ -145,23 +142,36 @@ namespace Game
             return (monsterHouse, shop, rooms);
         }
 
-        private void ApplyInitialMapState(MapMemento map, IGameManager gameManager)
+        private void ApplyInitialMapState(MapMemento map, IGameManager gameManager, bool isNewWorld)
         {
+            var player = EntityManager.Player;
+            var visibleArea = player.Character.VisionRange.VisibleArea;
+            Events.Record(new MapEntered(
+                Name,
+                Depth,
+                Type,
+                _tilemap.Rect,
+                _shop?.Rect,
+                _shop?.IsInside.CurrentValue == true,
+                _shop?.IsStolen == true,
+                player.Character.Entity.CurrentPosition,
+                player.Money,
+                _tilemap.GetAllTiles().Select(tile => tile.tileData.ToState(tile.position)).ToList(),
+                _tilemap.GetAllOverlayTiles().ToList(),
+                visibleArea,
+                isNewWorld,
+                player.Character.WholeInventoryLookIn(this),
+                this.PlayerUnderfoot(), this.ShopLookIn()));
+
             if (map.MonsterHouse.HasValue && !map.MonsterHouse.Value.HasEverEntered)
             {
-                GameLog.AddIgnoreVisibility("<color=yellow>不穏な気配を感じる……</color>");
+                Events.Record(new OminousPresenceFelt());
             }
 
             SetRules(gameManager);
 
-            var visibleArea = EntityManager.Player.Character.VisionRange.VisibleArea;
-            _tilemap.UpdateChunk(EntityManager.Player.Character.Entity.CurrentPosition);
             _tilemap.SetTilesKnown(visibleArea, true);
-
-            UpdateVisibility(EntityManager.Entities);
         }
-
-        public Observable<OnEffectSpawnedMessage> OnEffectSpawned => _onEffectSpawned;
 
         public void Dispose()
         {
@@ -218,18 +228,17 @@ namespace Game
                     affiliation: affiliation,
                     doActImmediately: doActImmediately
                 ),
-                _gameManager,
                 this
             );
         }
 
-        public void SpawnMimicItemRevealOnPickup(EnemyData enemy, Vector2Int position)
+        private void SpawnMimicItemRevealOnPickup(EnemyData enemy, Vector2Int position)
         {
             var dummyItem = _floorSpec.ItemDatabase.GetRandomItem(_progress).Build();
             EntityManager.SpawnMimicItem(MimicItemEntity.Build(ItemEntity.Build(position, dummyItem), enemy));
         }
 
-        public void SpawnMimicItemRevealOnUse(EnemyData enemy, Vector2Int position)
+        private void SpawnMimicItemRevealOnUse(EnemyData enemy, Vector2Int position)
         {
             var category = RandUtils.WeightedIndex(1, 1, 1, 1, 1) switch
             {
@@ -245,12 +254,12 @@ namespace Game
             ExecuteEntityTouchEventsAt(itemEntity.Entity.CurrentPosition, itemEntity).Forget();
         }
 
-        public void SpawnMimicMoney(EnemyData enemy, Vector2Int position)
+        private void SpawnMimicMoney(EnemyData enemy, Vector2Int position)
         {
             EntityManager.SpawnMimicMoney(MimicMoney.Build(position, _floorSpec.MoneyAmount(), enemy));
         }
 
-        public void SpawnMimicStairs(EnemyData enemy, Vector2Int position)
+        private void SpawnMimicStairs(EnemyData enemy, Vector2Int position)
         {
             EntityManager.SpawnMimicStairs(MimicStairs.Build(MovementEntityType.DownStairs, position, enemy));
         }
@@ -280,43 +289,39 @@ namespace Game
             );
         }
 
-        public async UniTask<Vector2Int> ShowThrowAnimation(Sprite icon, Vector2Int position, Direction8 direction,
-            int distance, bool isPiercing, params EntityLayer[] canHitLayer)
-        {
-            return await EntityManager.ShowThrowAnimation(icon, position, direction, distance, isPiercing, this, canHitLayer);
-        }
-
-        public void SpawnEffect(IEnumerable<Vector2Int> area, Color color)
-        {
-            _onEffectSpawned.OnNext(new OnEffectSpawnedMessage(area, color));
-        }
-
         public IMapPosition At(Vector2Int position)
         {
-            return new MapPosition(position, this, TilemapViewer);
+            return At(position, _tilemap);
         }
 
-        public void UpdateVisibility(IEnumerable<IEntity> entities)
+        public IMapPosition At(Vector2Int position, ITerrain terrain)
+        {
+            return new MapPosition(position, this, terrain);
+        }
+
+        private void UpdateVisibility(IEnumerable<IEntity> entities)
         {
             foreach (var entity in entities)
                 UpdateVisibility(entity);
         }
 
-        public void UpdateVisibility(IEntity entity)
+        private void UpdateVisibility(IEntity entity)
         {
-            bool visibility;
-            if (IsGrass(entity.Entity.CurrentPosition) &&
-                !entity.Entity.IgnoreGrass &&
-                (entity.Entity.Layer == EntityLayer.Bottom || entity.Entity.Layer == EntityLayer.Floor))
-                visibility = false;
-            else
-                visibility = EntityManager.Player.Character.IsVisible(entity.Entity.CurrentPosition);
-            entity.Entity.SetVisibility(visibility);
+            entity.Entity.SetVisibility(IsVisibleToPlayer(entity.Entity, entity.Entity.CurrentPosition));
+        }
+
+        private bool IsVisibleToPlayer(EntityBase entity, Vector2Int position)
+        {
+            if (IsGrass(position) &&
+                !entity.IgnoreGrass &&
+                (entity.Layer == EntityLayer.Bottom || entity.Layer == EntityLayer.Floor))
+                return false;
+            return EntityManager.Player.Character.IsVisible(position);
         }
 
         public bool IsGrass(Vector2Int position)
         {
-            return TilemapViewer.IsGrass(position);
+            return _tilemap.IsGrass(position);
         }
 
         // キャラがアイテムの上に乗ったとき、拾える条件を満たせば自動で拾う。拾えない場合は「乗った」ログのみ。
@@ -332,9 +337,7 @@ namespace Game
                             && EntityManager.CanPickUpAt(positionChanged, autoPickUpShopItem);
             if (!canPickUp)
             {
-                if (EntityManager.Player.Character.IsVisible(positionChanged))
-                    GameLog.Add(character.Entity.IsVisible,
-                        $"{character.GetName(EntityManager.Player)}は<color=yellow>{item.Item.GetName(EntityManager.Player, ItemPlaceholders)}</color>の上に乗った");
+                Events.Record(new ItemSteppedOn(character.Entity.Ref, character.Label, item.Item.NameIn(this)));
                 return;
             }
 
@@ -343,11 +346,9 @@ namespace Game
                 throw new Exception("Unexpected error. Unable to pick up item.");
 
             character.Inventory.AddToEmpty(item.Item);
-            _gameManager.PlaySE(SE.Pickup);
-            _gameManager.RequestWorldIconPopup(item.Icon, positionChanged);
-            if (EntityManager.Player.Character.IsVisible(positionChanged))
-                GameLog.Add(character.Entity.IsVisible,
-                    $"{character.GetName(EntityManager.Player)}は<color=yellow>{item.Item.GetName(EntityManager.Player, ItemPlaceholders)}</color>を拾った");
+            Events.Record(new ItemPickedUp(character.Entity.Ref, character.Label, item.Item.NameIn(this), true,
+                new ObtainedItem(item.Item.Icon, positionChanged), character.HeldItemsIn(this),
+                character.UnderfootAfterMove(this, positionChanged)));
         }
 
         public async UniTask ExecuteEntityTouchEventsAt(Vector2Int position, IEntity triggerEntity)
@@ -377,7 +378,7 @@ namespace Game
         public IEnumerable<IMapPosition> GetAllBlankPositions() => GetAllBlankPositionsOn();
         public IEnumerable<IMapPosition> GetAllBlankPositionsOn(params EntityLayer[] layers)
         {
-            return TilemapViewer
+            return _tilemap
                 .GetAllPassablePositions()
                 .Select(position => At(position))
                 .Where(position => position.IsBlank(layers));
@@ -386,7 +387,7 @@ namespace Game
         public IEnumerable<IMapPosition> GetAllBlankAndStandablePositions() => GetAllBlankAndStandablePositionsOn();
         public IEnumerable<IMapPosition> GetAllBlankAndStandablePositionsOn(params EntityLayer[] layers)
         {
-            return TilemapViewer
+            return _tilemap
                 .GetAllWalkablePositions()
                 .Select(position => At(position))
                 .Where(position => position.IsBlank(layers));
@@ -394,7 +395,7 @@ namespace Game
 
         public IEnumerable<IMapPosition> GetAllWalkablePositions(IAffiliation affiliation)
         {
-            var result = TilemapViewer.GetAllWalkablePositions();
+            var result = _tilemap.GetAllWalkablePositions();
             result.ExceptWith(
                 EntityManager.Entities
                     .On(EntityLayer.Middle)
@@ -403,18 +404,13 @@ namespace Game
             return result.Select(position => At(position));
         }
 
-        public bool IsReachable(Vector2Int from, Vector2Int to, IHasBehavior actor)
+        public bool IsReachable(Vector2Int to, IHasBehavior actor)
         {
-            var calculator = new MoveCostCalculator(actor, this, true);
-            var route = new AStar(calculator.Calculate).Calc(from, to);
-            if (!route.Any())
-                return false;
+            var route = actor.RouteTo(to, this);
             if (At(to).IsWalkable(actor.Affiliation))
-                return route.Last() == to;
-            return (route.Last() - to).sqrMagnitude <= 2;
+                return route.Last == to;
+            return (route.Last - to).sqrMagnitude <= 2;
         }
-
-        public ITilemapViewer TilemapViewer => _tilemap;
 
         public MapMemento Serialize()
         {
@@ -431,7 +427,7 @@ namespace Game
             );
         }
 
-        public MapMemento SerializeWithoutPartyMembers()
+        internal MapMemento SerializeWithoutPartyMembers()
         {
             return new MapMemento
             (
@@ -446,32 +442,48 @@ namespace Game
             );
         }
 
+        private void RecordShopRoomItemChanges()
+        {
+            if (_shop == null)
+                return;
+
+            var shop = _shop;
+            var itemsInRoom = EntityManager.Items.Where(item => shop.Rect.Contains(item.Entity.CurrentPosition)).ToHashSet();
+
+            void Update(IItemEntity item, bool isOnMap)
+            {
+                var isInRoom = isOnMap && shop.Rect.Contains(item.Entity.CurrentPosition);
+                if (isInRoom ? itemsInRoom.Add(item) : itemsInRoom.Remove(item))
+                    Events.Record(new ShopRoomItemsChanged(this.ShopLookIn()));
+            }
+
+            EntityManager.Items.ObserveAdd().Subscribe(added => Update(added.Value, true)).AddTo(_disposables);
+            EntityManager.Items.ObserveRemove().Subscribe(removed => Update(removed.Value, false)).AddTo(_disposables);
+            EntityManager.Items.SubscribeIncludingCurrentObservables(
+                item => item.Entity.Position.SkipLatestValueOnSubscribe(),
+                (item, _) => Update(item, true)
+            ).AddTo(_disposables);
+        }
+
         private void SetRules(IGameManager gameManager)
         {
-            EntityManager.SetRules();
-
-            EntityManager.Characters.SubscribeIncludingCurrentObservables(
-                character => character.OnDead,
-                (character, _) =>
-                {
-                    if (!character.IsPlayer)
-                        DropAllItem(character);
-                }
-            ).AddTo(_disposables);
+            EntityManager.SetRules(IsVisibleToPlayer);
+            RecordShopRoomItemChanges();
 
             EntityManager.Player.Character.VisionRange.OnVisibleAreaChanged.Subscribe(areaChanged =>
             {
-                _tilemap.SetTilesKnown(EntityManager.Player.Character.VisionRange.VisibleArea, true);
+                var visibleArea = EntityManager.Player.Character.VisionRange.VisibleArea;
+                Events.Record(new SightChanged(visibleArea));
+                _tilemap.SetTilesKnown(visibleArea, true);
                 UpdateVisibility(EntityManager.Entities);
             }).AddTo(_disposables);
 
             EntityManager.Player.Character.Entity.Position.Subscribe(async positionChanged =>
             {
-                _tilemap.UpdateChunk(positionChanged);
                 if (IsGrass(positionChanged))
                 {
+                    Events.Record(new GrassTrampled());
                     SetGrasses(new[] { EntityManager.Player.Character.Entity.CurrentPosition }, false);
-                    _gameManager.PlaySE(SE.GrassWalk);
                 }
                 var eventId = gameManager.StartEvent();
                 foreach (var eventArea in _rooms)
@@ -539,11 +551,6 @@ namespace Game
                 }
             ).AddTo(_disposables);
 
-            EntityManager.Entities.SubscribeIncludingCurrentObservables(
-                entity => entity.Entity.Position,
-                (entity, _) => UpdateVisibility(entity)
-            ).AddTo(_disposables);
-
             _tilemap.OnOverlayTilesChanged.Subscribe(overlayTilesChanged =>
             {
                 foreach (var (position, category) in overlayTilesChanged)
@@ -586,14 +593,6 @@ namespace Game
                     SpawnRandomEnemy(positions.GetAtRandom());
             }
 
-            var unloadedCharacters = EntityManager.Characters
-                .Where(character => !_tilemap.IsPositionInsideActiveChunk(character.Entity.CurrentPosition))
-                .ToList();
-            foreach (var character in unloadedCharacters)
-            {
-                EntityManager.RemoveCharacter(character);
-            }
-
             await EntityManager.UpdateTurn(_gameManager, this);
 
             SetGrasses(EntityManager.FireEntities.Positions(), false);
@@ -603,7 +602,9 @@ namespace Game
 
         public void RemoveWalls(IEnumerable<Vector2Int> positions)
         {
-            _tilemap.RemoveWalls(positions);
+            var previousTiles = _tilemap.RemoveWalls(positions);
+            foreach (var character in Characters)
+                character.RememberTerrainBefore(previousTiles);
         }
 
         public void SetGrasses(IEnumerable<Vector2Int> positions, bool isGrass)
@@ -616,19 +617,9 @@ namespace Game
             _tilemap.SetOverlayTiles(positions, isIce ? OverlayTileCategory.FloatingIce : null);
         }
 
-        public void DropAllItem(ICharacter character)
-        {
-            foreach (var item in character.Inventory.Clear())
-            {
-                SpawnItem(item,
-                    FindBlankPositionFrom(character.Entity.CurrentPosition,
-                        position => At(position).IsBlankAndStandable(EntityLayer.Bottom)));
-            }
-        }
-
         public Vector2Int FindBlankPositionFrom(Vector2Int position, Func<Vector2Int, bool> isBlankFunc)
         {
-            return BlankFinder.FindBlankPosition(isBlankFunc, TilemapViewer.IsWalkable, position);
+            return BlankFinder.FindBlankPosition(isBlankFunc, _tilemap.IsWalkable, position);
         }
 
         public Vector2Int GetThrowDestination(Vector2Int position, Direction8 direction, int distance, params EntityLayer[] canHitLayer)
@@ -732,20 +723,17 @@ namespace Game
         }
 
         public IPlayer Player => EntityManager?.Player;
+        public IReadOnlyPlayerCharacter PlayerCharacter => Player.ReadOnlyCharacter;
+        public IReadOnlyItem? ItemAt(Vector2Int position) => EntityManager.GetItemAt(position)?.Item;
+        public IEnumerable<IReadOnlyItem> ItemsIn(IEnumerable<Vector2Int> positions) => Items.In(positions).Select(item => item.Item);
         public IObservableCollection<IEntity> Entities => EntityManager.Entities;
         public IObservableCollection<ICharacter> Characters => EntityManager.Characters;
-        public IObservableCollection<IItemEntity> Items => EntityManager.Items;
-        public IObservableCollection<IEntityEventEntity> StandaloneEntityEventEntities => EntityManager.StandaloneEntityEventEntities;
-        public IObservableCollection<ICharacterEventEntity> StandaloneCharacterEventEntities => EntityManager.StandaloneCharacterEventEntities;
-        public IObservableCollection<IPlayerEventEntity> StandalonePlayerEventEntities => EntityManager.StandalonePlayerEventEntities;
-        public IObservableCollection<IScheduledEventEntity> StandaloneScheduledEventEntities => EntityManager.StandaloneScheduledEventEntities;
-        public IObservableCollection<IPlayerEventEntity> PlayerEventEntities => EntityManager.PlayerEventEntities;
-        public IObservableCollection<IScheduledEventEntity> ScheduledEventEntities => EntityManager.ScheduledEventEntities;
-        public IObservableCollection<ThrowAnimationEntity> ThrowAnimationEntities => EntityManager.ThrowAnimationEntities;
-        public IObservableCollection<Fire> FireEntities => EntityManager.FireEntities;
-        public List<Stairs> Stairs => EntityManager.Stairs;
         public IEnumerable<ILockedEntity> LockedEntities => EntityManager.LockedEntities;
+        public ITerrain Terrain => _tilemap;
+        public IObservableCollection<IItemEntity> Items => EntityManager.Items;
+        public List<Stairs> Stairs => EntityManager.Stairs;
         public IEntity? GetEntityFastAt(Vector2Int position, EntityLayer layer) => EntityManager.GetEntityFastAt(position, layer);
+        public ICharacter? GetCharacterAt(Vector2Int position) => EntityManager.GetCharacterAt(position);
         public IEnumerable<IEntity> GetEntitiesFastAt(Vector2Int position, IEnumerable<EntityLayer> layers) => EntityManager.GetEntitiesFastAt(position, layers);
         public IEnumerable<IEntity> GetEntitiesFastAt(Vector2Int position, params EntityLayer[] layers) => EntityManager.GetEntitiesFastAt(position, layers);
         public IEnumerable<IEntity> GetEntitiesFastAt(Vector2Int position) => EntityManager.GetEntitiesFastAt(position);
@@ -762,7 +750,7 @@ namespace Game
         public IEnumerable<IScheduledEventEntity> GetScheduledEventEntitiesFastAt(Vector2Int position, IEnumerable<EntityLayer> layers) => EntityManager.GetScheduledEventEntitiesFastAt(position, layers);
         public IEnumerable<IScheduledEventEntity> GetScheduledEventEntitiesFastAt(Vector2Int position, params EntityLayer[] layers) => EntityManager.GetScheduledEventEntitiesFastAt(position, layers);
         public IItem? GetItemByIdFromWorldOrInventory(Id<IItem> id) => EntityManager.GetItemByIdFromWorldOrInventory(id);
-        public HashSet<Vector2Int> AllCharacterPositionsFast() => EntityManager.AllCharacterPositionsFast();
+        public IReadOnlyCollection<Vector2Int> AllCharacterPositionsFast() => EntityManager.AllCharacterPositionsFast();
         public HashSet<Vector2Int> AllItemPositionsFast() => EntityManager.AllItemPositionsFast();
         public void RevealMimic(IEnumerable<Vector2Int> positions) => EntityManager.RevealMimic(positions);
         public void AttackStatue(IEnumerable<Vector2Int> positions) => EntityManager.AttackStatue(positions);
@@ -776,16 +764,7 @@ namespace Game
         }
 
         public void SpawnTrap(TrapData trap, Vector2Int position) => EntityManager.SpawnTrap(trap, position);
-        public IItemEntity? TryPickUpAt(Vector2Int position, bool canPickUpShopItem)
-        {
-            _gameManager.PlaySE(SE.Pickup);
-            var item = EntityManager.TryPickUpAt(position, canPickUpShopItem);
-            if (item != null)
-            {
-                _gameManager.RequestWorldIconPopup(item.Icon, position);
-            }
-            return item;
-        }
-        public IEnumerable<ICharacter> GetFollowingCharacters() => EntityManager.GetFollowingCharacters();
+        public IItemEntity? TryPickUpAt(Vector2Int position, bool canPickUpShopItem) => EntityManager.TryPickUpAt(position, canPickUpShopItem);
+        internal IEnumerable<ICharacter> GetFollowingCharacters() => EntityManager.GetFollowingCharacters();
     }
 }

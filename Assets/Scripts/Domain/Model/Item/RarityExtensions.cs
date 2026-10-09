@@ -13,7 +13,7 @@ namespace Domain.Model.Item
         /// <param name="rarity"></param>
         /// <param name="progress">0~1 </param>
         /// <returns></returns>
-        public static float GetWeight(this Rarity rarity, float progress)
+        internal static float GetWeight(this Rarity rarity, float progress)
         {
             progress = Mathf.Clamp01(progress);
 

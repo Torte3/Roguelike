@@ -6,14 +6,14 @@ using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using Domain.Service.Items;
-using Domain.Service.Logs;
 using UnityEngine;
 using Utilities;
 
 namespace Domain.Service.Events
 {
-    public class Money : IDisposable, ISerializable<MoneyMemento>, ICharacterEventEntity, IIconEntity
+    public class Money : IDisposable, ISerializable<MoneyMemento>, ICharacterEventEntity
     {
         public EntityBase Entity { get; init; }
         public readonly int Amount;
@@ -28,10 +28,9 @@ namespace Domain.Service.Events
                 (character, gameManager, map) =>
                 {
                     map.Player.AddMoney(Amount);
-                    gameManager.PlaySE(SE.Pickup);
-                    gameManager.RequestWorldIconPopup(Icon, Entity.CurrentPosition);
-                    GameLog.AddIgnoreVisibility($"{map.Player.Character.GetName(map.Player)}は{Amount}Gを拾った");
-                    Entity.Destroy($"は{map.Player.Character.GetName(map.Player)}に拾われた");
+                    map.Events.Record(new MoneyPickedUp(map.Player.Character.Label, Amount, map.Player.Money,
+                        new ObtainedItem(Icon, Entity.CurrentPosition)));
+                    Entity.Destroy();
                     return UniTask.CompletedTask;
                 }
             );
@@ -42,7 +41,7 @@ namespace Domain.Service.Events
             Entity.Dispose();
         }
 
-        public Sprite Icon => Amount switch
+        private Sprite Icon => Amount switch
         {
             <= 100 => ObjectLoader.LoadIcon("icons_full_16_362"),
             <= 300 => ObjectLoader.LoadIcon("icons_full_16_363"),
@@ -60,16 +59,25 @@ namespace Domain.Service.Events
             Entity.SetVisibility(visibility);
         }
 
-        public async UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)
+        public bool CanBeBrokenBy(BreakTargets targets) => targets.HasFlag(BreakTargets.Money);
+
+        public EntityLabel LabelIn(IMap map)
+        {
+            return new MoneyEntityLabel(Amount);
+        }
+
+        public WorldEvent Appeared(IMap map)
+        {
+            return Entity.Appeared(EntityKind.Money, Icon);
+        }
+
+        public UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)
         {
             var destination = ItemEntity.GetThrowDestination(Entity.CurrentPosition, direction, distance, map);
-            if (Entity.Visibility.CurrentValue && destination != Entity.CurrentPosition)
-            {
-                Entity.SetVisibility(false);
-                await map.ShowThrowAnimation(Icon, Entity.CurrentPosition, direction, distance, false, EntityLayer.Middle);
-                Entity.Teleport(map.FindBlankPositionFrom(destination,
-                    position => map.At(position).IsBlankAndStandable(EntityLayer.Bottom)));
-            }
+            if (ItemEntity.GetFloorLanding(Entity.CurrentPosition, destination, map) is { } landing)
+                Entity.BlowTo(landing);
+
+            return UniTask.CompletedTask;
         }
 
         public MoneyMemento Serialize()

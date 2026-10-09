@@ -4,12 +4,13 @@ using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using UnityEngine;
 using Utilities;
 
 namespace Domain.Service.Events
 {
-    public class Teleporter : ISerializable<EntityMemento>, IEntityEventEntity, IIconEntity
+    public class Teleporter : ISerializable<EntityMemento>, IEntityEventEntity
     {
         public EntityBase Entity { get; init; }
         public bool IsGrounded => true;
@@ -27,9 +28,19 @@ namespace Domain.Service.Events
             );
         }
 
-        public Sprite Icon => ObjectLoader.LoadMapChip("(Base)BaseChip_pipo_71");
+        private Sprite Icon => ObjectLoader.LoadMapChip("(Base)BaseChip_pipo_71");
 
         public IEntityEvent Event { get; init; }
+
+        public EntityLabel LabelIn(IMap map)
+        {
+            return new KindEntityLabel(FixtureKind.Teleporter);
+        }
+
+        public WorldEvent Appeared(IMap map)
+        {
+            return Entity.Appeared(FixtureKind.Teleporter.ToEntityKind(), Icon);
+        }
 
         public UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)
         {

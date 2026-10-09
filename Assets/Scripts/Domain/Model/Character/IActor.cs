@@ -11,7 +11,7 @@ namespace Domain.Model.Character
         public Direction8 CurrentDirection { get; }
         public void DoNothing();
         public bool CanSwap(Direction8 direction, IMap map);
-        public UniTask Move(Direction8 direction, IInput input);
+        public void Move(Direction8 direction);
         public void Turn(Direction8 direction);
         public void FaceNearestCharacter(IMap map);
         public UniTask UseSkill(ISkillWithCost skill, Direction8 direction, IMap map);

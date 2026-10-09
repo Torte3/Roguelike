@@ -1,6 +1,7 @@
 #nullable enable
 using System;
-using Domain.Service.Logs;
+using Domain.Model.WorldEvents;
+using Game;
 using IngameDebugConsole;
 using Unity.Logging;
 using Unity.Logging.Sinks;
@@ -10,8 +11,11 @@ namespace Provider
 {
     public class LogCommands
     {
-        public LogCommands()
+        private readonly World _world;
+
+        public LogCommands(World world)
         {
+            _world = world;
             DebugLogConsole.AddCommandInstance(
                 "log",
                 "画面にログを出力します。",
@@ -26,7 +30,7 @@ namespace Provider
 
         private void AddLog(string log)
         {
-            GameLog.AddIgnoreVisibility(log);
+            _world.Events.Record(new DebugMessage(log));
         }
 
         private void SetLogLevel(LogLevel level)

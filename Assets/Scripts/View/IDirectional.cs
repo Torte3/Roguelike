@@ -2,7 +2,7 @@
 
 namespace View
 {
-    public interface IDirectional
+    internal interface IDirectional
     {
         public Direction8 GetDirection();
     }

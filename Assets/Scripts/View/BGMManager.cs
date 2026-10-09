@@ -1,5 +1,10 @@
+using System;
+using Configuration;
+using R3;
 using Unity.Logging;
 using UnityEngine;
+using Utilities;
+using View.Playback;
 
 namespace View
 {
@@ -11,41 +16,27 @@ namespace View
         [SerializeField] private AudioClip _shopBGM;
         [SerializeField] private AudioClip _monsterHouseBGM;
 
-        public void SetVolume(float volume)
+        private void Awake()
         {
-            _audioSource.volume = volume;
+            Settings.GlobalSettings.BGMVolume.Value
+                .SubscribeIncludingCurrentValue(volume => _audioSource.volume = volume / 100f)
+                .AddTo(this);
         }
 
-        public void NormalBGM()
+        internal void Play(BgmTrack track)
         {
-            Log.Debug("[BGM]Change BGM to Normal");
-            ChangeBGM(_normalBGM);
+            Log.Debug($"[BGM]Change BGM to {track}");
+            ChangeBGM(track switch
+            {
+                BgmTrack.Normal => _normalBGM,
+                BgmTrack.Stolen => _stolenBGM,
+                BgmTrack.Shop => _shopBGM,
+                BgmTrack.MonsterHouse => _monsterHouseBGM,
+                _ => throw new ArgumentOutOfRangeException(nameof(track), track, null),
+            });
         }
 
-        public void StolenBGM()
-        {
-            Log.Debug("[BGM]Change BGM to Stolen");
-            ChangeBGM(_stolenBGM);
-        }
-
-        public void ShopBGM()
-        {
-            Log.Debug("[BGM]Change BGM to Shop");
-            ChangeBGM(_shopBGM);
-        }
-
-        public void MonsterHouseBGM()
-        {
-            Log.Debug("[BGM]Change BGM to MonsterHouse");
-            ChangeBGM(_monsterHouseBGM);
-        }
-
-        public void StopBGM()
-        {
-            _audioSource.Stop();
-        }
-
-        public void ChangeBGM(AudioClip? clip)
+        private void ChangeBGM(AudioClip? clip)
         {
             if (clip == null)
             {

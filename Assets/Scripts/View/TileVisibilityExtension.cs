@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace View
 {
-    public static class TileVisibilityExtension
+    internal static class TileVisibilityExtension
     {
-        public static Color GetColor(this TileVisibility visibility)
+        internal static Color GetColor(this TileVisibility visibility)
         {
             return visibility switch
             {
@@ -16,7 +16,7 @@ namespace View
             };
         }
 
-        public static Color GetMinimapColor(this TileVisibility visibility)
+        internal static Color GetMinimapColor(this TileVisibility visibility)
         {
             return visibility switch
             {

@@ -54,7 +54,7 @@ namespace Domain.Model.Evaluation
             return 0.2f * distance;
         }
 
-        public static float CircleAreaEvaluate(bool canIgnoreWalls, int radius)
+        internal static float CircleAreaEvaluate(bool canIgnoreWalls, int radius)
         {
             if (canIgnoreWalls)
                 return (radius + 1) * 3;

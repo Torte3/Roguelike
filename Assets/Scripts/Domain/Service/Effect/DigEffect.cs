@@ -31,7 +31,7 @@ namespace Domain.Service.Effect
             return 15f;
         }
 
-        public override string Info()
+        public override string Description()
         {
             return "壁を掘る\n";
         }

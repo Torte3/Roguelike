@@ -23,11 +23,14 @@ namespace Domain.Service.Characters
         private readonly Id<IEntity> _id;
         private readonly Subject<OnAffiliationChangedMessage> _onAffiliationChanged = new();
         private IAffiliation? _playerAffiliation;
+        private readonly System.Action<AffiliationType> _onTypeTowardPlayerChanged;
         private readonly Dictionary<(Id<IEntity>, AffiliationType), FlagStat> _forcedAffiliationFlags = new();
 
-        public CharacterAffiliationManager(Id<IEntity> id, AffiliationMemento data, IPlayer? player)
+        public CharacterAffiliationManager(Id<IEntity> id, AffiliationMemento data, IPlayer? player,
+            System.Action<AffiliationType> onTypeTowardPlayerChanged)
         {
             _id = id;
+            _onTypeTowardPlayerChanged = onTypeTowardPlayerChanged;
             Group = data.Group;
             _affections = data.Affiliations;
             _forcedAffiliationFlags = data.ForcedAffiliationFlags;
@@ -35,17 +38,43 @@ namespace Domain.Service.Characters
         }
 
         public Id<IEntity> Id => _id;
-        public Observable<OnAffiliationChangedMessage> OnAffiliationChanged => _onAffiliationChanged;
+        internal Observable<OnAffiliationChangedMessage> OnAffiliationChanged => _onAffiliationChanged;
 
         public CharacterGroup Group { get; private set; }
 
         public void Clear()
         {
-            foreach (var key in _affections.Keys.ToList())
+            ChangeTowardPlayer(() =>
             {
-                _affections.Remove(key);
-                _onAffiliationChanged.OnNext(new OnAffiliationChangedMessage(key));
+                foreach (var key in _affections.Keys.ToList())
+                {
+                    _affections.Remove(key);
+                    _onAffiliationChanged.OnNext(new OnAffiliationChangedMessage(key));
+                }
+            });
+        }
+
+        private void ChangeTowardPlayer(System.Action change)
+        {
+            if (_playerAffiliation == null || _playerAffiliation.Id == Id)
+            {
+                change();
+                return;
             }
+
+            var before = GetAffiliationType(_playerAffiliation);
+            change();
+            var after = GetAffiliationType(_playerAffiliation);
+            if (after != before)
+                _onTypeTowardPlayerChanged(after);
+        }
+
+        private void ChangeTowardPlayer(Id<IEntity> target, System.Action change)
+        {
+            if (target == _playerAffiliation?.Id)
+                ChangeTowardPlayer(change);
+            else
+                change();
         }
 
         public AffiliationType GetAffiliationType(IAffiliation other)
@@ -73,9 +102,12 @@ namespace Domain.Service.Characters
                 return AffiliationType.Neutral;
             }
 
-            if (other != _playerAffiliation && _playerAffiliation != null && IsAlly(_playerAffiliation))
+            if (other != _playerAffiliation && _playerAffiliation != null)
             {
-                return other.GetAffiliationType(_playerAffiliation);
+                if (IsAlly(_playerAffiliation))
+                    return other.GetAffiliationType(_playerAffiliation);
+                if (other.IsAlly(_playerAffiliation))
+                    return GetAffiliationType(_playerAffiliation);
             }
 
             var totalAffection = GetAffection(other);
@@ -209,13 +241,16 @@ namespace Domain.Service.Characters
                 return;
             }
 
-            if (!_affections.ContainsKey(targetId))
+            ChangeTowardPlayer(targetId, () =>
             {
-                _affections[targetId] = 0;
-            }
+                if (!_affections.ContainsKey(targetId))
+                {
+                    _affections[targetId] = 0;
+                }
 
-            _affections[targetId] += change;
-            _onAffiliationChanged.OnNext(new OnAffiliationChangedMessage(targetId));
+                _affections[targetId] += change;
+                _onAffiliationChanged.OnNext(new OnAffiliationChangedMessage(targetId));
+            });
         }
 
         public void UpdateTurn(IEnumerable<IAffiliation> visibleCharacters)
@@ -223,11 +258,15 @@ namespace Domain.Service.Characters
             foreach (var target in _affections.Keys
                          .Where(target => !visibleCharacters.Select(x => x.Id).Contains(target)).ToList())
             {
-                ModifyAffection(target, _affections[target] * -0.001f);
-                if (Mathf.Abs(_affections[target]) <= 0.01f)
+                ChangeTowardPlayer(target, () =>
                 {
-                    _affections.Remove(target);
-                }
+                    _affections[target] += _affections[target] * -0.001f;
+                    _onAffiliationChanged.OnNext(new OnAffiliationChangedMessage(target));
+                    if (Mathf.Abs(_affections[target]) <= 0.01f)
+                    {
+                        _affections.Remove(target);
+                    }
+                });
             }
         }
 
@@ -243,16 +282,19 @@ namespace Domain.Service.Characters
                 return;
             }
 
-            if (!_forcedAffiliationFlags.ContainsKey((target, type)))
+            ChangeTowardPlayer(target, () =>
             {
-                _forcedAffiliationFlags[(target, type)] = new FlagStat(1);
-            }
-            else
-            {
-                _forcedAffiliationFlags[(target, type)].Add();
-            }
+                if (!_forcedAffiliationFlags.ContainsKey((target, type)))
+                {
+                    _forcedAffiliationFlags[(target, type)] = new FlagStat(1);
+                }
+                else
+                {
+                    _forcedAffiliationFlags[(target, type)].Add();
+                }
 
-            _onAffiliationChanged.OnNext(new OnAffiliationChangedMessage(target));
+                _onAffiliationChanged.OnNext(new OnAffiliationChangedMessage(target));
+            });
         }
 
         public void RemoveForceAffiliation(Id<IEntity> target, AffiliationType type)
@@ -262,13 +304,16 @@ namespace Domain.Service.Characters
                 return;
             }
 
-            _forcedAffiliationFlags[(target, type)].Remove();
-            if (_forcedAffiliationFlags[(target, type)].CurrentFlags <= 0)
+            ChangeTowardPlayer(target, () =>
             {
-                _forcedAffiliationFlags.Remove((target, type));
-            }
+                _forcedAffiliationFlags[(target, type)].Remove();
+                if (_forcedAffiliationFlags[(target, type)].CurrentFlags <= 0)
+                {
+                    _forcedAffiliationFlags.Remove((target, type));
+                }
 
-            _onAffiliationChanged.OnNext(new OnAffiliationChangedMessage(target));
+                _onAffiliationChanged.OnNext(new OnAffiliationChangedMessage(target));
+            });
         }
 
         private float GetAffectionByGroup(IAffiliation target)

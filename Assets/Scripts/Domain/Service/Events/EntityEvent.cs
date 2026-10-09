@@ -6,7 +6,7 @@ using Domain.Model.Map;
 
 namespace Domain.Service.Events
 {
-    public class EntityEvent : IEntityEvent
+    internal class EntityEvent : IEntityEvent
     {
         private readonly Func<IEntity, bool> _canExecuteEvent;
         private readonly Func<IEntity, IGameManager, IMap, UniTask> _doEvent;

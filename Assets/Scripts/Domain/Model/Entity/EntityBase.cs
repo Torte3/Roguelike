@@ -1,7 +1,7 @@
 #nullable enable
 using System;
-using Cysharp.Threading.Tasks;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using R3;
 using UnityEngine;
 using Utilities;
@@ -9,21 +9,17 @@ using Utilities.Serialize.Option;
 
 namespace Domain.Model.Entity
 {
-    public abstract record EntityAppearance
-    {
-        public record Icon(int Id) : EntityAppearance;
-        public record Prefab(string Name) : EntityAppearance;
-    }
     public class EntityBase : IDisposable, ISerializable<EntityMemento>
     {
         public readonly Id<IEntity> Id;
         private readonly EntityLayer _layer;
         private readonly bool _ignoreGrass;
-        private readonly Subject<(Direction8 direction, Vector2Int destination, bool isThrown)> _onMove = new();
-        private readonly Subject<Vector2Int> _onTeleport = new();
         private readonly ReactiveProperty<Vector2Int> _position;
-        private readonly ReactiveProperty<bool> _visibleByPlayer = new(false);
-        private readonly ReactiveProperty<string?> _destroyLog;
+        private readonly ReactiveProperty<bool> _isDestroyed;
+        private IWorldEventRecorder? _events;
+        private bool _isPlayer;
+        private Func<Vector2Int, bool>? _isVisibleToPlayer;
+        private Func<Vector2Int, Underfoot?>? _underfootAfterMove;
 
         public EntityBase(EntityMemento data, bool isVisualOnly = false)
         {
@@ -31,27 +27,23 @@ namespace Domain.Model.Entity
             _position = new(data.Position);
             _layer = data.Layer;
             _ignoreGrass = data.IgnoreGrass;
-            _destroyLog = new(data.DestroyLog.Value);
+            _isDestroyed = new(data.IsDestroyed);
             IsVisualOnly = new(isVisualOnly);
         }
 
-        public Vector2Int CurrentPosition => Position.CurrentValue;
+        public Vector2Int CurrentPosition => _position.CurrentValue;
         public ReadOnlyReactiveProperty<Vector2Int> Position => _position;
-        public Observable<(Direction8 direction, Vector2Int destination, bool isThrown)> OnMove => _onMove;
-        public Observable<Vector2Int> OnTeleport => _onTeleport;
-        public ReadOnlyReactiveProperty<bool> Visibility => _visibleByPlayer;
-        public bool IsVisible => Visibility.CurrentValue;
+        public bool IsVisible { get; private set; }
+        public EntityRef Ref => new(Id, CurrentPosition, IsVisible);
         public ReactiveProperty<bool> IsVisualOnly;
         public EntityLayer Layer => _layer;
         public bool IgnoreGrass => _ignoreGrass;
-        public bool IsDestroyed => _destroyLog.CurrentValue != null;
-        public Observable<string> OnDestroyed => _destroyLog.WhereNotNull();
-        public string? DestroyLog => _destroyLog.CurrentValue;
+        public bool IsDestroyed => _isDestroyed.CurrentValue;
+        public Observable<Unit> OnDestroyed => _isDestroyed.Where(isDestroyed => isDestroyed).AsUnitObservable();
 
         public void Dispose()
         {
             _position.Dispose();
-            _onMove.Dispose();
         }
 
         public EntityMemento Serialize()
@@ -59,9 +51,9 @@ namespace Domain.Model.Entity
             return new EntityMemento
             (
                 Id.ToString(),
-                _position.CurrentValue,
+                CurrentPosition,
                 _layer,
-                _destroyLog.CurrentValue.ToOption(),
+                IsDestroyed,
                 _ignoreGrass
             );
         }
@@ -84,32 +76,83 @@ namespace Domain.Model.Entity
                 id.ToString(),
                 position,
                 layer,
-                Option<string>.None,
+                false,
                 ignoreGrass
             );
         }
 
+        public EntityAppeared Appeared(EntityKind kind, Sprite? icon, bool isShiny = false)
+        {
+            return new EntityAppeared(Ref, AppearanceOf(kind, icon, isShiny));
+        }
+
+        public Appearance AppearanceOf(EntityKind kind, Sprite? icon, bool isShiny = false)
+        {
+            return new Appearance(kind, _layer, icon, isShiny);
+        }
+
+        public void EnterWorld(IWorldEventRecorder events, Func<Vector2Int, bool> isVisibleToPlayer, bool isPlayer,
+            Func<Vector2Int, Underfoot?> underfootAfterMove)
+        {
+            _events = events;
+            _isPlayer = isPlayer;
+            _isVisibleToPlayer = isVisibleToPlayer;
+            _underfootAfterMove = underfootAfterMove;
+            IsVisible = isVisibleToPlayer(CurrentPosition);
+        }
+
+        public void LeaveWorld(Underfoot? underfoot)
+        {
+            Record(new EntityDisappeared(Ref, underfoot));
+            _events = null;
+            _isVisibleToPlayer = null;
+            _underfootAfterMove = null;
+        }
+
+        public void Record(WorldEvent worldEvent)
+        {
+            _events?.Record(worldEvent);
+        }
+
         public void SetVisibility(bool visible)
         {
-            _visibleByPlayer.Value = visible;
+            if (IsVisible == visible)
+                return;
+            IsVisible = visible;
+            Record(new VisibilityChanged(Ref));
+        }
+
+        public void Move(Direction8 direction, MoveKind kind)
+        {
+            MoveTo(CurrentPosition + direction.Vector(), kind);
+        }
+
+        public void MoveTo(Vector2Int position, MoveKind kind)
+        {
+            if (_isVisibleToPlayer != null)
+            {
+                var wasVisible = IsVisible;
+                IsVisible = _isVisibleToPlayer(position);
+                Record(new EntityMoved(new EntityRef(Id, position, IsVisible), kind, wasVisible, _isPlayer,
+                    _underfootAfterMove?.Invoke(position)));
+            }
+
+            _position.Value = position;
         }
 
         public void Teleport(Vector2Int position)
         {
-            _position.Value = position;
-            _onTeleport.OnNext(position);
+            MoveTo(position, MoveKind.Teleport);
         }
 
-        public async UniTask Move(Direction8 direction, int moveMilliseconds, bool isThrown = false)
+        public void BlowTo(Vector2Int landing)
         {
-            _position.Value += direction.Vector();
-            _onMove.OnNext((direction, CurrentPosition, isThrown));
-            if (Visibility.CurrentValue) await UniTask.Delay(moveMilliseconds);
+            MoveTo(landing, MoveKind.Thrown);
         }
 
-        public void Destroy(string destroyLog)
+        public void Destroy()
         {
-            _destroyLog.Value = destroyLog;
+            _isDestroyed.Value = true;
         }
     }
 }

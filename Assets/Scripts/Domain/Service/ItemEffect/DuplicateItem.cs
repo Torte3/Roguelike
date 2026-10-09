@@ -1,9 +1,9 @@
 using System;
-using Domain.Model.Character;
-using Domain.Model.Dungeon;
 using Domain.Model.Entity;
 using Domain.Model.Item;
+using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using Domain.Service.Items;
 using Utilities;
 
@@ -12,16 +12,18 @@ namespace Domain.Service.ItemEffect
     [Serializable]
     public class DuplicateItem : IItemEffect
     {
-        public bool CanApplyTo(IPlayer player, IItem item)
+        public bool CanApplyTo(IItem item, IMap map)
         {
-            return player.Character.Inventory.Contains(item)
-                   && player.Character.Inventory.CanAddToEmpty();
+            return map.Player.Character.Inventory.Contains(item)
+                   && map.Player.Character.Inventory.CanAddToEmpty();
         }
 
-        public void Apply(IPlayer player, IItem item, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
+        public void Apply(IItem item, IEntity itemHolder, IMap map)
         {
             var duplicatedItem = Duplicate(item);
-            player.Character.Inventory.AddToEmpty(duplicatedItem);
+            map.Player.Character.Inventory.AddToEmpty(duplicatedItem);
+            map.Events.Record(new ItemChanged(itemHolder.Entity.IsVisible, item.NameIn(map), ItemChangeKind.Duplicated,
+                duplicatedItem.LookIn(map), itemHolder.HeldItemsIn(map), itemHolder.UnderfootIn(map), map.ShopLookIn()));
         }
 
         public float EvaluatePrice()
@@ -29,7 +31,7 @@ namespace Domain.Service.ItemEffect
             return 1000;
         }
 
-        public string Info()
+        public string Description()
         {
             return "複製";
         }

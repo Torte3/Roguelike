@@ -51,8 +51,6 @@ namespace Domain.Service.Effect
         {
             if (entity == null)
                 return null;
-            if (entity is ThrowAnimationEntity)
-                return null;
             if (entity is ICharacter character)
                 return FromCharacter(character);
             if (entity is Statue statue)
@@ -90,7 +88,7 @@ namespace Domain.Service.Effect
 
             if (mover.IsSoft && blocker.IsSoft)
             {
-                await ApplySoftSoft(mover.Character!, blocker.Character!, total, attacker, map);
+                await ApplySoftSoft(mover.Character!, blocker.Character!, total, attacker);
                 return;
             }
 
@@ -113,16 +111,15 @@ namespace Domain.Service.Effect
             ICharacter mover,
             ICharacter blocker,
             int total,
-            ICharacter? attacker,
-            IMap map)
+            ICharacter? attacker)
         {
             var half = total / 2;
             var moverDamage = half;
             var blockerDamage = total - half;
             if (moverDamage > 0)
-                await mover.LoseHp(moverDamage, $"は{blocker.GetName(map.Player)}に激しくぶつかった", attacker);
+                await mover.LoseHp(moverDamage, Collision(blocker, CollisionRole.Struck), attacker);
             if (blockerDamage > 0)
-                await blocker.LoseHp(blockerDamage, $"は{mover.GetName(map.Player)}に激しくぶつかられた", attacker);
+                await blocker.LoseHp(blockerDamage, Collision(mover, CollisionRole.StruckBy), attacker);
         }
 
         private static async UniTask ApplyRigidSoft(
@@ -134,7 +131,7 @@ namespace Domain.Service.Effect
             IMap map)
         {
             if (soft.Character != null)
-                await soft.Character.LoseHp(total, BuildSoftLog(softIsMover, soft.Character, rigid, map.Player), attacker);
+                await soft.Character.LoseHp(total, SoftCollision(softIsMover, rigid), attacker);
 
             await ApplyRigidSideEffect(rigid, soft.Character, rigidWasMover: !softIsMover, attacker, map);
         }
@@ -159,10 +156,10 @@ namespace Domain.Service.Effect
             switch (rigid.Kind)
             {
                 case BlowAwayCollisionKind.Hard when rigid.Character != null:
-                    await ApplyHardDamage(rigid.Character, otherCharacter, rigidWasMover, attacker, map);
+                    await ApplyHardDamage(rigid.Character, otherCharacter, rigidWasMover, attacker);
                     break;
                 case BlowAwayCollisionKind.Statue when rigid.Statue != null:
-                    rigid.Statue.Attacked();
+                    rigid.Statue.Attacked(map);
                     break;
             }
         }
@@ -171,29 +168,27 @@ namespace Domain.Service.Effect
             ICharacter hard,
             ICharacter? other,
             bool hardWasMover,
-            ICharacter? attacker,
-            IMap map)
+            ICharacter? attacker)
         {
-            var log = other != null
-                ? hardWasMover
-                    ? $"は{other.GetName(map.Player)}に激しくぶつかった"
-                    : $"は{other.GetName(map.Player)}に激しくぶつかられた"
-                : "は壁に激しくぶつかった";
-            await hard.LoseHp(1, log, attacker);
+            var source = other != null
+                ? Collision(other, hardWasMover ? CollisionRole.Struck : CollisionRole.StruckBy)
+                : new DamageSource(DamageCause.Collision, Collision: CollisionRole.Wall);
+            await hard.LoseHp(1, source, attacker);
         }
 
-        private static string BuildSoftLog(bool softIsMover, ICharacter soft, BlowAwayCollisionSide rigid, IPlayer player)
+        private static DamageSource SoftCollision(bool softIsMover, BlowAwayCollisionSide rigid)
         {
             if (rigid.Kind == BlowAwayCollisionKind.Wall)
-                return "は壁に激しくぶつかった";
+                return new DamageSource(DamageCause.Collision, Collision: CollisionRole.Wall);
             if (rigid.Character != null)
-            {
-                return softIsMover
-                    ? $"は{rigid.Character.GetName(player)}に激しくぶつかった"
-                    : $"は{rigid.Character.GetName(player)}に激しくぶつかられた";
-            }
+                return Collision(rigid.Character, softIsMover ? CollisionRole.Struck : CollisionRole.StruckBy);
 
-            return "は激しくぶつかった";
+            return new DamageSource(DamageCause.Collision, Collision: CollisionRole.Object);
+        }
+
+        private static DamageSource Collision(ICharacter other, CollisionRole role)
+        {
+            return new DamageSource(DamageCause.Collision, Opponent.Of(other), role);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Provider.Input
         private readonly ReactiveProperty<bool> _isUsingKeyboard = new(Gamepad.current == null);
 
         /// <summary>直近に操作されたデバイスがキーボード/マウスなら true、ゲームパッドなら false。</summary>
-        public ReadOnlyReactiveProperty<bool> IsUsingKeyboard => _isUsingKeyboard;
+        internal ReadOnlyReactiveProperty<bool> IsUsingKeyboard => _isUsingKeyboard;
 
         public InputReceiver()
         {
@@ -51,25 +51,25 @@ namespace Provider.Input
             { "<Gamepad>/buttonNorth", "<Gamepad>/buttonWest" },
         };
 
-        public Observable<Vector2> OnMovePerformed =>
+        internal Observable<Vector2> OnMovePerformed =>
             _actions.Field.Move.AsObservable().Select(context => context.ReadValue<Vector2>());
 
-        public Vector2 MoveVector => _actions.Field.Move.ReadValue<Vector2>();
+        internal Vector2 MoveVector => _actions.Field.Move.ReadValue<Vector2>();
 
         // UIモジュールは BindToUIModule で _actions と同一アセットを使うため、直接読める。
-        public Vector2 NavigateVector => _actions.UI.Navigate.ReadValue<Vector2>();
+        private Vector2 NavigateVector => _actions.UI.Navigate.ReadValue<Vector2>();
 
         // フィールド中のアイテム選択入力（Field マップの SelectItem アクション：右スティック/矢印など）。
-        public Vector2 SelectItemVector => _actions.Field.SelectItem.ReadValue<Vector2>();
+        private Vector2 SelectItemVector => _actions.Field.SelectItem.ReadValue<Vector2>();
 
         // アイテム選択修飾（L）。Field マップの SelectItemModifier アクション。
         // 押下中は移動入力をインベントリのカーソル移動に転用する（L+移動でアイテム選択）。
-        public bool IsSelectItemModifier => _actions.Field.SelectItemModifier.IsPressed();
+        internal bool IsSelectItemModifier => _actions.Field.SelectItemModifier.IsPressed();
 
         // インベントリのカーソル移動に使う入力。
         // メニュー等（Field 無効）では UI ナビゲーション。
         // フィールドでは、L 押下中は移動入力を、そうでなければ SelectItem（右スティック/矢印）をカーソルに使う。
-        public Vector2 InventoryNavigateVector
+        internal Vector2 InventoryNavigateVector
         {
             get
             {
@@ -78,34 +78,32 @@ namespace Provider.Input
                 return IsSelectItemModifier ? MoveVector : SelectItemVector;
             }
         }
-        public ReadOnlyReactiveProperty<bool> IsDash => _actions.Field.Dash.AsEnabledPressedReactiveProperty();
-        public ReadOnlyReactiveProperty<bool> IsNoMove => _actions.Field.TurnOnly.AsEnabledPressedReactiveProperty();
-        public ReadOnlyReactiveProperty<bool> IsDiagonalOnly => _actions.Field.DiagonalOnly.AsEnabledPressedReactiveProperty();
+        internal ReadOnlyReactiveProperty<bool> IsNoMove => _actions.Field.TurnOnly.AsEnabledPressedReactiveProperty();
 
-        public bool IsDashPressed => IsPressed(_actions.Field.Dash);
-        public bool IsNoMovePressed => IsPressed(_actions.Field.TurnOnly);
-        public bool IsDiagonalOnlyPressed => IsPressed(_actions.Field.DiagonalOnly);
+        internal bool IsDashPressed => IsPressed(_actions.Field.Dash);
+        internal bool IsNoMovePressed => IsPressed(_actions.Field.TurnOnly);
+        internal bool IsDiagonalOnlyPressed => IsPressed(_actions.Field.DiagonalOnly);
 
-        public Observable<Unit> OnAttackPerformed =>
+        internal Observable<Unit> OnAttackPerformed =>
             _actions.Field.Attack.AsObservable().Select(context => Unit.Default);
 
-        public Observable<Unit> OnSubmitPerformed =>
+        internal Observable<Unit> OnSubmitPerformed =>
             _actions.UI.Submit.AsObservable().Select(_ => Unit.Default);
 
-        public Observable<Unit> OnThrowPerformed => _actions.Field.Throw.AsObservable().Select(context => Unit.Default);
-        public Observable<Unit> OnSwapItemPerformed => _actions.Field.SwapItem.AsObservable().Select(context => Unit.Default);
+        internal Observable<Unit> OnThrowPerformed => _actions.Field.Throw.AsObservable().Select(context => Unit.Default);
+        internal Observable<Unit> OnSwapItemPerformed => _actions.Field.SwapItem.AsObservable().Select(context => Unit.Default);
 
-        public Observable<Unit> OnDoNothingPerformed =>
+        internal Observable<Unit> OnDoNothingPerformed =>
             _actions.Field.DoNothing.AsObservable().Select(context => Unit.Default);
 
-        public bool IsDoNothingPerformed => _actions.Field.DoNothing.IsPressed();
+        internal bool IsDoNothingPerformed => _actions.Field.DoNothing.IsPressed();
 
-        public Observable<Unit> OnRenamePerformed =>
+        internal Observable<Unit> OnRenamePerformed =>
             _actions.Field.Rename.AsObservable().Select(context => Unit.Default);
 
-        public Observable<Unit> OnMainMenuOpening => _actions.Field.OpenMainMenu.AsObservable().Select(context => Unit.Default);
-        public Observable<Unit> OnMenuCanceling => _actions.Menu.Cancel.AsObservable().Select(context => Unit.Default);
-        public Observable<Unit> OnMenuClosing => _actions.Menu.Close.AsObservable().Select(context => Unit.Default);
+        internal Observable<Unit> OnMainMenuOpening => _actions.Field.OpenMainMenu.AsObservable().Select(context => Unit.Default);
+        internal Observable<Unit> OnMenuCanceling => _actions.Menu.Cancel.AsObservable().Select(context => Unit.Default);
+        internal Observable<Unit> OnMenuClosing => _actions.Menu.Close.AsObservable().Select(context => Unit.Default);
 
         public void Dispose()
         {
@@ -117,26 +115,26 @@ namespace Provider.Input
         private enum InputMode { Field, Menu }
         private InputMode _mode = InputMode.Field;
 
-        public void Enable()
+        internal void Enable()
         {
             // 全マップを無条件に有効化すると、フィールドでも UI が有効になり
             // UI.Navigate(矢印) が SelectItem(矢印) と競合する。現在モードを復元する。
             ApplyMode();
         }
 
-        public void Disable()
+        internal void Disable()
         {
             _actions.Disable();
         }
 
-        public void SwitchMenu()
+        internal void SwitchMenu()
         {
             Log.Info("[Input] Switch input to Menu");
             _mode = InputMode.Menu;
             ApplyMode();
         }
 
-        public void SwitchField()
+        internal void SwitchField()
         {
             Log.Info("[Input] Switch input to Field");
             _mode = InputMode.Field;
@@ -160,7 +158,7 @@ namespace Provider.Input
             }
         }
 
-        public void ApplyFaceButtonSwap(bool enabled)
+        internal void ApplyFaceButtonSwap(bool enabled)
         {
             // UIモジュールも同一アセット（BindToUIModule）なので、このアセットへの適用だけで足りる。
             ApplyFaceButtonSwapToAsset(_actions.asset, enabled);
@@ -171,7 +169,7 @@ namespace Provider.Input
         // EventSystem の UIモジュールを、この InputReceiver と同一のアクションアセットへ束ねる。
         // これで「ゲームプレイ用」と「UIモジュール用」が1インスタンスに統一され、有効/無効や
         // SwapABXY の二重管理、NavigateVector の特殊対応が不要になる。
-        public void BindToUIModule()
+        internal void BindToUIModule()
         {
             var uiModule = EventSystem.current != null
                 ? EventSystem.current.GetComponent<InputSystemUIInputModule>()

@@ -33,9 +33,9 @@ namespace Domain.Model.Item
         public static readonly Color GoodColor = Colors.LimeGreen;
         public static readonly Color BadColor = Colors.Purple;
 
-        public static string Wrap(Color color, string text) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{text}</color>";
+        private static string Wrap(Color color, string text) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{text}</color>";
 
-        public static string Emphasize(string text) => $"<b>{text}</b>";
+        private static string Emphasize(string text) => $"<b>{text}</b>";
 
         public static string HeaderLine(string plainText) => Emphasize($"{plainText}");
 
@@ -49,7 +49,7 @@ namespace Domain.Model.Item
 
         public static string RichHealAmount(int value) => Wrap(HealAmountColor, value.ToString());
 
-        public static string RichSpatial(int value) => Wrap(SpatialColor, value.ToString());
+        internal static string RichSpatial(int value) => Wrap(SpatialColor, value.ToString());
 
         public static string RichSpatialCells(int value) => Wrap(SpatialColor, $"{value}マス");
 
@@ -103,9 +103,5 @@ namespace Domain.Model.Item
         /// <summary>TMP の色タグを除いたプレーン断片（テンプレが威力部分を取り出す用）。</summary>
         public static string StripColorTags(string text) =>
             string.IsNullOrEmpty(text) ? text : ColorTag.Replace(text, "");
-
-        /// <summary>効果説明をそのまま返す（有利・不利によるブロック着色は行わない）。</summary>
-        public static string StyleEffectInfo(IEffect _, string rawFromInfo) =>
-            string.IsNullOrEmpty(rawFromInfo) ? rawFromInfo : rawFromInfo;
     }
 }

@@ -6,7 +6,7 @@ using Domain.Model.Memento;
 
 namespace Domain.Model.Item
 {
-    public interface IItemEntity : IDisposable, ISerializable<ItemEntityMemento>, IIconEntity
+    public interface IItemEntity : IDisposable, ISerializable<ItemEntityMemento>, IEntity
     {
         public IItem Item { get; }
         public bool ShouldRevealMimic(IMap map);

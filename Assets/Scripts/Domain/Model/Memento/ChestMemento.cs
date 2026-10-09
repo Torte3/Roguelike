@@ -20,25 +20,29 @@ namespace Domain.Model.Memento
         [SerializeField] private Option<ScriptableObjectSerializable<EnemyData>> _mimic;
         public Option<EnemyData> Mimic => _mimic.Map(m => m.Value);
         [field: SerializeField] public EntityMemento Entity { get; private set; }
-        [SerializeField] private List<string> _keyCharacters;
-        public List<Id<IEntity>> KeyCharacters => _keyCharacters.Select(keyCharacter => new Id<IEntity>(keyCharacter)).ToList();
+        [field: SerializeField] public bool HasLock { get; private set; }
+        [SerializeField] private List<string> _keyHolders;
+        public List<Id<IEntity>> KeyHolders => _keyHolders.Select(keyHolder => new Id<IEntity>(keyHolder)).ToList();
 
         public ChestMemento(
             List<IItemMemento> items,
             Option<EnemyData> mimic,
             EntityMemento entity,
-            List<Id<IEntity>> keyCharacters)
+            bool hasLock,
+            IEnumerable<Id<IEntity>> keyHolders)
         {
             Items = items;
             _mimic = mimic.Map(m => m.ToSerializable());
             Entity = entity;
-            _keyCharacters = keyCharacters.Select(keyCharacter => keyCharacter.ToString()).ToList();
+            HasLock = hasLock;
+            _keyHolders = keyHolders.Select(keyHolder => keyHolder.ToString()).ToList();
         }
 
         public ChestMemento(List<IItemMemento> items, EntityMemento entity) : this(
             items,
             Option.None<EnemyData>(),
             entity,
+            false,
             new List<Id<IEntity>>())
         {
         }
@@ -47,6 +51,7 @@ namespace Domain.Model.Memento
             new List<IItemMemento> { item },
             Option.None<EnemyData>(),
             entity,
+            false,
             new List<Id<IEntity>>())
         {
         }
@@ -55,6 +60,7 @@ namespace Domain.Model.Memento
             new List<IItemMemento>(),
             Option.Some(mimic),
             entity,
+            false,
             new List<Id<IEntity>>())
         {
         }

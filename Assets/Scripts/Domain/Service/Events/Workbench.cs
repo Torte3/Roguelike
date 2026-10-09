@@ -8,40 +8,39 @@ using Domain.Model.Entity;
 using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using Domain.Service.Items;
-using Domain.Service.Logs;
-using R3;
 using UnityEngine;
 using Utilities;
 
 namespace Domain.Service.Events
 {
-    public class Workbench : IDisposable, ISerializable<WorkbenchMemento>, IPlayerEventEntity, IIconEntity
+    public class Workbench : IDisposable, ISerializable<WorkbenchMemento>, IPlayerEventEntity
     {
-        private ReactiveProperty<int> _remainingUsages;
-        public ReadOnlyReactiveProperty<bool> CanUse => _remainingUsages.Select(remainingUsages => remainingUsages > 0).ToReadOnlyReactiveProperty();
+        private int _remainingUsages;
+        private bool CanUse => _remainingUsages > 0;
         public EntityBase Entity { get; init; }
         public bool IsGrounded => true;
 
         public Workbench(WorkbenchMemento data)
         {
             Entity = new EntityBase(data.Entity);
-            _remainingUsages = new ReactiveProperty<int>(data.RemainingUsages);
+            _remainingUsages = data.RemainingUsages;
             Events = new List<IPlayerEvent>
             {
                 new PlayerEvent(
-                    "工作台を見つけた",
+                    FixtureKind.Workbench,
                     new List<PlayerChoiceEvent>
                     {
                         new(
                             "アイテムを修理する",
-                            (player, map) => CanUse.CurrentValue,
-                            async (gameManager, map) => await DoRepairEvent(gameManager, map)
+                            (player, map) => CanUse,
+                            async (_, map) => await DoRepairEvent(map)
                         ),
                         new(
                             "アイテムを強化する",
-                            (player, map) => CanUse.CurrentValue,
-                            async (gameManager, map) => await DoUpgradeEvent(gameManager, map)
+                            (player, map) => CanUse,
+                            async (_, map) => await DoUpgradeEvent(map)
                         )
                     }
                 )
@@ -53,7 +52,7 @@ namespace Domain.Service.Events
             Entity.Dispose();
         }
 
-        public Sprite Icon => ObjectLoader.LoadMapChip("(Base)BaseChip_pipo_683");
+        private Sprite Icon => ObjectLoader.LoadMapChip("(Base)BaseChip_pipo_683");
 
         public IReadOnlyList<IPlayerEvent> Events { get; init; }
 
@@ -62,7 +61,7 @@ namespace Domain.Service.Events
             return item.RemainingUses.CurrentValue < item.MaxUsages;
         }
 
-        private async UniTask DoRepairEvent(IGameManager gameManager, IMap map)
+        private async UniTask DoRepairEvent(IMap map)
         {
             var player = map.Player;
             var itemIndex = await player.Character.SelectItemWithCanSelect(
@@ -75,14 +74,21 @@ namespace Domain.Service.Events
             {
                 return;
             }
-            if (!player.Character.Inventory.CanRemove(item))
+            if (player.Character.Inventory.TakeOutCheck(item).IsFailed(out var failure))
             {
-                GameLog.AddIgnoreVisibility($"{item.GetName(player, map.ItemPlaceholders)}は取り出せなかった");
+                map.Events.Record(new FacilityItemFailed(item.NameIn(map), failure));
                 return;
             }
-            item.Repair(player, player.Character, map.ItemPlaceholders);
-            gameManager.PlaySE(SE.WorkbenchCraft);
-            _remainingUsages.Value -= 1;
+            map.Events.Record(new FacilityUsed(FixtureKind.Workbench));
+            item.Repair(player.Character, map);
+            ConsumeUse();
+        }
+
+        private void ConsumeUse()
+        {
+            _remainingUsages -= 1;
+            if (!CanUse)
+                Entity.Record(new FacilityExhausted(Entity.Ref, null));
         }
 
         private bool CanUpgrade(IItem item)
@@ -90,7 +96,7 @@ namespace Domain.Service.Events
             return item.CanUpgrade();
         }
 
-        private async UniTask DoUpgradeEvent(IGameManager gameManager, IMap map)
+        private async UniTask DoUpgradeEvent(IMap map)
         {
             var player = map.Player;
             var itemIndex = await player.Character.SelectItemWithCanSelectPreview(
@@ -104,7 +110,7 @@ namespace Domain.Service.Events
                     }
 
                     var previewItem = item.Clone();
-                    previewItem.Upgrade(player, player.Character, map.ItemPlaceholders, log: false);
+                    previewItem.Upgrade(player.Character, map, log: false);
                     return new ItemSelectPreview(new ItemFocus(0), previewItem, null);
                 },
                 defaultPreview: null,
@@ -116,14 +122,24 @@ namespace Domain.Service.Events
             {
                 return;
             }
-            if (!player.Character.Inventory.CanRemove(item))
+            if (player.Character.Inventory.TakeOutCheck(item).IsFailed(out var failure))
             {
-                GameLog.AddIgnoreVisibility($"{item.GetName(player, map.ItemPlaceholders)}は取り出せなかった");
+                map.Events.Record(new FacilityItemFailed(item.NameIn(map), failure));
                 return;
             }
-            item.Upgrade(player, player.Character, map.ItemPlaceholders);
-            gameManager.PlaySE(SE.WorkbenchCraft);
-            _remainingUsages.Value -= 1;
+            map.Events.Record(new FacilityUsed(FixtureKind.Workbench));
+            item.Upgrade(player.Character, map);
+            ConsumeUse();
+        }
+
+        public EntityLabel LabelIn(IMap map)
+        {
+            return new KindEntityLabel(FixtureKind.Workbench);
+        }
+
+        public WorldEvent Appeared(IMap map)
+        {
+            return new FacilityAppeared(Entity.Ref, Entity.AppearanceOf(FixtureKind.Workbench.ToEntityKind(), Icon), CanUse);
         }
 
         public UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)
@@ -133,7 +149,7 @@ namespace Domain.Service.Events
 
         public WorkbenchMemento Serialize()
         {
-            return new WorkbenchMemento(_remainingUsages.CurrentValue, Entity.Serialize());
+            return new WorkbenchMemento(_remainingUsages, Entity.Serialize());
         }
 
         public static WorkbenchMemento Build(Vector2Int position)

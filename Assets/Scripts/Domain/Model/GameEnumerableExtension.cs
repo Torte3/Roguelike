@@ -60,7 +60,7 @@ namespace Domain.Model
 
         public static IEnumerable<T> IsVisible<T>(this IEnumerable<T> ie, Vector2Int position) where T : ICharacter
         {
-            return ie.Where(item => item.VisionRange.IsVisible(position));
+            return ie.Where(item => item.IsVisible(position));
         }
 
         public static IEnumerable<Vector2Int> Positions<T>(this IEnumerable<T> ie) where T : IEntity

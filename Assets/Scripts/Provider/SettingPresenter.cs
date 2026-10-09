@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Domain.Model.Setting;
+using Configuration;
 using Unity.Logging;
 using VContainer;
 using View.UI;

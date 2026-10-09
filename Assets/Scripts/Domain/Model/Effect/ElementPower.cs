@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Domain.Model.Effect
 {
     [Serializable]
-    public class ElementPower : IHasInfo
+    public class ElementPower
     {
         [SerializeField] private Element _element;
         [MinValue(1)] [SerializeField] private int _power;
@@ -23,11 +23,6 @@ namespace Domain.Model.Effect
         public ElementPower MultiplyPower(float multiplier)
         {
             return new ElementPower(Element, Mathf.RoundToInt(_power * multiplier));
-        }
-
-        public string Info()
-        {
-            return $"{Element.Name()}属性、威力{Power}";
         }
     }
 }

@@ -1,22 +1,21 @@
 #nullable enable
 using System.Collections.Generic;
-using Domain.Model.Character.Message;
+using System.Linq;
+using Domain.Model.WorldEvents;
 using R3;
 
 namespace Domain.Model.Item
 {
-    public interface IStorage
+    public interface IStorage : IReadOnlyStorage
     {
-        public IEnumerable<IItem> AllItems { get; }
-        public IEnumerable<(IItem Item, int Index)> AllItemsWithIndex { get; }
+        public new IEnumerable<IItem> AllItems { get; }
+        public new IEnumerable<(IItem Item, int Index)> AllItemsWithIndex { get; }
+        IEnumerable<IReadOnlyItem> IReadOnlyStorage.AllItems => AllItems;
+        IEnumerable<(IReadOnlyItem Item, int Index)> IReadOnlyStorage.AllItemsWithIndex =>
+            AllItemsWithIndex.Select(pair => ((IReadOnlyItem)pair.Item, pair.Index));
         public ReadOnlyReactiveProperty<int> CurrentItemCount { get; }
         public ReadOnlyReactiveProperty<int> Capacity { get; }
         public bool CanAddItem { get; }
-        public bool CanRemoveItem { get; }
-        public Observable<OnItemInserted> OnItemInserted { get; }
-        public Observable<OnItemRemoved> OnItemRemoved { get; }
-        public Observable<OnItemReplaced> OnItemReplaced { get; }
-        public Observable<OnItemUpdated> OnItemUpdated { get; }
         public bool HasEmptySpace();
         public bool HasItem(IItem item);
         public bool HasItemAt(int index);
@@ -42,5 +41,6 @@ namespace Domain.Model.Item
         public bool CanSwap(int index1, int index2);
         public void Swap(int index1, int index2);
         public IEnumerable<IItem> Clear();
+        public IReadOnlyList<InventoryRowChange> TakeRowChanges();
     }
 }

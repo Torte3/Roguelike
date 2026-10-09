@@ -22,7 +22,7 @@ using Random = UnityEngine.Random;
 
 namespace Game
 {
-    public class MapBuilder
+    internal class MapBuilder
     {
         private readonly ItemMarketPriceTable _marketPriceTable;
         private readonly Id<IMap> _mapId;
@@ -41,7 +41,6 @@ namespace Game
         private MagicPotMemento? _magicPot;
         private WorkbenchMemento? _workbench;
         private EntityMemento? _teleporter;
-        private readonly List<Id<IEntity>> _keyCharacters = new();
         private readonly RoomMemento? _monsterHouse;
         private readonly ShopMemento? _shop;
         private readonly List<Id<Room>> _canPlaceStairRooms = new();
@@ -128,6 +127,7 @@ namespace Game
             if (data.ExistBoss)
             {
                 var bossRoom = roomIds.GetAtRandom();
+                var bossIds = new List<Id<IEntity>>();
                 foreach (var bossData in data.Boss)
                 {
                     var boss = CharacterFactory.BuildCharacter(
@@ -136,7 +136,7 @@ namespace Game
                         isSlept: false,
                         isShiny: false);
                     _characters.Add(boss);
-                    _keyCharacters.Add(new Id<IEntity>(boss.Entity.Id));
+                    bossIds.Add(new Id<IEntity>(boss.Entity.Id));
                 }
                 
                 if (data.BossReward.Any())
@@ -144,7 +144,7 @@ namespace Game
                     var chestPosition = GetRandomBlankPositionInRoom(bossRoom);
                     var bossItems = data.BossReward.Select(itemData => itemData.Build()).ToList();
                     
-                    _chests.Add(Chest.Build(bossItems, chestPosition, _keyCharacters));
+                    _chests.Add(Chest.Build(bossItems, chestPosition, bossIds));
                 }
             }
 

@@ -46,7 +46,7 @@ namespace Domain.Service.Effect
             return 50f;
         }
 
-        public override string Info()
+        public override string Description()
         {
             return $"ランダムに{_count}体召喚\n";
         }

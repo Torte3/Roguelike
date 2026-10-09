@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Configuration;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Character.Status;
 using Domain.Model.Map;
-using Domain.Model.Setting;
+using Domain.Model.WorldEvents;
 using R3;
 using Unity.Logging;
 using UnityEngine;
@@ -15,17 +16,15 @@ using Utilities.Stats;
 
 namespace Game
 {
-    public sealed class TurnController
+    internal sealed class TurnController
     {
         private readonly GameInput _input;
         private CancellationTokenSource _cancellationTokenSource;
         private bool _isRunning;
         private UniTaskCompletionSource _runCompletionSource;
         private ReactiveProperty<int> _turnInLevel = new(0);
-        private Subject<Unit> _onTurnChanged = new();
         private Resource _turnWaitTime { get; init; }
         public ReadOnlyReactiveProperty<int> TurnInLevel => _turnInLevel;
-        public Observable<Unit> OnTurnChanged => _onTurnChanged;
 
         public TurnController(GameInput input)
         {
@@ -65,9 +64,9 @@ namespace Game
                         continue;
 
                     character.Status.AddWaitTime(minWaitTime);
-                    character.UpdateCharacterTurn();
                     if (character.Status.IsWaitTimeFull())
                     {
+                        character.UpdateCharacterTurn();
                         switch (character.State)
                         {
                             case CharacterState.Wait:
@@ -75,14 +74,14 @@ namespace Game
                                 break;
                             case CharacterState.Act:
                             case CharacterState.Finish:
-                                Log.Debug($"[Turn]{character.GetName(map.Player)} already did action.");
+                                Log.Debug($"[Turn]{character.Name} already did action.");
                                 break;
                             case CharacterState.Think:
                                 throw new InvalidOperationException(
-                                    $"[Turn] {character.GetName(map.Player)} is unexpectedly in thinking state before their turn to action decision");
+                                    $"[Turn] {character.Name} is unexpectedly in thinking state before their turn to action decision");
                         }
 
-                        await UniTask.WaitWhile(() => gameManager.IsEventExecuting);
+                        await WaitWhileIfNeeded(() => gameManager.IsEventExecuting);
                     }
 
                     if (_cancellationTokenSource.Token.IsCancellationRequested)
@@ -94,16 +93,10 @@ namespace Game
                     }
                 }
 
-                Update(gameManager, map, characters, timeStopped, minWaitTime);
+                await Update(gameManager, map, characters, timeStopped, minWaitTime);
 
                 foreach (var character in characters.Where(character => character.Status.IsWaitTimeFull()))
                 {
-                    if (character.State != CharacterState.Wait && character.State != CharacterState.Finish)
-                    {
-                        await UniTask.WaitUntil(() =>
-                            character.State == CharacterState.Wait || character.State == CharacterState.Finish);
-                    }
-
                     character.Status.ResetWaitTime();
                     character.SetWaitState();
                 }
@@ -122,7 +115,12 @@ namespace Game
             _runCompletionSource.TrySetResult();
         }
 
-        private void Update(IGameManager gameManager, IMap map, List<ICharacter> characters, bool timeStopped, float minWaitTime)
+        private static UniTask WaitWhileIfNeeded(Func<bool> predicate)
+        {
+            return predicate() ? UniTask.WaitWhile(predicate) : UniTask.CompletedTask;
+        }
+
+        private async UniTask Update(IGameManager gameManager, IMap map, List<ICharacter> characters, bool timeStopped, float minWaitTime)
         {
             _turnWaitTime.Gain(minWaitTime);
             if (!_turnWaitTime.IsFull())
@@ -133,13 +131,17 @@ namespace Game
                 if (timeStopped && !character.Status.IsFlagStat(FlagStatType.OverDrive))
                     continue;
 
-                character.UpdateTurn();
+                if (character.IsDead)
+                    continue;
+
+                await character.UpdateTurn();
             }
 
             _turnInLevel.Value++;
-            _onTurnChanged.OnNext(Unit.Default);
+            map.Events.Record(new TurnPassed(_turnInLevel.Value));
             Log.Debug($"[Turn]Start turn in level:{_turnInLevel.Value})\nCharacters:{map.Characters.Count}");
-            map.UpdateTurn(_turnInLevel.Value);
+            if (!timeStopped)
+                await map.UpdateTurn(_turnInLevel.Value);
 
             _turnWaitTime.Set(0);
         }
@@ -149,15 +151,12 @@ namespace Game
             if (character.Status.IsFlagStat(FlagStatType.CannotAct) || character.IsDead)
             {
                 character.ResetChargeAction();
-                Log.Debug($"[Turn]{character.GetName(map.Player)} cannot act.");
-                if (character.IsPlayer)
-                {
-                    await UniTask.Delay(200);
-                }
+                Log.Debug($"[Turn]{character.Name} cannot act.");
+                map.Events.Record(new CharacterTurnSkipped(character.Entity.Ref, character.Label));
             }
             else
             {
-                Log.Debug($"[Turn]{character.GetName(map.Player)} think...");
+                Log.Debug($"[Turn]{character.Name} think...");
                 try
                 {
                     await character.DoNextAction(gameManager, map, _input)

@@ -15,8 +15,8 @@ namespace View.UI
         [SerializeField] private InventoryItemView _itemViewPrefab;
         private readonly Subject<int> _onSelected = new();
         private readonly List<InventoryItemView> _itemViews = new();
-        public IReadOnlyList<InventoryItemView> ItemViews => _itemViews;
-        public Observable<int> OnSelected => _onSelected;
+        internal IReadOnlyList<InventoryItemView> ItemViews => _itemViews;
+        internal Observable<int> OnSelected => _onSelected;
         private bool _canSkip = false;
 
         [Header("Navigation")]
@@ -189,7 +189,7 @@ namespace View.UI
             return _itemViews[index].ItemData;
         }
 
-        public int GetIndex(InventoryItemView itemView)
+        private int GetIndex(InventoryItemView itemView)
         {
             return _itemViews.IndexOf(itemView);
         }
@@ -253,7 +253,7 @@ namespace View.UI
                 _itemViews[index].Select();
         }
 
-        public void UpdateSiblingOrder()
+        private void UpdateSiblingOrder()
         {
             for (int i = 0; i < _itemViews.Count; i++)
             {
@@ -290,14 +290,14 @@ namespace View.UI
             view.UpdateInteractable(interactable);
         }
 
-        public void UpdateItemInteractable(int index, bool interactable)
+        internal void UpdateItemInteractable(int index, bool interactable)
         {
             Log.Verbose($"[View]StorageView UpdateItemState: {index}");
             var view = _itemViews[index];
             view.UpdateInteractable(interactable);
         }
 
-        public void UpdateItemSkip(bool canSkip)
+        internal void UpdateItemSkip(bool canSkip)
         {
             Log.Verbose($"[View]StorageView UpdateItemSkip: {canSkip}");
             _canSkip = canSkip;

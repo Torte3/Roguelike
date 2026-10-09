@@ -5,7 +5,6 @@ using Domain.Model.Effect.Position;
 using Domain.Model.Evaluation;
 using Sirenix.OdinInspector;
 using UnityEngine;
-using Utilities;
 
 namespace Domain.Model.Effect
 {
@@ -45,7 +44,7 @@ namespace Domain.Model.Effect
         }
 
 #if UNITY_EDITOR
-        public void SetSameEffect(SkillDataOnUse skillDataOnUse)
+        internal void SetSameEffect(SkillDataOnUse skillDataOnUse)
         {
             Effects = skillDataOnUse.Effects;
         }
@@ -64,18 +63,5 @@ namespace Domain.Model.Effect
             }
         }
 #endif
-
-        public string Info()
-        {
-            var info = "";
-            foreach (var effect in Effects.Index())
-            {
-                info += $"効果{effect.index + 1}: {effect.item.Info()}\n";
-            }
-
-            info += $"範囲: {Area.Info()}\n";
-            info += $"発動確率: {ProbabilityOfSuccess:P0}";
-            return info;
-        }
     }
 }

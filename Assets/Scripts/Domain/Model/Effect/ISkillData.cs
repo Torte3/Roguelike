@@ -3,7 +3,7 @@ using Domain.Model.Effect.Area;
 
 namespace Domain.Model.Effect
 {
-    public interface ISkillData : IHasInfo
+    public interface ISkillData
     {
         public IEffectPosition Position { get; }
         public IArea Area { get; }

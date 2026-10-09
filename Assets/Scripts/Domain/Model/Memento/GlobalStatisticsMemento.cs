@@ -1,6 +1,8 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Domain.Model.Entity;
 using UnityEngine;
 using Utilities.Serialize;
 
@@ -29,8 +31,9 @@ namespace Domain.Model.Memento
         [field: SerializeField] public bool HasShownFloor30Tutorial { get; private set; }
         [SerializeField] private SerializableDictionary<string, int> _itemUsedCountByBaseName;
         public Dictionary<string, int> ItemUsedCountByBaseName => _itemUsedCountByBaseName.ToDictionary();
-        [SerializeField] private SerializableDictionary<string, int> _deathCountByCause;
-        public Dictionary<string, int> DeathCountByCause => _deathCountByCause.ToDictionary();
+        [SerializeField] private List<DeathCountMemento> _deathCounts;
+        public Dictionary<DeathRecord, int> DeathCounts =>
+            _deathCounts.ToDictionary(death => death.Deserialize(), death => death.Count);
         public GlobalStatisticsMemento(
             int maxMapLevel,
             List<string> knownItemNames,
@@ -47,7 +50,7 @@ namespace Domain.Model.Memento
             int totalMonsterHouseEnterCount,
             int totalCursedItemDiscoverCount,
             Dictionary<string, int> itemUsedCountByBaseName,
-            Dictionary<string, int> deathCountByCause,
+            Dictionary<DeathRecord, int> deathCounts,
             bool hasShownFirstGameTutorial,
             bool hasShownShopTutorial,
             bool hasShownMagicCircleTutorial,
@@ -68,7 +71,7 @@ namespace Domain.Model.Memento
             TotalMonsterHouseEnterCount = totalMonsterHouseEnterCount;
             TotalCursedItemDiscoverCount = totalCursedItemDiscoverCount;
             _itemUsedCountByBaseName = itemUsedCountByBaseName.ToSerializable();
-            _deathCountByCause = deathCountByCause.ToSerializable();
+            _deathCounts = deathCounts.Select(death => new DeathCountMemento(death.Key, death.Value)).ToList();
             HasShownFirstGameTutorial = hasShownFirstGameTutorial;
             HasShownShopTutorial = hasShownShopTutorial;
             HasShownMagicCircleTutorial = hasShownMagicCircleTutorial;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#nullable enable
+using System.Collections.Generic;
 using System.Linq;
 using Domain.Model.Character;
 using Domain.Model.Map;
@@ -14,15 +15,14 @@ namespace Domain.Service.Characters.Behavior
         public static IEnumerable<IAction> GenerateMoveActionsDoable(IHasBehavior character, Vector2Int targetPosition,
             IMap map)
         {
-            var calculator = new MoveCostCalculator(character, map, true);
-            var route = new AStar(calculator.Calculate).Calc(character.Entity.CurrentPosition, targetPosition);
-            if (route.Count < 2)
+            var route = character.RouteTo(targetPosition, map);
+            if (route.HasNoStep)
             {
                 Log.Debug("[Think]Already reached the target position");
                 return Enumerable.Empty<Move>();
             }
 
-            var direction = DirectionMethods.FromVector(route[1] - route[0]);
+            var direction = DirectionMethods.FromVector(route.FirstStep - route.Start);
 
             var move = new Move(direction!.Value, 0.01f);
             var swap = new Swap(direction!.Value, 0.01f);
@@ -31,13 +31,20 @@ namespace Domain.Service.Characters.Behavior
                 return new List<Move> { move };
             }
 
-            if (swap.Doable(character, map))
+            if (swap.Doable(character, map) &&
+                map.GetCharacterAt(route.FirstStep)?.AcceptsSwapFrom(character.Entity.CurrentPosition, map) == true)
             {
-                //return new List<Swap> { swap };
+                return new List<Swap> { swap };
             }
 
             Log.Debug($"[Think]Move to {direction} is not doable");
             return Enumerable.Empty<Move>();
+        }
+
+        public static Direction8? NextStep(IHasBehavior character, Vector2Int targetPosition, IMap map)
+        {
+            var route = character.RouteTo(targetPosition, map);
+            return route.HasNoStep ? null : DirectionMethods.FromVector(route.FirstStep - route.Start);
         }
     }
 }

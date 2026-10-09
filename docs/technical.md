@@ -9,7 +9,8 @@ LogRogue は Unity / C# で開発しています。
 主な技術的特徴は次の通りです。
 
 - グラフ構造と手続き生成を組み合わせたダンジョン生成
-- 視界・状態・行動評価に基づく敵AI
+- 自分の視界と記憶だけで判断する、行動評価に基づく敵AI
+- WorldEvent によるゲームロジックと表示の分離
 - ターン進行や視界計算を含む、ゲームロジックのパフォーマンス改善
 - 発生位置・範囲・効果リストを組み合わせたスキル / アイテム効果システム
 - ダンジョン・フロア・アイテム・敵を編集する制作用GUI
@@ -88,18 +89,27 @@ LogRogue は Unity / C# で開発しています。
 
 これにより、単純な優先順位だけではなく、状況に応じてより効果の大きい行動を選びやすくしています。
 
-### 視野内情報だけを使う理由
+### 自分の視界と記憶だけで判断する
 
-敵AIだけが盤面全体を見て判断すると、プレイヤーにとって理不尽に感じられるため、敵も視野内のオブジェクトのみを判断材料にしています。
+敵は、プレイヤーと同じく、自分に見えているものと、自分が覚えていることだけで判断します。
 
-これは難易度を下げるためだけではなく、プレイヤーが敵の行動を納得しやすくするための方針です。
+| 判断 | 使う情報 |
+|---|---|
+| 経路の計算 | 自分に見えているキャラクターだけを、通れない場所として扱う |
+| 地形 | 敵ごとに地形を覚えていて、壁掘りなどの変化は自分で見るまで経路に反映しない |
+| 技の評価 | 自分の視界の中で、当たる相手と範囲を見積もる |
+| 攻撃・回復を受けたとき | 見えている相手にだけ、向きを変えたり、敵意や好感度を変えたりする |
+
+敵AIだけが盤面全体を見て判断すると、プレイヤーにとって理不尽に感じられます。経路・地形・技の評価・攻撃への反応まで同じ条件にそろえることで、プレイヤーが敵の行動を読み、納得できるようにしています。
 
 また、行動候補と評価値を分けて扱うことで、敵がどの条件でどの行動を選ぶかを確認しやすくなり、結果的にテストしやすい構造になりました。
 
 主な実装：  
 [EnemyBehavior.cs](../Assets/Scripts/Domain/Service/Characters/Behavior/EnemyBehavior.cs) /  
 [BehaviorData.cs](../Assets/Scripts/Domain/Model/Character/BehaviorData.cs) /  
-[Chase.cs](../Assets/Scripts/Domain/Service/Characters/Behavior/Chase.cs)
+[Chase.cs](../Assets/Scripts/Domain/Service/Characters/Behavior/Chase.cs) /  
+[KnownTerrain.cs](../Assets/Scripts/Domain/Service/Characters/KnownTerrain.cs) /  
+[MoveCostCalculator.cs](../Assets/Scripts/Domain/Service/Characters/Behavior/MoveCostCalculator.cs)
 
 ---
 

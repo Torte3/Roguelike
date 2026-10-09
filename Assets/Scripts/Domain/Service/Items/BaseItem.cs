@@ -13,12 +13,13 @@ using Domain.Model.Evaluation;
 using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using Domain.Service.Effect;
-using Domain.Service.Logs;
 using R3;
 using Unity.Logging;
 using UnityEngine;
 using Utilities;
+using Utilities.Result;
 using Utilities.Serialize.Option;
 
 namespace Domain.Service.Items
@@ -32,8 +33,8 @@ namespace Domain.Service.Items
         public Sprite Icon { get; private set; }
         public bool IsShiny { get; private set; }
         private Option<int> _customBasePrice { get; init; }
-        public int _additionalPrice { get; private set; }
-        public float _multiplyPrice { get; private set; }
+        private readonly int _additionalPrice;
+        private readonly float _multiplyPrice;
         public ItemState State { get; private set; }
         public int UpgradeCount { get; private protected set; }
         public int MaxUsages { get; private set; }
@@ -47,7 +48,6 @@ namespace Domain.Service.Items
         public bool IsCurseIdentified => _isCurseIdentified.CurrentValue;
         public int UpgradeLimit { get; private set; }
         private protected List<IConditionData> _conditions;
-        private protected Subject<Unit> _onItemUpdated = new();
         private protected Subject<Unit> _onMimicRevealed = new();
         private protected CompositeDisposable _disposables = new();
         protected bool UsedWhileCursed { get; private protected set; }
@@ -67,17 +67,7 @@ namespace Domain.Service.Items
         protected bool HasUsableSkillOnUse() => SkillOnUse.HasValue && SkillOnUse.Value.IsUsable();
         protected bool HasUsableSkillOnThrow() => SkillOnThrow.HasValue && SkillOnThrow.Value.IsUsable();
 
-        public string DebugName => _fullName;
-        private string _fullName => CustomName.UnwrapOr(RevealedName) + _upgradeText();
-        private string _upgradeText()
-        {
-            if (UpgradeCount == 0)
-                return "";
-            else if (UpgradeCount > 0)
-                return $" +{UpgradeCount}";
-            else
-                return $" {UpgradeCount}";
-        }
+        public string DebugName => RevealedName;
         public int GetPrice(ItemMarketPriceTable market) => Mathf.RoundToInt(EvaluatePrice(market));
         public bool HasActivatableSkillWhenUsed => SkillOnUse.HasValue;
         public bool HasActivatableSkillWhenThrown => SkillOnThrow.HasValue;
@@ -85,6 +75,11 @@ namespace Domain.Service.Items
         public abstract bool CanActivateWhenThrown { get; }
         public bool HasActivatableSkill => HasActivatableSkillWhenUsed || HasActivatableSkillWhenThrown;
         public bool CanActivate => CanActivateWhenUsed || CanActivateWhenThrown;
+        public virtual bool CanBeMergeBase => true;
+        public virtual IReadOnlyList<ItemFeature>? FeaturesForWeaponMerge => null;
+        public virtual IReadOnlyList<ArtifactPassiveConditionBundle>? PassiveSlotsForEquipmentMerge => null;
+        public abstract bool CanAcceptMergeMaterial(IItem material);
+        public abstract IItem MergeWith(IItem material);
 
         public abstract bool CanAttemptUse { get; }
 
@@ -94,21 +89,24 @@ namespace Domain.Service.Items
 
         public abstract bool IsDiscardBlocked { get; }
         public abstract Option<bool> IsEquipped { get; }
+
+        public ItemUseKind UseKind => IsEquipped.MapOr(ItemUseKind.Use,
+            isEquipped => isEquipped ? ItemUseKind.Unequip : ItemUseKind.Equip);
         public abstract ReadOnlyReactiveProperty<bool> IsPassiveActive { get; }
         public ReadOnlyReactiveProperty<int> RemainingUses => _remainingUsages;
         public IReadOnlyList<IConditionData> PassiveConditions => _conditions;
-        public Observable<Unit> OnItemUpdated => _onItemUpdated;
         public Observable<Unit> OnMimicRevealed => _onMimicRevealed;
 
-        public string UnknownName(ItemPlaceholders itemPlaceholders)
+        public ItemName GetName(IItemKnowledge knowledge, IReadOnlyItemPlaceholders itemPlaceholders)
         {
-            return $"?{CustomName.UnwrapOr(itemPlaceholders.GetPlaceholder(BaseName, Category))}?";
+            var isIdentified = knowledge.IsKnownItem(this);
+            return NameOf(isIdentified, isIdentified ? null : itemPlaceholders.GetPlaceholder(BaseName, Category));
         }
-        public string GetName(IPlayer player, ItemPlaceholders itemPlaceholders)
+
+        private ItemName NameOf(bool isIdentified, string? placeholder)
         {
-            if (player.Character.IsKnownItem(this))
-                return _fullName;
-            return UnknownName(itemPlaceholders);
+            return new ItemName(isIdentified, CustomName.IsSome(out var customName) ? customName : null,
+                isIdentified ? RevealedName : null, placeholder, isIdentified ? UpgradeCount : 0);
         }
 
         protected BaseItem(BaseItemMemento baseItem)
@@ -135,7 +133,7 @@ namespace Domain.Service.Items
             UsedWhileCursed = baseItem.UsedWhileCursed;
         }
 
-        public BaseItemMemento SerializeBase()
+        private protected BaseItemMemento SerializeBase()
         {
             return new BaseItemMemento(
                 id: Id,
@@ -160,7 +158,7 @@ namespace Domain.Service.Items
                 usedWhileCursed: UsedWhileCursed);
         }
 
-        public static BaseItemMemento BuildBase(
+        private protected static BaseItemMemento BuildBase(
             string baseName,
             Sprite icon,
             bool isShiny,
@@ -207,27 +205,118 @@ namespace Domain.Service.Items
         public void SetState(ItemState state)
         {
             State = state;
-            _onItemUpdated.OnNext(Unit.Default);
+        }
+
+        private protected void RecordChange(IEntity holder, IMap map, ItemChangeKind kind)
+        {
+            RecordChange(holder, map, kind, this.NameIn(map));
+        }
+
+        private protected void RecordChange(IEntity holder, IMap map, ItemChangeKind kind, ItemName name)
+        {
+            map.Events.Record(new ItemChanged(holder.Entity.IsVisible, name, kind, this.LookIn(map), holder.HeldItemsIn(map, this),
+                holder.UnderfootIn(map), map.ShopLookIn()));
         }
 
         public bool ShouldRevealMimic(IActorOfEffect actor, Vector2Int position, IMap map)
         {
             if (_mimic.IsSome(out var mimic))
             {
-                GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は{mimic.Name}の擬態だった！");
-                map.SpawnEnemyIgnoreMimic(mimic, position, doActImmediately: true, isSlept: false, isShiny: false);
+                var label = this.LabelIn(map);
                 _onMimicRevealed.OnNext(Unit.Default);
+                map.Events.Record(new MimicRevealed(actor.Entity.IsVisible, label, mimic.Name, actor.HeldItemsIn(map)));
+                map.SpawnEnemyIgnoreMimic(mimic, position, doActImmediately: true, isSlept: false, isShiny: false);
                 return true;
             }
             return false;
         }
 
-        public abstract UniTask<ISkillResult> Use(IActor actor, Vector2Int position, Direction8 direction, IMap map);
+        public async UniTask<ISkillResult> Use(IActor actor, Vector2Int position, Direction8 direction, IMap map)
+        {
+            if (!PassesChecksBeforeUse(actor, actor, position, map))
+            {
+                return SkillOutcome.Failed;
+            }
 
-        public abstract void LogWhyCannotActivateWhenUsed(IActor actor, IMap map);
+            var skill = SkillOnUse.Expect("SkillOnUse is null");
 
-        public abstract UniTask<ISkillResult> UseWhenThrown(IActorOfEffect actor, Vector2Int position,
-            Direction8 direction, IMap map);
+            if (!skill.IsUsable())
+            {
+                map.Events.Record(new SkillFailed(actor.Entity.IsVisible, SkillFailureKind.Fizzled, false));
+                OnUseAttemptedInHand(actor, map);
+                return SkillOutcome.Failed;
+            }
+
+            var preparation = await skill.Prepare(actor, this, position, direction, map);
+            if (!preparation.IsOk(out var execution))
+            {
+                return SkillOutcome.NotRun(preparation);
+            }
+
+            var result = await Run(actor, map, execution);
+            OnUseAttemptedInHand(actor, map);
+            return result;
+        }
+
+        public abstract Result<Unit, ItemActionFailure> ActivationCheckWhenUsed();
+
+        public async UniTask<ISkillResult> UseWhenThrown(IActorOfEffect actor, Vector2Int position,
+            Direction8 direction, IMap map)
+        {
+            if (!PassesChecksBeforeUse(actor, actor as IHasInventory, position, map))
+            {
+                return SkillOutcome.Failed;
+            }
+
+            if (!SkillOnThrow.IsSome(out var skill) || !skill.IsUsable())
+            {
+                return SkillOutcome.Failed;
+            }
+
+            return await Run(actor, map, () => SkillExtension.Match(
+                skill.Skill,
+                spawnEffectSkill => spawnEffectSkill.Use(actor, this, position, direction, map),
+                itemTargetSkill => throw new Exception(
+                    "The item is not configured to activate this type of skill when thrown."),
+                inventoryTargetSkill => throw new Exception(
+                    "The item is not configured to activate this type of skill when thrown."),
+                equipToggleSkill => equipToggleSkill.Use(actor, this, position, direction, map)
+            ));
+        }
+
+        private bool PassesChecksBeforeUse(IActorOfEffect actor, IHasInventory? holder, Vector2Int position, IMap map)
+        {
+            if (ShouldRevealMimic(actor, position, map))
+            {
+                return false;
+            }
+
+            holder?.KnowCurse(this, true);
+
+            if (this.ReadCheck(actor).IsFailed(out var failure))
+            {
+                map.Events.Record(new ItemActionFailed(actor.Entity.IsVisible, this.NameIn(map), failure));
+                return false;
+            }
+
+            return true;
+        }
+
+        private async UniTask<ISkillResult> Run(IActorOfEffect actor, IMap map, SkillExecution execution)
+        {
+            var isConsumed = ConfirmUse(actor, map);
+            var result = await execution();
+            FinishUse(actor, map, isConsumed);
+            return result;
+        }
+
+        private protected virtual bool ConfirmUse(IActorOfEffect actor, IMap map) => false;
+
+        private protected abstract void FinishUse(IActorOfEffect actor, IMap map, bool isConsumed);
+
+        private protected virtual void OnUseAttemptedInHand(IActorOfEffect actor, IMap map)
+        {
+        }
 
         public float EvaluateWhenUsed(IActor actor, Vector2Int position, Direction8 direction, IMap map)
         {
@@ -248,24 +337,6 @@ namespace Domain.Service.Items
                 0,
                 skill => skill.Evaluate(actor, position, direction, map, this)
             );
-        }
-
-        public float EvaluateBasePrice()
-        {
-            var priceOnUse = SkillOnUse.MapOr(0, skill => skill.EvaluatePrice()) * (UseOnDeath ? 5 : 1);
-            var priceOnThrow = SkillOnThrow.MapOr(0, skill => skill.EvaluatePrice()) *
-                               CommonSenseParameters.ProjectileImpactHitProbability;
-            var price = Mathf.Max(priceOnUse, priceOnThrow) * MaxUsages;
-            price += _additionalPrice;
-            price += _conditions.Sum(condition => condition.EvaluatePrice()) * 100;
-            if (IsCursed)
-            {
-                price *= 0.8f;
-            }
-
-            price *= _multiplyPrice;
-
-            return price;
         }
 
         public float EvaluateEvaluatedPrice()
@@ -312,14 +383,14 @@ namespace Domain.Service.Items
             return price;
         }
 
-        public void UpdateTurn()
+        public void UpdateTurn(IEntity holder, IMap map)
         {
             if (SkillOnUse.HasValue && !SkillOnUse.Value.IsUsable())
             {
                 SkillOnUse.Value.CoolDown();
                 if (SkillOnUse.Value.IsUsable())
                 {
-                    _onItemUpdated.OnNext(Unit.Default);
+                    RecordChange(holder, map, ItemChangeKind.Recharged);
                 }
             }
             if (SkillOnThrow.HasValue && !SkillOnThrow.Value.IsUsable())
@@ -327,122 +398,119 @@ namespace Domain.Service.Items
                 SkillOnThrow.Value.CoolDown();
                 if (SkillOnThrow.Value.IsUsable())
                 {
-                    _onItemUpdated.OnNext(Unit.Default);
+                    RecordChange(holder, map, ItemChangeKind.Recharged);
                 }
             }
         }
 
-        public abstract void Repair(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders);
+        public abstract void Repair(IEntity itemHolder, IMap map);
 
-        public void SetCursed(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool isCursed)
+        public void SetCursed(IEntity itemHolder, IMap map, bool isCursed)
         {
-            if (isCursed)
+            var name = this.NameIn(map);
+            if (_isCursed.CurrentValue != isCursed)
             {
-                GameLog.Add(itemHolder.IsVisible, $"{GetName(player, itemPlaceholders)}は呪われた");
-            }
-            else
-            {
-                GameLog.Add(itemHolder.IsVisible, $"{GetName(player, itemPlaceholders)}の呪いは解かれた");
-            }
-
-            if (_isCursed.CurrentValue == isCursed)
-            {
-                SetCurseIdentified(true);
-                return;
+                _isCursed.Value = isCursed;
+                if (!isCursed)
+                {
+                    UsedWhileCursed = false;
+                }
             }
 
-            _isCursed.Value = isCursed;
-            if (!isCursed)
-            {
-                UsedWhileCursed = false;
-            }
-
-            SetCurseIdentified(true);
-            _onItemUpdated.OnNext(Unit.Default);
+            SetCurseIdentified(true, itemHolder, map, false);
+            RecordChange(itemHolder, map, isCursed ? ItemChangeKind.Cursed : ItemChangeKind.Uncursed, name);
         }
 
-        public void SetCurseIdentified(bool isCurseIdentified, IPlayer? logPlayer = null,
-            IEntity? logVisibleEntity = null, ItemPlaceholders? logPlaceholders = null)
+        public void SetCurseIdentified(bool isCurseIdentified, IEntity holder, IMap map, bool log)
         {
             var wasUnidentified = !IsCurseIdentified;
             _isCurseIdentified.Value = isCurseIdentified;
-            if (isCurseIdentified && wasUnidentified && IsCursed
-                && logPlayer != null && logVisibleEntity != null && logPlaceholders != null)
-            {
-                GameLog.Add(logVisibleEntity.IsVisible,
-                    $"{GetName(logPlayer, logPlaceholders)}は呪われていた");
-            }
+            if (!isCurseIdentified || !wasUnidentified)
+                return;
 
-            _onItemUpdated.OnNext(Unit.Default);
+            RecordChange(holder, map, IsCursed && log ? ItemChangeKind.CurseRevealed : ItemChangeKind.CurseIdentified);
         }
 
         public void Rename(string name)
         {
             CustomName = Option.Some(name);
-            _onItemUpdated.OnNext(Unit.Default);
         }
 
         public void RevertToDefaultName()
         {
             CustomName = Option.None<string>();
-            _onItemUpdated.OnNext(Unit.Default);
         }
 
         #region Upgrade
 
         public abstract bool CanUpgrade();
         public abstract bool CanDowngrade();
-        public abstract void Upgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true);
-        public abstract void Downgrade(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders, bool log = true);
+        public abstract void Upgrade(IEntity itemHolder, IMap map, bool log = true);
+        public abstract void Downgrade(IEntity itemHolder, IMap map, bool log = true);
 
         #endregion
         #region Info
-        public bool IsInfoIdentified(IPlayer player)
+
+        private CurseKnowledge Curse => !IsCurseIdentified
+            ? CurseKnowledge.Unknown
+            : IsCursed ? CurseKnowledge.Cursed : CurseKnowledge.NotCursed;
+
+        public ItemDescription Describe(IItemKnowledge knowledge, IReadOnlyItemPlaceholders itemPlaceholders)
         {
-            return player.Character.IsKnownItem(this);
+            var name = GetName(knowledge, itemPlaceholders);
+            return name.IsIdentified ? DescribeIdentified(name, true) : DescribeUnidentified(name);
         }
 
-        public string CursedInfo()
+        public ItemDescription DescribeIdentified()
         {
-            if (IsCurseIdentified)
-            {
-                if (IsCursed)
-                    return ItemDescriptionRichText.HarmfulLine("それは呪われている") + "\n";
-                return "それは呪われていない\n";
-            }
-
-            return "それは呪われているかわからない\n";
+            return DescribeIdentified(NameOf(true, null), true);
         }
 
-        public string Info(IPlayer player, ItemPlaceholders itemPlaceholders)
+        public ItemDescription DescribeIdentifiedWithoutSkillTemplate()
         {
-            if (IsInfoIdentified(player))
-            {
-                return FullInfo();
-            }
-            else
-            {
-                return UnknownInfo(itemPlaceholders);
-            }
+            return DescribeIdentified(NameOf(true, null), false);
         }
 
-        public string UnknownInfo(ItemPlaceholders itemPlaceholders)
+        private ItemDescription DescribeUnidentified(ItemName name)
         {
-            var info = $"{State.GetDescription()}{UnknownName(itemPlaceholders)}\n";
-            info += CursedInfo();
-            if (HasActivatableSkillWhenUsed)
-                info += "それは使用可能である\n";
-            if (HasActivatableSkillWhenThrown)
-                info += "それは投擲可能である\n";
-            return info;
+            return new ItemDescription(
+                State: State,
+                Name: name,
+                IsEquipped: null,
+                RemainingUses: 0,
+                MaxUses: 0,
+                UpgradeCount: 0,
+                UpgradeLimit: 0,
+                Curse: Curse,
+                CanUse: HasActivatableSkillWhenUsed,
+                CanThrow: HasActivatableSkillWhenThrown,
+                Details: null,
+                Abilities: null);
+        }
+
+        private ItemDescription DescribeIdentified(ItemName name, bool useActivatableSkillTemplate)
+        {
+            return new ItemDescription(
+                State,
+                name,
+                IsEquipped.IsSome(out var isEquipped) ? isEquipped : null,
+                _remainingUsages.CurrentValue,
+                MaxUsages,
+                UpgradeCount,
+                UpgradeLimit,
+                Curse,
+                HasActivatableSkillWhenUsed,
+                HasActivatableSkillWhenThrown,
+                BuildDetails(useActivatableSkillTemplate),
+                Abilities);
         }
 
         public string DebugInfo()
         {
-            return FullInfo();
+            return DescribeIdentified().ToString();
         }
 
-        protected abstract string FullInfoImpl();
+        protected abstract ItemAbilities? Abilities { get; }
 
         /// <summary>識別済み表示で使用する効果の要約。null のときは従来の詳細表示にフォールバックする。</summary>
         protected virtual string? BuildTemplatedActivatableSkillInfo() => null;
@@ -450,61 +518,33 @@ namespace Domain.Service.Items
         /// <summary>インスペクタでのプレビュー用。</summary>
         public string PreviewTemplatedSkillSection() => BuildTemplatedActivatableSkillInfo() ?? "";
 
-        /// <summary>
-        /// 識別済みの説明文。効果部分はテンプレート要約を優先する（ゲーム内表示と同じ）。
-        /// </summary>
-        public string FullInfo() => BuildFullInfo(useActivatableSkillTemplate: true);
-
-        /// <summary>
-        /// 識別済みの説明文。効果部分は常にスキル詳細（テンプレート不使用）。インスペクタ比較用。
-        /// </summary>
-        public string FullInfoGenericSkillDescription() => BuildFullInfo(useActivatableSkillTemplate: false);
-
-        private string BuildFullInfo(bool useActivatableSkillTemplate)
+        private string BuildDetails(bool useActivatableSkillTemplate)
         {
-            var info = $"{State.GetDescription()}{_fullName}";
-            if (IsEquipped.IsSome(out var equippedNow))
-            {
-                info += equippedNow
-                    ? $" ({ItemDescriptionRichText.RichMeta("装備中")})"
-                    : $" ({ItemDescriptionRichText.RichMeta("未装備")})";
-            }
-            else if (MaxUsages > 1)
-            {
-                info += $" ({ItemDescriptionRichText.RichMeta(_remainingUsages.CurrentValue)}/{ItemDescriptionRichText.RichMeta(MaxUsages)})";
-            }
+            var description = BuildActivatableSkillSection(useActivatableSkillTemplate);
 
-            info += "\n";
-            if (UpgradeCount > 0)
-                info += $"それは{ItemDescriptionRichText.RichMeta(UpgradeCount)}/{ItemDescriptionRichText.RichMeta(UpgradeLimit)}回強化されている\n";
-            info += CursedInfo();
-            info += BuildActivatableSkillSection(useActivatableSkillTemplate);
-
-            info += "\n";
+            description += "\n";
 
             if (UseOnDeath)
             {
-                info += "それは死亡時に自動的に使用される\n";
+                description += "それは死亡時に自動的に使用される\n";
             }
 
             if (UsageLossChance == 0)
             {
-                info += "それは使用可能回数が減少しない\n";
+                description += "それは使用可能回数が減少しない\n";
             }
             else if (UsageLossChance < 1)
             {
-                info += ItemDescriptionRichText.ColorPercentagesInPlainText(
+                description += ItemDescriptionRichText.ColorPercentagesInPlainText(
                     $"それは{(1 - UsageLossChance):P0}の確率で使用可能回数が減少しない\n");
             }
 
             foreach (var condition in PassiveConditions)
             {
-                info += $"それは{ItemDescriptionRichText.RichPassiveConditionName(condition.Name)}の効果を授ける\n";
+                description += $"それは{ItemDescriptionRichText.RichPassiveConditionName(condition.Name)}の効果を授ける\n";
             }
 
-            info += FullInfoImpl();
-
-            return info;
+            return description;
         }
 
         private string BuildActivatableSkillSection(bool useTemplateWhenAvailable)
@@ -521,11 +561,11 @@ namespace Domain.Service.Items
 
             if (HasSameSkill)
             {
-                var info = "\n" + ItemDescriptionRichText.HeaderLine("使用または投擲したときの効果...") + "\n" + SkillOnUse.Expect("SkillOnUse is null").Skill.Match(
-                    spawnEffectSkill => spawnEffectSkill.InfoOnUse(omitProbabilityOfSuccess: true, useOrThrowCombinedTargets: true) + "\n",
+                var description = "\n" + ItemDescriptionRichText.HeaderLine("使用または投擲したときの効果...") + "\n" + SkillOnUse.Expect("SkillOnUse is null").Skill.Match(
+                    spawnEffectSkill => spawnEffectSkill.DescriptionOnUse(omitProbabilityOfSuccess: true, useOrThrowCombinedTargets: true) + "\n",
                     itemTargetSkill => throw new Exception("SkillOnUse can not be ItemTargetSkill"),
                     inventoryTargetSkill => throw new Exception("SkillOnUse can not be InventoryTargetSkill"),
-                    equipToggleSkill => equipToggleSkill.Info()
+                    equipToggleSkill => equipToggleSkill.Description()
                 );
                 var skillOnUseSuccessProbability = SkillOnUse.Expect("SkillOnUse is null").Skill.Match(
                     spawnEffectSkill => spawnEffectSkill.ProbabilityOfSuccess,
@@ -539,23 +579,23 @@ namespace Domain.Service.Items
                     inventoryTargetSkill => throw new Exception("SkillOnThrow can not be InventoryTargetSkill"),
                     _ => 1f
                 );
-                info += ItemDescriptionRichText.ColorPercentagesInPlainText(
+                description += ItemDescriptionRichText.ColorPercentagesInPlainText(
                     $"成功率：使用{skillOnUseSuccessProbability:P0}／投擲{skillOnThrowSuccessProbability:P0}\n");
-                return info;
+                return description;
             }
 
             var generic = SkillOnUse.MapOr(
                 "",
-                skill => "\n" + ItemDescriptionRichText.HeaderLine("使用したときの効果...") + "\n" + skill.Info()
+                skill => "\n" + ItemDescriptionRichText.HeaderLine("使用したときの効果...") + "\n" + skill.Description()
             );
 
             generic += SkillOnThrow.MapOr(
                 "",
                 skill => "\n" + ItemDescriptionRichText.HeaderLine("投擲したときの効果...") + "\n" + skill.Skill.Match(
-                    spawnEffectSkill => spawnEffectSkill.InfoOnThrow(HasSameEffect),
+                    spawnEffectSkill => spawnEffectSkill.DescriptionOnThrow(HasSameEffect),
                     itemTargetSkill => throw new Exception("SkillOnThrow can not be ItemTargetSkill"),
                     inventoryTargetSkill => throw new Exception("SkillOnThrow can not be InventoryTargetSkill"),
-                    equipToggleSkill => equipToggleSkill.Info()
+                    equipToggleSkill => equipToggleSkill.Description()
                 )
             );
             return generic;

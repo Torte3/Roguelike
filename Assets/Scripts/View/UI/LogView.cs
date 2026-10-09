@@ -1,5 +1,7 @@
-﻿using DG.Tweening;
+﻿using Configuration;
+using DG.Tweening;
 using TMPro;
+using Unity.Logging;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,15 +15,9 @@ namespace View.UI
         [SerializeField] private float _slideInDistance = 60f;
         [SerializeField] private float _slideInDuration = 0.2f;
         [SerializeField] private Ease _slideInEase = Ease.OutCubic;
-        private int _logShownMilliSeconds = 3000;
-
-        public void SetLogShownMilliSeconds(int milliSeconds)
-        {
-            _logShownMilliSeconds = milliSeconds;
-        }
-
         public void AddLog(string message, bool appendToPrevious)
         {
+            Log.Info($"[GameLog]{message}");
             if (appendToPrevious && TryAppendToLastLog(message))
             {
                 return;
@@ -31,7 +27,7 @@ namespace View.UI
             logText.text = message;
             // TMPのpreferred width確定前にレイアウトを読むと位置がずれるため先に確定させる。
             logText.ForceMeshUpdate();
-            logText.gameObject.AddComponent<LifeTimer>().LifeTimeMilliseconds = _logShownMilliSeconds;
+            logText.gameObject.AddComponent<LifeTimer>().LifeTimeMilliseconds = Settings.GlobalSettings.LogShownMilliSeconds.CurrentValue;
             LayoutRebuilder.ForceRebuildLayoutImmediate(_content as RectTransform);
             PlaySlideIn(logText.rectTransform);
         }
@@ -41,7 +37,7 @@ namespace View.UI
         {
             var position = rectTransform.anchoredPosition;
             rectTransform.anchoredPosition = new Vector2(position.x - _slideInDistance, position.y);
-            rectTransform.DOAnchorPosX(position.x, _slideInDuration).SetEase(_slideInEase);
+            rectTransform.DOAnchorPosX(position.x, _slideInDuration).SetEase(_slideInEase).SetLink(rectTransform.gameObject);
         }
 
         public void Clear()

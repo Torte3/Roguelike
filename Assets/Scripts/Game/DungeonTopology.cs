@@ -13,7 +13,7 @@ namespace Game
     /// <summary>
     /// マップ間の接続（階段・魔法陣）、MapId 実体、無限セクションのグラフ状態を管理する。
     /// </summary>
-    public class DungeonTopology
+    internal class DungeonTopology
     {
         private readonly IDungeonBlueprintData _blueprint;
 

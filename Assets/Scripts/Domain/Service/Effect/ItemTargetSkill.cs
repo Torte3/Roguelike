@@ -10,7 +10,9 @@ using Domain.Model.Entity;
 using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
-using Domain.Service.Logs;
+using Domain.Model.WorldEvents;
+using R3;
+using Utilities.Result;
 
 namespace Domain.Service.Effect
 {
@@ -58,21 +60,22 @@ namespace Domain.Service.Effect
             throw new Exception("ItemTargetSkill: Item not found in inventory or ground.");
         }
 
-        public async UniTask<ISkillResult> Use(IPlayer player, IItem item, IEntity itemHolder, IMap map)
+        public async UniTask<Result<SkillExecution, Unit>> Prepare(IItem item, IEntity itemHolder, IMap map)
         {
+            var player = map.Player;
             var selfIndex = GetItemIndex(player, item, map);
 
             var disabledItemIndexes = new List<ItemFocus>();
             foreach (var (item2, index) in player.Character.Inventory.AllItemsWithIndex)
             {
-                if (!_itemEffect.CanApplyTo(player, item2))
+                if (!_itemEffect.CanApplyTo(item2, map))
                 {
                     disabledItemIndexes.Add(new ItemFocus(index));
                 }
             }
 
             var groundItem = map.Items.At(player.Character.Entity.CurrentPosition).FirstOrDefault()?.Item;
-            if (groundItem == null || !_itemEffect.CanApplyTo(player, groundItem))
+            if (groundItem == null || !_itemEffect.CanApplyTo(groundItem, map))
             {
                 disabledItemIndexes.Add(ItemFocus.GroundItem);
             }
@@ -84,8 +87,11 @@ namespace Domain.Service.Effect
                     disabledItemIndexes.ToArray());
                 if (focus.IsOnItem(player.Character.Inventory, map, out var selectedItem))
                 {
-                    _itemEffect.Apply(player, selectedItem, itemHolder, map.ItemPlaceholders);
-                    return ItemTargetSkillResult.Success;
+                    return Result<SkillExecution, Unit>.Ok(() =>
+                    {
+                        _itemEffect.Apply(selectedItem, itemHolder, map);
+                        return UniTask.FromResult<ISkillResult>(SkillOutcome.Success);
+                    });
                 }
             }
             else
@@ -94,20 +100,23 @@ namespace Domain.Service.Effect
                     await player.Character.SelectItemContainsGroundItem("適応するアイテムを選択してください", selfIndex);
                 if (focus.IsOnItem(player.Character.Inventory, map, out var selectedItem))
                 {
-                    if (disabledItemIndexes.Contains(focus))
+                    return Result<SkillExecution, Unit>.Ok(() =>
                     {
-                        GameLog.Add(itemHolder.IsVisible, "しかし効果はなかった。");
-                    }
-                    else
-                    {
-                        _itemEffect.Apply(player, selectedItem, itemHolder, map.ItemPlaceholders);
-                    }
+                        if (disabledItemIndexes.Contains(focus))
+                        {
+                            map.Events.Record(new SkillFailed(itemHolder.Entity.IsVisible, SkillFailureKind.ItemUnaffected, false));
+                        }
+                        else
+                        {
+                            _itemEffect.Apply(selectedItem, itemHolder, map);
+                        }
 
-                    return ItemTargetSkillResult.Success;
+                        return UniTask.FromResult<ISkillResult>(SkillOutcome.Success);
+                    });
                 }
             }
 
-            return ItemTargetSkillResult.Cancelled;
+            return Result<SkillExecution, Unit>.Cancelled();
         }
 
         public float Evaluate() => 0;
@@ -117,7 +126,7 @@ namespace Domain.Service.Effect
             return _itemEffect.EvaluatePrice();
         }
 
-        public string Info() =>
-            "アイテムを対象に\n" + _itemEffect.Info();
+        public string Description() =>
+            "アイテムを対象に\n" + _itemEffect.Description();
     }
 }

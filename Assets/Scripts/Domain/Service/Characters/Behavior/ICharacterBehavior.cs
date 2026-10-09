@@ -6,6 +6,9 @@ using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
 using R3;
+using UnityEngine;
+using Utilities;
+using Utilities.Serialize.Option;
 
 #nullable enable
 
@@ -21,6 +24,8 @@ namespace Domain.Service.Characters.Behavior
             IInput input);
 
         public void KnowLocationOf(Location location);
+
+        public bool AcceptsSwapFrom(IHasBehavior character, Vector2Int requesterPosition, IMap map);
 
         // 旧 IItemSelector。合成元がこのIFのみで独立利用が無かったため統合した。
         public UniTask<ItemFocus> SelectItem(string text, ItemFocus[] disabledItems);

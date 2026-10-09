@@ -12,16 +12,15 @@ namespace View
             _tilemap.ClearAllTiles();
         }
 
-        public void SetTile(Vector2Int position, TileBase tile, TileVisibility? visibility = null,
-            TileBase underTile = null)
+        public void SetTile(Vector2Int position, TileBase tile, TileBase underTile = null)
         {
-            var color = visibility?.GetColor() ?? GetTileColor(position);
+            var color = GetTileColor(position);
             _tilemap.SetTile(new Vector3Int(position.x, position.y, 0), tile);
             _tilemap.SetTile(new Vector3Int(position.x, position.y, -1), underTile);
             SetTileColor(position, color);
         }
 
-        public Color GetTileColor(Vector2Int position)
+        private Color GetTileColor(Vector2Int position)
         {
             var color = _tilemap.GetColor(new Vector3Int(position.x, position.y, 0));
             return color;

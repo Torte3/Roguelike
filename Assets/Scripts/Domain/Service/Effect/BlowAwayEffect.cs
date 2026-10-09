@@ -59,7 +59,7 @@ namespace Domain.Service.Effect
             return CommonSenseParameters.BlowAwayPrice(_distance);
         }
 
-        public override string Info()
+        public override string Description()
         {
             return $"{_distance}マス吹き飛ばす\n";
         }

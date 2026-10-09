@@ -92,18 +92,6 @@ namespace Domain.Model.Item
             _ => false
         };
 
-        public void AddEffects(List<IEffect> effects)
-        {
-            if (SkillOnUse != null)
-            {
-                SkillOnUse.Effects.AddRange(effects);
-            }
-
-            if (SkillOnThrow != null)
-            {
-                SkillOnThrow.Effects.AddRange(effects);
-            }
-        }
 #if UNITY_EDITOR
         private void OnValidate()
         {

@@ -42,21 +42,21 @@ namespace View
             var canvasGroup = GetComponent<CanvasGroup>();
             if (canvasGroup != null)
             {
-                canvasGroup.DOFade(0f, FadeOutDuration).SetEase(Ease.OutQuad);
+                canvasGroup.DOFade(0f, FadeOutDuration).SetEase(Ease.OutQuad).SetLink(gameObject);
                 return;
             }
             
             var graphic = GetComponent<Graphic>();
             if (graphic != null)
             {
-                graphic.DOFade(0f, FadeOutDuration).SetEase(Ease.OutQuad);
+                graphic.DOFade(0f, FadeOutDuration).SetEase(Ease.OutQuad).SetLink(gameObject);
                 return;
             }
             
             var spriteRenderer = GetComponent<SpriteRenderer>();
             if (spriteRenderer != null)
             {
-                spriteRenderer.DOFade(0f, FadeOutDuration).SetEase(Ease.OutQuad);
+                spriteRenderer.DOFade(0f, FadeOutDuration).SetEase(Ease.OutQuad).SetLink(gameObject);
                 return;
             }
 

@@ -1,21 +1,20 @@
-using Domain.Model.Character;
-using Domain.Model.Dungeon;
 using Domain.Model.Entity;
 using Domain.Model.Item;
+using Domain.Model.Map;
 
 namespace Domain.Service.ItemEffect
 {
     public class Identify : IItemEffect
     {
-        public bool CanApplyTo(IPlayer player, IItem item)
+        public bool CanApplyTo(IItem item, IMap map)
         {
-            return !player.Character.IsKnownItem(item) || !player.Character.IsCurseKnown(item);
+            return !map.Player.Character.IsKnownItem(item) || !map.Player.Character.IsCurseKnown(item);
         }
 
-        public void Apply(IPlayer player, IItem item, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
+        public void Apply(IItem item, IEntity itemHolder, IMap map)
         {
-            player.Character.KnowItem(item, true);
-            player.Character.KnowCurse(item, true);
+            map.Player.Character.KnowItem(item, true);
+            map.Player.Character.KnowCurse(item, true);
         }
 
         public float EvaluatePrice()
@@ -23,7 +22,7 @@ namespace Domain.Service.ItemEffect
             return 100;
         }
 
-        public string Info()
+        public string Description()
         {
             return "識別";
         }

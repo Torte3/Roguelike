@@ -11,13 +11,4 @@ namespace View
         public TileBase Water;
         public TileBase Wall;
     }
-    [Serializable]
-    internal struct WorldTiles
-    {
-        public TileBase Grass;
-        public TileBase Ocean;
-        public TileBase Mountain;
-        public TileBase Desert;
-        public TileBase Forest;
-    }
 }

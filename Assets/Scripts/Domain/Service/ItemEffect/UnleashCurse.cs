@@ -1,20 +1,19 @@
-using Domain.Model.Character;
-using Domain.Model.Dungeon;
 using Domain.Model.Entity;
 using Domain.Model.Item;
+using Domain.Model.Map;
 
 namespace Domain.Service.ItemEffect
 {
     public class UnleashCurse : IItemEffect
     {
-        public bool CanApplyTo(IPlayer player, IItem item)
+        public bool CanApplyTo(IItem item, IMap map)
         {
-            return item.IsCursed || (!player.Character.IsKnownItem(item) && !item.IsCurseIdentified);
+            return item.IsCursed || (!map.Player.Character.IsKnownItem(item) && !item.IsCurseIdentified);
         }
 
-        public void Apply(IPlayer player, IItem item, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
+        public void Apply(IItem item, IEntity itemHolder, IMap map)
         {
-            item.SetCursed(player, itemHolder, itemPlaceholders, false);
+            item.SetCursed(itemHolder, map, false);
         }
 
         public float EvaluatePrice()
@@ -22,7 +21,7 @@ namespace Domain.Service.ItemEffect
             return 200;
         }
 
-        public string Info()
+        public string Description()
         {
             return "解呪";
         }

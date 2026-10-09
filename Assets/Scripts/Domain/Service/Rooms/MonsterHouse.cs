@@ -4,13 +4,13 @@ using Domain.Model;
 using Domain.Model.Entity;
 using Domain.Model.Map;
 using Domain.Model.Memento;
-using Domain.Service.Logs;
+using Domain.Model.WorldEvents;
 using UnityEngine;
 using Utilities;
 
 namespace Domain.Service.Rooms
 {
-    public class MonsterHouse : Room<RoomMemento>, IMonsterHouse
+    public class MonsterHouse : Room<RoomMemento>
     {
         public MonsterHouse(RoomMemento data, Vector2Int playerPosition) : base(data, playerPosition)
         {
@@ -36,10 +36,9 @@ namespace Domain.Service.Rooms
             );
         }
 
-        protected override async UniTask FirstTimeEnter(IGameManager gameManager, IMap map)
+        protected override UniTask FirstTimeEnter(IGameManager gameManager, IMap map)
         {
-            gameManager.PlayBGM(BGM.MonsterHouse);
-            GameLog.AddIgnoreVisibility("<color=red>モンスターハウスだ！</color>");
+            map.Events.Record(new MonsterHouseEntered());
             var area = Rect.size.x * Rect.size.y;
             var monsterCount = area switch
             {
@@ -58,7 +57,7 @@ namespace Domain.Service.Rooms
                 map.SpawnRandomEnemy(position.Position, false);
             }
 
-            await UniTask.Delay(1000);
+            return UniTask.CompletedTask;
         }
     }
 }

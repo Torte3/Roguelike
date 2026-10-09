@@ -7,6 +7,7 @@ using Domain.Model.Dungeon;
 using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Item;
+using Domain.Model.WorldEvents;
 using ObservableCollections;
 using R3;
 using UnityEngine;
@@ -14,23 +15,30 @@ using Utilities;
 
 namespace Domain.Model.Map
 {
-    public interface IMap : IPassableChecker
+    public interface IMap : IPassableChecker, IReadOnlyMap
     {
         public Id<IMap> Id { get; }
         public ItemDatabase ItemDatabase { get; }
-        public ItemPlaceholders ItemPlaceholders { get; }
-        public ItemMarketPriceTable MarketPriceTable { get; }
-        public IShop? Shop { get; }
-        public IMonsterHouse? MonsterHouse { get; }
+        public IWorldEventRecorder Events { get; }
+        public new ItemPlaceholders ItemPlaceholders { get; }
         public IPlayer Player { get; }
 
         public IObservableCollection<IEntity> Entities { get; }
         public IObservableCollection<ICharacter> Characters { get; }
+        public IEnumerable<ILockedEntity> LockedEntities { get; }
+        public ITerrain Terrain { get; }
+        public IMapPosition At(Vector2Int position, ITerrain terrain);
         public IObservableCollection<IItemEntity> Items { get; }
 
         public HashSet<Vector2Int> GetAllPositions();
+        public IEnumerable<IMapPosition> GetAllBlankPositions();
+        public IEnumerable<IMapPosition> GetAllBlankPositionsOn(params EntityLayer[] layers);
+        public IEnumerable<IMapPosition> GetAllBlankAndStandablePositions();
+        public IEnumerable<IMapPosition> GetAllBlankAndStandablePositionsOn(params EntityLayer[] layers);
+        public IEnumerable<IMapPosition> GetAllWalkablePositions(IAffiliation affiliation);
 
         public IEntity? GetEntityFastAt(Vector2Int position, EntityLayer layer);
+        public ICharacter? GetCharacterAt(Vector2Int position);
         public IEnumerable<IEntity> GetEntitiesFastAt(Vector2Int position, IEnumerable<EntityLayer> layers);
         public IEnumerable<IEntity> GetEntitiesFastAt(Vector2Int position, params EntityLayer[] layers);
         public IEnumerable<IEntity> GetEntitiesFastAt(Vector2Int position);
@@ -46,11 +54,11 @@ namespace Domain.Model.Map
         public IScheduledEventEntity? GetScheduledEventEntityFastAt(Vector2Int position, EntityLayer layer);
         public IEnumerable<IScheduledEventEntity> GetScheduledEventEntitiesFastAt(Vector2Int position, IEnumerable<EntityLayer> layers);
         public IEnumerable<IScheduledEventEntity> GetScheduledEventEntitiesFastAt(Vector2Int position, params EntityLayer[] layers);
-        public HashSet<Vector2Int> AllCharacterPositionsFast();
+        public IReadOnlyCollection<Vector2Int> AllCharacterPositionsFast();
         public HashSet<Vector2Int> AllItemPositionsFast();
 
         public bool IsInside(Vector2Int position);
-        public bool IsReachable(Vector2Int from, Vector2Int to, IHasBehavior actor);
+        public bool IsReachable(Vector2Int to, IHasBehavior actor);
 
         public IItem? GetItemByIdFromWorldOrInventory(Id<IItem> id);
 
@@ -81,11 +89,6 @@ namespace Domain.Model.Map
         public void SpawnFire(IEnumerable<Vector2Int> positions);
 
         public void SpawnTrap(TrapData trap, Vector2Int position);
-
-        public UniTask<Vector2Int> ShowThrowAnimation(Sprite icon, Vector2Int position, Direction8 direction,
-            int distance, bool isPiercing, params EntityLayer[] canHitLayer);
-
-        public void SpawnEffect(IEnumerable<Vector2Int> area, Color color);
 
         public IItemEntity? TryPickUpAt(Vector2Int position, bool canPickUpShopItem);
 

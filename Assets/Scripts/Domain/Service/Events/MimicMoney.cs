@@ -4,16 +4,16 @@ using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Effect;
 using Domain.Model.Entity;
+using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
-using Domain.Service.Items;
-using Domain.Service.Logs;
+using Domain.Model.WorldEvents;
 using UnityEngine;
 using Utilities;
 
 namespace Domain.Service.Events
 {
-    public class MimicMoney : IDisposable, ICharacterEventEntity, IIconEntity
+    public class MimicMoney : IDisposable, ICharacterEventEntity
     {
         private readonly Money _money;
         public EntityBase Entity => _money.Entity;
@@ -36,8 +36,8 @@ namespace Domain.Service.Events
 
         public ICharacter Reveal(IMap map)
         {
-            GameLog.Add(map.Player.Character.IsVisible(Entity.CurrentPosition), $"{_money.Amount}Gは{Mimic.Name}の擬態だった！");
-            Entity.Destroy("モンスターが正体を表した");
+            map.Events.Record(new MimicRevealed(Entity.IsVisible, LabelIn(map), Mimic.Name, null));
+            Entity.Destroy();
             return map.SpawnEnemyIgnoreMimic(
                 Mimic,
                 _money.Entity.CurrentPosition,
@@ -52,8 +52,6 @@ namespace Domain.Service.Events
             _money.Dispose();
         }
 
-        public Sprite Icon => _money.Icon;
-
         public ICharacterEvent Event { get; init; }
 
         public void SetVisibility(bool visibility)
@@ -61,16 +59,19 @@ namespace Domain.Service.Events
             _money.SetVisibility(visibility);
         }
 
-        public async UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)
+        public EntityLabel LabelIn(IMap map)
         {
-            var destination = ItemEntity.GetThrowDestination(_money.Entity.CurrentPosition, direction, distance, map);
-            if (Entity.Visibility.CurrentValue && destination != Entity.CurrentPosition)
-            {
-                Entity.SetVisibility(false);
-                await map.ShowThrowAnimation(Icon, Entity.CurrentPosition, direction, distance, false, EntityLayer.Middle);
-                Entity.Teleport(map.FindBlankPositionFrom(destination,
-                    position => map.At(position).IsBlankAndStandable(EntityLayer.Bottom)));
-            }
+            return _money.LabelIn(map);
+        }
+
+        public WorldEvent Appeared(IMap map)
+        {
+            return _money.Appeared(map);
+        }
+
+        public UniTask BlowAway(IActorOfEffect actor, Direction8 direction, int distance, IMap map)
+        {
+            return _money.BlowAway(actor, direction, distance, map);
         }
 
         public MimicMoneyMemento Serialize()

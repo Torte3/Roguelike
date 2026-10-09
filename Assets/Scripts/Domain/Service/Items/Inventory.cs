@@ -7,7 +7,9 @@ using Domain.Model.Character;
 using Domain.Model.Character.Message;
 using Domain.Model.Entity;
 using Domain.Model.Item;
+using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using R3;
 using Utilities;
 
@@ -28,10 +30,6 @@ namespace Domain.Service.Items
         public ReadOnlyReactiveProperty<int> Capacity => _storage.Capacity;
         public bool CanAddItem => _storage.CanAddItem;
         public bool CanRemoveItem => _storage.CanRemoveItem;
-        public Observable<OnItemInserted> OnItemInserted => _storage.OnItemInserted;
-        public Observable<OnItemRemoved> OnItemRemoved => _storage.OnItemRemoved;
-        public Observable<OnItemReplaced> OnItemReplaced => _storage.OnItemReplaced;
-        public Observable<OnItemUpdated> OnItemUpdated => _storage.OnItemUpdated;
 
         public Inventory(StorageMemento data, ICharacter character)
         {
@@ -149,11 +147,11 @@ namespace Domain.Service.Items
             }
         }
 
-        public void UpdateTurn()
+        public void UpdateTurn(IMap map)
         {
-            foreach (var item in AllItems)
+            foreach (var item in AllItems.ToList())
             {
-                item.UpdateTurn();
+                item.UpdateTurn(_character, map);
             }
         }
 
@@ -256,5 +254,6 @@ namespace Domain.Service.Items
             return Replace(item, index);
         }
         public IEnumerable<IItem> Clear() => _storage.Clear();
+        public IReadOnlyList<InventoryRowChange> TakeRowChanges() => _storage.TakeRowChanges();
     }
 }

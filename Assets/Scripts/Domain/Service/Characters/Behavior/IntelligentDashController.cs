@@ -1,9 +1,9 @@
 ﻿using System.Linq;
+using Configuration;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
 using Domain.Model.Map;
-using Domain.Model.Setting;
 using Domain.Service.Action;
 using Utilities;
 

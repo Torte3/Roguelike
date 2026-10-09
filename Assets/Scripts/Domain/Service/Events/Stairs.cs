@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Character;
@@ -8,7 +9,7 @@ using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Map;
 using Domain.Model.Memento;
-using R3;
+using Domain.Model.WorldEvents;
 using UnityEngine;
 using Utilities;
 
@@ -16,17 +17,18 @@ namespace Domain.Service.Events
 {
     public class Stairs : IDisposable, ISerializable<StairsMemento>, IPlayerEventEntity, IMovementEntity
     {
-        public const string ActiveMagicCircleMapChipName = "(Base)BaseChip_pipo_71";
-        public const string UsedMagicCircleMapChipName = "(Base)BaseChip_pipo_70";
+        private const string ActiveMagicCircleMapChipName = "(Base)BaseChip_pipo_71";
+        private const string UsedMagicCircleMapChipName = "(Base)BaseChip_pipo_70";
 
         public MovementEntityType Type { get; init; }
+        private FixtureKind FixtureKind => Type.ToFixtureKind();
         public Id<IMap> Destination { get; init; }
         public EntityBase Entity { get; init; }
         public bool IsGrounded => true;
         public Id<IEntity> DestinationId { get; init; }
 
-        private readonly ReactiveProperty<bool> _isUsed;
-        public ReadOnlyReactiveProperty<bool> CanUse { get; }
+        private bool _isUsed;
+        private bool CanUse => Type != MovementEntityType.MagicCircle || !_isUsed;
 
         public Stairs(StairsMemento data)
         {
@@ -34,29 +36,20 @@ namespace Domain.Service.Events
             Entity = new EntityBase(data.Entity);
             Destination = data.Destination;
             DestinationId = data.DestinationId;
-            _isUsed = new ReactiveProperty<bool>(
-                Type == MovementEntityType.MagicCircle && data.IsUsed);
-            CanUse = _isUsed
-                .Select(used => Type != MovementEntityType.MagicCircle || !used)
-                .ToReadOnlyReactiveProperty();
+            _isUsed = Type == MovementEntityType.MagicCircle && data.IsUsed;
 
-            var entityName = Type switch
-            {
-                MovementEntityType.UpStairs => "階段",
-                MovementEntityType.DownStairs => "階段",
-                MovementEntityType.MagicCircle => "魔法陣",
-                _ => throw new NotImplementedException(),
-            };
             Events = new List<IPlayerEvent>
             {
                 new PlayerEvent(
-                    $"{entityName}を見つけた",
+                    map => HasUnopenedUnlockedChest(map)
+                        ? new ChoiceMessage("まだ鍵の開いた宝箱を開けていない！", TextTone.Caution)
+                        : PlayerEvent.FoundMessage(FixtureKind),
                     new List<PlayerChoiceEvent>
                     {
                         new(
                             "進む",
-                            (player, map) => CanUse.CurrentValue,
-                            (gameManager, map) => DoEvent(gameManager)),
+                            (player, map) => CanUse,
+                            (gameManager, map) => DoEvent(gameManager, map)),
                     }),
             };
         }
@@ -68,18 +61,35 @@ namespace Domain.Service.Events
 
         public IReadOnlyList<IPlayerEvent> Events { get; init; }
 
-        private UniTask DoEvent(IGameManager gameManager)
+        private Sprite? Icon => IconOf(Type, CanUse);
+
+        internal static Sprite? IconOf(MovementEntityType type, bool canUse)
         {
-            var se = Type switch
-            {
-                MovementEntityType.UpStairs => SE.Stairs,
-                MovementEntityType.DownStairs => SE.Stairs,
-                MovementEntityType.MagicCircle => SE.Teleport,
-                _ => SE.Stairs,
-            };
-            gameManager.PlaySE(se);
+            if (type != MovementEntityType.MagicCircle)
+                return null;
+            return ObjectLoader.LoadMapChip(canUse ? ActiveMagicCircleMapChipName : UsedMagicCircleMapChipName);
+        }
+
+        public EntityLabel LabelIn(IMap map)
+        {
+            return new KindEntityLabel(FixtureKind);
+        }
+
+        public WorldEvent Appeared(IMap map)
+        {
+            return new FacilityAppeared(Entity.Ref, Entity.AppearanceOf(FixtureKind.ToEntityKind(), Icon), CanUse);
+        }
+
+        private static bool HasUnopenedUnlockedChest(IMap map)
+        {
+            return map.LockedEntities.Any(locked => locked.IsLockReleased);
+        }
+
+        private UniTask DoEvent(IGameManager gameManager, IMap map)
+        {
+            map.Events.Record(new FacilityUsed(FixtureKind));
             if (Type == MovementEntityType.MagicCircle)
-                _isUsed.Value = true;
+                _isUsed = true;
             gameManager.MoveMap(Destination, DestinationId);
             return UniTask.CompletedTask;
         }
@@ -93,7 +103,7 @@ namespace Domain.Service.Events
                 Destination,
                 DestinationId,
                 Entity.Serialize(),
-                Type == MovementEntityType.MagicCircle && _isUsed.CurrentValue);
+                Type == MovementEntityType.MagicCircle && _isUsed);
 
         public static StairsMemento Build(
             MovementEntityType type,

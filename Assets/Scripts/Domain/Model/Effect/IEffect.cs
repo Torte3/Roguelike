@@ -6,9 +6,10 @@ using UnityEngine;
 
 namespace Domain.Model.Effect
 {
-    public interface IEffect : IHasInfo
+    public interface IEffect
     {
         public Impact Impact { get; }
+        public Impact AppliedImpact => Impact;
         public Color Color { get; }
 
         public UniTask Apply(IActorOfEffect actor, ITargetOfEffect target, Vector2Int position, IMap map);
@@ -18,5 +19,6 @@ namespace Domain.Model.Effect
         public float Evaluate(IActorOfEffect actor, ITargetOfEffect target);
         public float Evaluate(IActorOfEffect actor, IEnumerable<Vector2Int> positions);
         public float EvaluatePrice();
+        public string Description();
     }
 }

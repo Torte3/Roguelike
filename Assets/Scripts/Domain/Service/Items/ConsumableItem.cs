@@ -10,11 +10,12 @@ using Domain.Model.Evaluation;
 using Domain.Model.Item;
 using Domain.Model.Map;
 using Domain.Model.Memento;
+using Domain.Model.WorldEvents;
 using Domain.Service.Effect;
-using Domain.Service.Logs;
 using R3;
 using UnityEngine;
 using Utilities;
+using Utilities.Result;
 using Utilities.Serialize.Option;
 
 namespace Domain.Service.Items
@@ -45,7 +46,7 @@ namespace Domain.Service.Items
             ItemCurseKind.CannotDiscardWhenCursed => false,
         };
 
-        private void TryMarkUsedWhileCursed(IActorOfEffect actor, IMap map)
+        private protected override void OnUseAttemptedInHand(IActorOfEffect actor, IMap map)
         {
             if (!IsCursed || UsedWhileCursed)
             {
@@ -53,13 +54,9 @@ namespace Domain.Service.Items
             }
 
             UsedWhileCursed = true;
-            _onItemUpdated.OnNext(Unit.Default);
-
-            if (CurseKind == ItemCurseKind.CannotDiscardWhenCursed)
-            {
-                GameLog.Add(actor.IsVisible,
-                    $"{GetName(map.Player, map.ItemPlaceholders)}は捨てられなくなった");
-            }
+            RecordChange(actor, map, CurseKind == ItemCurseKind.CannotDiscardWhenCursed
+                ? ItemChangeKind.BecameUndiscardable
+                : ItemChangeKind.UsedWhileCursed);
         }
 
         private bool IsUseBlockedByCurse =>
@@ -76,11 +73,11 @@ namespace Domain.Service.Items
 
         public override bool CanAttemptThrow => !IsDiscardBlocked;
 
-        public override void Repair(IPlayer player, IEntity itemHolder, ItemPlaceholders itemPlaceholders)
+        public override void Repair(IEntity itemHolder, IMap map)
         {
-            GameLog.Add(itemHolder.IsVisible, $"{GetName(player, itemPlaceholders)}は修理された");
+            var name = this.NameIn(map);
             _remainingUsages.Value = MaxUsages;
-            _onItemUpdated.OnNext(Unit.Default);
+            RecordChange(itemHolder, map, ItemChangeKind.Repaired, name);
         }
 
         private bool ShouldDecreaseUsage(IActorOfEffect actor)
@@ -96,15 +93,21 @@ namespace Domain.Service.Items
             return RandUtils.IsLessThanProbability(UsageLossChance);
         }
 
-        private void ApplyPostUseAttemptInventoryEffects(IActorOfEffect actor, IMap map)
+        private bool BreaksWhenConsumed => MaxUsages > 1 && _remainingUsages.Value == 1;
+
+        private protected override bool ConfirmUse(IActorOfEffect actor, IMap map)
         {
-            if (ShouldDecreaseUsage(actor))
+            var isConsumed = ShouldDecreaseUsage(actor);
+            if (isConsumed && BreaksWhenConsumed)
+                map.Events.Record(new ItemBroken(actor.Entity.IsVisible, this.NameIn(map)));
+            return isConsumed;
+        }
+
+        private protected override void FinishUse(IActorOfEffect actor, IMap map, bool isConsumed)
+        {
+            if (isConsumed)
             {
                 _remainingUsages.Value -= 1;
-            }
-            else
-            {
-                GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は消費しなかった");
             }
 
             if (State == ItemState.ShopItem)
@@ -112,92 +115,12 @@ namespace Domain.Service.Items
                 SetState(ItemState.UsedShopItem);
             }
 
-            _onItemUpdated.OnNext(Unit.Default);
+            RecordChange(actor, map, isConsumed ? ItemChangeKind.Consumed : ItemChangeKind.NotConsumed);
         }
 
-        public override void LogWhyCannotActivateWhenUsed(IActor actor, IMap map)
+        public override Result<Unit, ItemActionFailure> ActivationCheckWhenUsed()
         {
-            if (!CannotUseWhileCursed || !IsCursed)
-            {
-                return;
-            }
-
-            GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は呪われているため使用できない");
-        }
-
-        public override async UniTask<ISkillResult> Use(IActor actor, Vector2Int position, Direction8 direction, IMap map)
-        {
-            if (ShouldRevealMimic(actor, position, map))
-            {
-                return SpawnEffectSkillResult.Failed;
-            }
-
-            actor.KnowCurse(this, true);
-
-            if (!actor.CanReadItem && RequiresLiteracy)
-            {
-                GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は文字が読めない");
-                return SpawnEffectSkillResult.Failed;
-            }
-
-            var skill = SkillOnUse.Expect("SkillOnUse is null");
-
-            if (!skill.IsUsable())
-            {
-                GameLog.Add(actor.IsVisible, $"しかしうまくいかなかった");
-                TryMarkUsedWhileCursed(actor, map);
-                return SpawnEffectSkillResult.Failed;
-            }
-
-            var result = await skill.Use(actor, this, position, direction, map);
-            if (result.Result != SkillResult.Cancelled)
-            {
-                ApplyPostUseAttemptInventoryEffects(actor, map);
-                TryMarkUsedWhileCursed(actor, map);
-            }
-
-            return result;
-        }
-
-        public override async UniTask<ISkillResult> UseWhenThrown(IActorOfEffect actor, Vector2Int position,
-            Direction8 direction, IMap map)
-        {
-            if (ShouldRevealMimic(actor, position, map))
-            {
-                return SpawnEffectSkillResult.Failed;
-            }
-
-            if (actor is IHasInventory holder)
-                holder.KnowCurse(this, true);
-
-            if (!actor.CanReadItem && RequiresLiteracy)
-            {
-                GameLog.Add(actor.IsVisible, $"{GetName(map.Player, map.ItemPlaceholders)}は文字が読めない");
-                return SpawnEffectSkillResult.Failed;
-            }
-
-            var skill = SkillOnThrow.Expect("SkillOnThrow is null");
-
-            if (!skill.IsUsable())
-            {
-                return SpawnEffectSkillResult.Failed;
-            }
-
-            var result = await SkillExtension.Match(
-                skill.Skill,
-                spawnEffectSkill => spawnEffectSkill.Use(actor, this, position, direction, map),
-                itemTargetSkill => throw new Exception(
-                    "The item is not configured to activate this type of skill when thrown."),
-                inventoryTargetSkill => throw new Exception(
-                    "The item is not configured to activate this type of skill when thrown."),
-                equipToggleSkill => equipToggleSkill.Use(actor, this, position, direction, map)
-            );
-            if (result.Result != SkillResult.Cancelled)
-            {
-                ApplyPostUseAttemptInventoryEffects(actor, map);
-            }
-
-            return result;
+            return ItemChecks.Check(!CannotUseWhileCursed || !IsCursed, ItemActionFailure.CursedCannotUse);
         }
     }
 }

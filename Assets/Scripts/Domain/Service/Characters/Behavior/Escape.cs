@@ -29,5 +29,10 @@ namespace Domain.Service.Characters.Behavior
 
             return moves.Where(move => move.Doable(character, map));
         }
+
+        public static Direction8? NextStep(IHasBehavior character, Vector2Int targetPosition)
+        {
+            return DirectionMethods.NearDirectionsFromVector(character.Entity.CurrentPosition - targetPosition)?[0];
+        }
     }
 }

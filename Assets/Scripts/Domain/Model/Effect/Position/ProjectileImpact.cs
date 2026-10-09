@@ -14,6 +14,7 @@ namespace Domain.Model.Effect.Position
         [Required] public IconSerializable Icon;
         public List<EntityLayer> CanHitLayer = new() { EntityLayer.Middle };
         public bool IsDirectional => true;
+        public Sprite ProjectileIcon => Icon.Value;
         public bool IsPiercing;
 
         public ProjectileImpact(IconSerializable icon, List<EntityLayer> canHitLayer, bool isPiercing)
@@ -47,7 +48,7 @@ namespace Domain.Model.Effect.Position
             return CommonSenseParameters.ProjectileImpactHitProbability;
         }
 
-        public string Info()
+        public string Description()
         {
             return "着弾地点" + (IsPiercing ? "（貫通）" : "");
         }

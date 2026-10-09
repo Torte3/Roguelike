@@ -4,12 +4,7 @@ using Cysharp.Threading.Tasks;
 using Domain.Model.Effect;
 using Domain.Model.Entity;
 using Domain.Model.Evaluation;
-using Domain.Model.Item;
 using Domain.Model.Map;
-using Domain.Service.Characters;
-using Domain.Service.Events;
-using Domain.Service.Items;
-using Domain.Service.Logs;
 using UnityEngine;
 using Utilities;
 
@@ -36,38 +31,20 @@ namespace Domain.Service.Effect
             ApplyToStatue = applyToStatue;
         }
 
+        private BreakTargets Targets =>
+            (ApplyToCharacter ? BreakTargets.Character : BreakTargets.None)
+            | (ApplyToItem ? BreakTargets.Item : BreakTargets.None)
+            | (ApplyToMoney ? BreakTargets.Money : BreakTargets.None)
+            | (ApplyToTrap ? BreakTargets.Trap : BreakTargets.None)
+            | (ApplyToChest ? BreakTargets.Chest : BreakTargets.None)
+            | (ApplyToStatue ? BreakTargets.Statue : BreakTargets.None);
+
         public override UniTask Apply(IEntity target, Vector2Int position, IMap map)
         {
-            if (target is Character character && ApplyToCharacter)
-            {
-                GameLog.Add(target.IsVisible, $"{character.GetName(map.Player)}は破壊された");
-            }
-            else if (target is ItemEntity item && ApplyToItem)
-            {
-                GameLog.Add(target.IsVisible, $"{item.Item.GetName(map.Player, map.ItemPlaceholders)}は破壊された");
-            }
-            else if (target is Money money && ApplyToMoney)
-            {
-                GameLog.Add(target.IsVisible, $"{money.Amount}Gは破壊された");
-            }
-            else if (target is Trap trap && ApplyToTrap)
-            {
-                GameLog.Add(target.IsVisible, $"{trap.Name}は破壊された");
-            }
-            else if (target is Chest chest && ApplyToChest)
-            {
-                GameLog.Add(target.IsVisible, "宝箱は破壊された");
-            }
-            else if (target is Statue statue && ApplyToStatue)
-            {
-                GameLog.Add(target.IsVisible, $"{statue.Name}は破壊された");
-            }
-            else
-            {
+            if (!target.CanBeBrokenBy(Targets))
                 return UniTask.CompletedTask;
-            }
 
-            target.Entity.Destroy("は破壊された");
+            target.Break(map);
             return UniTask.CompletedTask;
         }
 
@@ -86,7 +63,7 @@ namespace Domain.Service.Effect
                 return 5f;
         }
 
-        public override string Info()
+        public override string Description()
         {
             var targets = new List<string>();
             if (ApplyToCharacter) targets.Add("キャラクター");

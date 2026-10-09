@@ -13,39 +13,34 @@ namespace View
             _tilemap.ClearAllTiles();
         }
 
-        public void SetFloor(Vector2Int position, TileVisibility? visibility = null)
+        public void SetFloor(Vector2Int position)
         {
-            SetTile(position, _minimapTiles.Floor, visibility);
+            SetTile(position, _minimapTiles.Floor);
         }
 
-        public void SetWater(Vector2Int position, TileVisibility? visibility = null)
+        public void SetWater(Vector2Int position)
         {
-            SetTile(position, _minimapTiles.Water, visibility);
+            SetTile(position, _minimapTiles.Water);
         }
 
-        public void SetWall(Vector2Int position, TileVisibility? visibility = null)
+        public void SetWall(Vector2Int position)
         {
-            SetTile(position, _minimapTiles.Wall, visibility);
+            SetTile(position, _minimapTiles.Wall);
         }
 
-        public void SetUnbreakableWall(Vector2Int position, TileVisibility? visibility = null)
+        public void SetUnbreakableWall(Vector2Int position)
         {
-            SetTile(position, _minimapTiles.Wall, visibility);
+            SetTile(position, _minimapTiles.Wall);
         }
 
-        public void SetShopFloor(Vector2Int position, TileVisibility? visibility = null)
+        private void SetTile(Vector2Int position, TileBase tile)
         {
-            SetTile(position, _minimapTiles.ShopFloor, visibility);
-        }
-
-        private void SetTile(Vector2Int position, TileBase tile, TileVisibility? visibility = null)
-        {
-            var color = visibility?.GetMinimapColor() ?? GetTileColor(position);
+            var color = GetTileColor(position);
             _tilemap.SetTile(new Vector3Int(position.x, position.y, 0), tile);
             SetTileColor(position, color);
         }
 
-        public Color GetTileColor(Vector2Int position)
+        private Color GetTileColor(Vector2Int position)
         {
             var color = _tilemap.GetColor(new Vector3Int(position.x, position.y, 0));
             return color;

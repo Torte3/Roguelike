@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Domain.Model.Effect;
+using Domain.Model.Entity;
 using Domain.Model.Item;
 using Domain.Model.Map;
-using Domain.Service.Logs;
 using UnityEngine;
 using Utilities;
 
@@ -27,8 +27,7 @@ namespace Domain.Service.Effect
         public override async UniTask Apply(ITargetOfEffect target, Vector2Int position, IMap map)
         {
             var damage = Formula.CalcExplosionDamage(_damageRate, target);
-            GameLog.AddAppend(target.IsVisible, $"{target.GetName(map.Player)}に{damage}のダメージ。");
-            await target.LoseHp(damage, $"は爆発に巻き込まれた", null);
+            await target.LoseHp(damage, new DamageSource(DamageCause.Explosion), null);
         }
 
         public override float Evaluate(IActorOfEffect actor, ITargetOfEffect target)
@@ -44,7 +43,7 @@ namespace Domain.Service.Effect
             return Formula.EvaluateExplosionDamage(_damageRate);
         }
 
-        public override string Info()
+        public override string Description()
         {
             var rate = $"割合{_damageRate:P0}";
             return $"攻撃[{ItemDescriptionRichText.RichAttackPowerSummary(rate)}]\n";
