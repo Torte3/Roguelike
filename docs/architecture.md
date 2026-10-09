@@ -33,14 +33,17 @@ flowchart TD
     Game --> Model
 
     Service --> Model
+    Service --> Settings
 
     Model --> Utilities
     Model --> Stats
-    Model --> Settings
+
+    View --> Settings
+    View --> Utilities
 ```
 
-`Provider` は、DI や Presenter を通じて各層を接続する合成ルートです。  
-`View` は UI、演出、GameObject の表示制御を担当します。  
+`Provider` は、DI や Presenter を通じて各層を接続し、WorldEvent を表示の指示へ変換する合成ルートです。  
+`View` は UI、演出、GameObject の表示制御と、表示の指示の再生を担当します。  
 `Game` は World、Map、Turn、Save など、ゲーム全体の進行を管理します。  
 `Domain.Service` は、戦闘、敵AI、効果処理、マップ処理などのゲームルールを実装します。  
 `Domain.Model` は、型、インターフェース、ScriptableObject、Memento などのデータ定義を持ちます。  
@@ -67,7 +70,7 @@ flowchart TD
 
 `Provider` は、入力、Presenter、DI コンテナなどを通じて、`View`、`Game`、`Domain.Service`、`Domain.Model` を接続する層です。
 
-VContainer を使い、GameManager、Presenter、デバッグコマンドなどを登録・注入しています。
+VContainer を使い、GameManager、Presenter、WorldEvent の変換、デバッグコマンドなどを登録・注入しています。
 
 この層に接続処理を集めることで、各機能が互いに直接参照しすぎないようにしています。
 
@@ -77,47 +80,36 @@ VContainer を使い、GameManager、Presenter、デバッグコマンドなど�
 
 ---
 
-## Event Propagation and Dependency Inversion
+## WorldEvent
 
-LogRogue では、状態変化の通知に R3 を使っています。
+ロジックと表示は、WorldEvent だけでつないでいます。
 
-ゲーム中には、次のような状態変化が頻繁に発生します。
+```mermaid
+flowchart LR
+    Logic["Domain / Game<br/>ターンを解決し WorldEvent を記録"]
+    Stream["WorldEventStream<br/>R3 のストリーム"]
+    View["表示側<br/>WorldEvent を読み、演出を再生"]
 
-- ターンの進行
-- マップの切り替え
-- 視界範囲の変化
-- エンティティの追加・削除
-- HP や状態異常の変化
-- 好感度や所属の変化
+    Logic --> Stream --> View
+```
 
-これらを各クラスが直接呼び合う形で実装すると、  
-ロジック側が表示側や具体的な更新処理を知る必要があり、依存関係が広がりやすくなります。
+### この形にした理由
 
-そこで、ロジック側は状態変化をイベントストリームとして公開し、  
-Presenter や View 同期側が必要なイベントを購読して追従する形にしています。
+ローグライクの1ターンでは、多くのキャラクターが続けて動きます。ロジックと演出を結びつけたまま進めると、演出の順番がロジックの処理順に縛られ、敵が多い場面では操作に引っかかりを覚えるなど、体験が悪くなります。また、表示の都合にゲームルールが依存してしまいます。
 
-これにより、例えば `Game` や `Domain.Service` は  
-「UIを更新する」「特定のGameObjectを動かす」といった処理を直接呼ばずに済みます。
+### 記録
 
-つまり R3 は、単なるイベント通知のためだけでなく、  
-**ロジック側が表示側の具体的な実装を知らないまま状態変化を伝えるための仕組み**  
-として使っています。
+ゲームルールは、状態を変えたその場で WorldEvent（移動・攻撃の命中・状態異常・所持品の変化など）を記録して先へ進みます。WorldEvent には、何が起きたかに加えて、ロジックの状態に関する値も載せているので、表示側はロジックの状態を読みに行かずに画面を作れます。
 
-この構成により、依存関係を内側へ向けつつ、表示更新や演出側の処理を外側で購読できるようにしています。
+### 再生
 
----
-
-## View Synchronization
-
-View は、UI や演出、GameObject の表示制御に集中し、ゲームルールやデータ構造へ直接依存しないようにしています。
-
-表示更新に必要な情報は、Presenter や同期用の仕組みを通じて View に渡します。
-
-これにより、例えば敵AIやアイテム効果の実装を変更しても、表示側へ変更が広がりにくくなります。
+表示側は WorldEvent を読み、演出を出します。順序関係のない演出はまとめて再生するため、他のキャラクターの行動を待つ時間がなくなり、テンポよく遊べます。演出を変えてもゲームルールには手を入れずに済みます。また、画面のログ・BGM・プレイ統計も、同じ WorldEvent から作っています。
 
 主な実装：
 
-- [SynchronizedEntityView.cs](../Assets/Scripts/Provider/SynchronizedView/SynchronizedEntityView.cs)
+- [WorldEvent.cs](../Assets/Scripts/Domain/Model/WorldEvents/WorldEvent.cs) /
+  [WorldEventStream.cs](../Assets/Scripts/Domain/Model/WorldEvents/WorldEventStream.cs)
+- [PlaybackQueue.cs](../Assets/Scripts/View/Playback/PlaybackQueue.cs)
 
 ---
 
