@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Configuration;
 using Domain.Model;
 using Domain.Model.Item;
 using Domain.Model.Memento;
@@ -32,7 +33,7 @@ namespace Game.Entities
                 item => item.Item.RemainingUses.SkipLatestValueOnSubscribe(),
                 (item, remainingUses) =>
                 {
-                    if (remainingUses <= 0 && item.Item.AutoDestroyWhenDisabled)
+                    if (remainingUses <= 0 && (Settings.GlobalSettings.DiscardUsedUpItems.CurrentValue || item.Item.AutoDestroyWhenDisabled))
                     {
                         _items.Remove(item);
                     }

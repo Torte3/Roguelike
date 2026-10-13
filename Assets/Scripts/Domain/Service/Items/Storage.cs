@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Configuration;
 using Domain.Model;
 using Domain.Model.Character.Message;
 using Domain.Model.Item;
@@ -57,7 +58,7 @@ namespace Domain.Service.Items
                         itemAdded.RemainingUses.SkipLatestValueOnSubscribe().Subscribe(
                             remainingUses =>
                             {
-                                if (remainingUses <= 0 && itemAdded.AutoDestroyWhenDisabled)
+                                if (remainingUses <= 0 && (Settings.GlobalSettings.DiscardUsedUpItems.CurrentValue || itemAdded.AutoDestroyWhenDisabled))
                                 {
                                     ForceRemove(itemAdded);
                                 }
