@@ -99,6 +99,7 @@ namespace Configuration
         public readonly Slider LowHpThresholdPercentage = new("低HP警告閾値[%]", 1, 100, 25);
         public readonly CheckBox IntelligentDash = new("スマートダッシュ", true);
         public readonly CheckBox AutoPickUpShopItem = new("店のアイテムを自動で拾う", false);
+        public readonly CheckBox DiscardUsedUpItems = new("使い終わったアイテムを破棄する", true);
         public readonly Slider DashPauseMilliseconds = new("分岐一時停止時間[ms]", 100, 1000, 250);
         public readonly CheckBox SwapABXY = new("A/B・X/Yボタンを入れ替える", false);
         public readonly CheckBox AutoSave = new("自動でセーブする", false);
